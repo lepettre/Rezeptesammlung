@@ -563,8 +563,20 @@ function fmtDuration(min){
 /* ===== Freitext-Import ===== */
 const H_ING = /^(zutaten|ingredients?|einkaufsliste|du brauchst|ihr braucht|man braucht|was (?:ihr|du) brauch\w*|you(?:'|’)?ll need|what you need|rezept\b[^:]{0,40})\s*(:|$|für\s+(ca\.\s*)?\d|for\s+\d|\(|-)/i;
 const H_STEP = /^(zubereitung|method|instructions?|directions?|preparation|anleitung|so geht(?:'|’)?s|und so geht(?:'|’)?s|so wird(?:'|’)?s gemacht|schritte|steps|step by step)\s*(:|$)/i;
-const NOISE = /(ist am Kiosk|als Abo\b|zeit\.de\/|faz\.net|^Foto\s|^Anzeige$|^Von [A-ZÄÖÜ][a-zäöü]+ [A-ZÄÖÜ][a-zäöü]+$|^Vor \d+ (Tagen|Stunden|Minuten|Wochen)$|^(Gespeichert|Antworten|Zurück|Sprechen.*|Pause|Mehr anzeigen|Rezept speichern|Drucken|Teilen|Zum Rezept springen|Das neue)$|^\d{1,2}:\d{2}\b|^[\d.,\s]{3,}$|^([@#]\S+\s*)+$|ZEITmagazin \d+\/\d{4}|ZEITmagazin WOCHENMARKT|^Seite \d+$|\b\d+ von \d+$|^Zeitmagazin\b|\bkcal\b|^Pro Portion)/i;
+const NOISE = /(ist am Kiosk|als Abo\b|zeit\.de\/|faz\.net|^Foto\s|^Anzeige$|^Von [A-ZÄÖÜ][a-zäöü]+ [A-ZÄÖÜ][a-zäöü]+$|^Vor \d+ (Tagen|Stunden|Minuten|Wochen)$|^(Gespeichert|Antworten|Zurück|Sprechen.*|Pause|Mehr anzeigen|Rezept speichern|Drucken|Teilen|Zum Rezept springen|Das neue|Abonnieren|Kommentieren|Alle Zutaten|Z\+|Q)$|^\d{1,2}:\d{2}\b|^[\d.,\s]{3,}$|^([@#]\S+\s*)+$|ZEITmagazin \d+\/\d{4}|ZEITmagazin WOCHENMARKT|^Seite \d+$|\b\d+ von \d+$|^Zeitmagazin\b|\bkcal\b|^Pro Portion)/i;
 const hdr = l => l.replace(/^[^\p{L}\d]+/u,'').trim();
+const ING_HEAD = /^(?:(?:für|for)\s+(?:den|die|das|the)\s+|zum\s+|zur\s+)?(teig|boden|füllung|glasur|guss|soße|sosse|sauce|dressing|topping|toppings|belag|marinade|creme|streusel|deko|dekoration|garnitur|garnish|tofu|mushrooms|pilze|dough|crust|filling|glaze|frosting|icing|salat|salad|gemüse|vegetables|reis|rice|nudeln|noodles|pasta|fleisch|meat|sirup|syrup|brühe|broth|kompott|meringue|pangrattato|pesto|dip|servieren|to serve|außerdem|optional|basis|base|vinaigrette|chili-öl|chiliöl|würzpaste|paste|curry|suppe|soup)$/i;
+const TEASER = /^(mehr zum thema|noch mehr rezepte|das könnte sie auch interessieren|weitere rezepte|ähnliche rezepte|related recipes|you may also like|more recipes|newsletter|lesen sie auch|auch interessant)\b/i;
+const H_NOTES = /^(notes?|tipps?|tips?|hinweise?|anmerkungen?|variationen?|varianten?|recipe notes)\s*:?$/i;
+const STEP_STOP = /\b(und|oder|die|der|das|den|dem|mit|in|im|zu|zum|auf|an|the|and|or|of|to|a|with|in|into|for|until)$/i;
+/* VERSALIEN → normale Schreibweise: Wörter groß, kleine Funktionswörter klein */
+const LOWW=new Set(['mit','und','oder','aus','auf','in','im','am','an','von','vom','zum','zur','der','die','das','den','dem','des','für','nach','über','unter','ohne','à','al','alla','alle','di','da','del','della','e','con','in','la','le','les','de','du','et','au','aux','with','and','or','of','the','a','an','on','for','to','y','con','en','el','à la']);
+function isCaps(s){ const letters=(s.match(/\p{L}/gu)||[]); return letters.length>=2 && letters.every(c=>c===c.toUpperCase()) && letters.some(c=>c!==c.toLowerCase()); }
+function decap(s){
+  if(!isCaps(s)) return s;
+  let i=0;
+  return s.toLowerCase().replace(/[\p{L}]+/gu,(w,off)=>{ const first=i++===0; const prev=s.slice(0,off); if(!first && LOWW.has(w) && !/[-–:]\s*$/.test(prev)) return w; return w.charAt(0).toUpperCase()+w.slice(1); });
+}
 const H_SUBSTEP = /^(anrichten|servieren|fertigstellen|garnieren|to serve|assembly|finish)\s*:?$/i;
 const SERV_RE = /(?:zutaten\s+)?(?:für|for|serves|ergibt|makes|portionen:?)\s*(?:ca\.\s*)?(\d+)(?:\s*(?:[-–]|bis|to)\s*(\d+))?\s*([A-Za-zÄÖÜäöüß]+)?/i;
 const ABBR = /(?:\b(?:z|u|v|d|s|o|ca|bzw|evtl|ggf|inkl|gem|std|min|max|esp|etc|vgl|nr|bspw|zb|e|ca|i|approx|tbsp|tsp|el|tl|msp|pck)\.)$/i;
@@ -616,12 +628,15 @@ function parseRecipeText(text){
   let lines = String(text||'').replace(/\r/g,'').replace(/\u00a0/g,' ').split('\n').map(l=>l.replace(/\s+/g,' ').trim());
   lines = joinWrapped(lines);
   // Sektionen markieren
-  let sec='pre', lastPre=''; const blocks={pre:[],ing:[],step:[],post:[]};
+  let sec='pre', lastPre='', skipTeaser=false; const blocks={pre:[],ing:[],step:[],post:[]};
   const meta=[];
   for(let i=0;i<lines.length;i++){
     let l=lines[i];
     if(!l){ blocks[sec].push(''); continue; }
     if(NOISE.test(l)) continue;
+    if(TEASER.test(l)){ skipTeaser=true; continue; }
+    if(skipTeaser){ if(l.split(/\s+/).length>=7 || H_ING.test(hdr(l)) || H_STEP.test(hdr(l))) skipTeaser=false; else continue; }
+    if(H_NOTES.test(hdr(l)) && sec!=='pre'){ sec='post'; continue; }
     const lh0=hdr(l);
     // Metazeilen
     if(/^(zeitbedarf|zubereitungszeit|arbeitszeit|kochzeit|backzeit|ruhezeit|gesamtzeit|prep(?:aration)? time|cook(?:ing)? time|total time|dauer)\b/i.test(l) || (/^\d+\s*(?:[-–]\s*\d+\s*)?(min|minuten|std|stunden|h)\b/i.test(l) && l.length<45)){ meta.push(l); continue; }
@@ -629,6 +644,10 @@ function parseRecipeText(text){
     if(/^(haltbarkeit|hält sich|haltbar)\b/i.test(l)){ meta.push(l); continue; }
     if(/^(vegan|vegetarisch|vegetarian|glutenfrei|laktosefrei)$/i.test(l)){ r.tags.push(cap(l.toLowerCase())); continue; }
     if(/^(©|quelle:|source:|aus:|from:)/i.test(l) || /(erschienen|übersetzt|translated by|published)/i.test(l) && l.length<160){ r.source.name = (r.source.name? r.source.name+' · ' : '') + l.replace(/^(quelle|source|aus|from):\s*/i,''); continue; }
+    { const zg=lh0.match(/^zutaten\s+(?:für|for)\s+(?!\d|ca\.)(?:den|die|das|the\s+)?\s*(.{2,40}?)\s*:?$/i);
+      if(zg && !/personen|portionen|stück|people|servings/i.test(zg[1])){ sec='ing'; blocks.ing.push(''); blocks.ing.push('## '+decap(zg[1]).replace(/^./,c=>c.toUpperCase())); continue; } }
+    if((sec==='ing'||sec==='step') && isCaps(l) && l.split(/\s+/).length<=4 && !/\d/.test(l) && !H_ING.test(lh0) && !H_STEP.test(lh0) && !H_NOTES.test(lh0)){
+      blocks[sec].push(''); blocks[sec].push('## '+decap(l.replace(/:$/,''))); if(sec==='step') blocks.step.push(''); continue; }
     if(H_ING.test(lh0)){
       if(!r.title && lastPre && lastPre.length<70 && !/^\d/.test(lastPre) && /für|for/i.test(lh0)) { r.title=lastPre; r.titleStrong=true; const k=blocks.pre.lastIndexOf(lastPre); if(k>=0) blocks.pre.splice(k,1); }
       sec='ing';
@@ -648,7 +667,7 @@ function parseRecipeText(text){
       let k=0; for(let j=i;j<Math.min(lines.length,i+4);j++) if(lines[j] && looksIng(lines[j])) k++;
       if(k>=2) sec='ing';
     }
-    if(sec==='ing' && l && !ING_RE.test(l) && !/[,;]\s*\d/.test(l) && (l.split(/\s+/).length>=7 || (/[.!?]$/.test(l) && l.split(/\s+/).length>=4))){ sec='step'; }
+    if(sec==='ing' && l && !ING_RE.test(l) && !/[,;]\s*\d/.test(l) && !/^(etwas|einige|ein paar|some|a|an|optional|nach belieben)\b/i.test(l) && (l.split(/\s+/).length>=9 || (/[.!?]$/.test(l) && l.split(/\s+/).length>=4))){ sec='step'; }
     if(sec==='ing' && /^\d+[.)]\s+[A-ZÄÖÜ]/.test(l) && l.length>40){ sec='step'; }
     blocks[sec].push(l); if(sec==='pre') lastPre=l;
   }
@@ -663,7 +682,7 @@ function parseRecipeText(text){
     }
   }
   r.title = r.title.replace(/\s+–\s+$/,'');
-  if(r.title === r.title.toUpperCase() && /[A-Z]/.test(r.title)) r.title = r.title.toLowerCase().replace(/(^|[\s(-])([a-zäöü])/g,(a,b,c)=>b+c.toUpperCase());
+  r.title = decap(r.title);
   // Intro
   r.intro = paragraphs(pre).join('\n\n');
   // Zutaten
@@ -672,7 +691,8 @@ function parseRecipeText(text){
   for(const l of blocks.ing){
     if(!l){ flushBuf(); continue; }
     if(/:$/.test(l) && l.length<50 && !ING_RE.test(l)){ flushBuf(); ingLines.push('## '+l.replace(/:$/,'')); continue; }
-    if(buf && (/^[a-zäöüß(]/.test(l) || /[,(]$/.test(buf) || (buf.match(/\(/g)||[]).length>(buf.match(/\)/g)||[]).length)){ buf+=' '+l; continue; }
+    if(buf && (/[,(\-]$/.test(buf) || (buf.match(/\(/g)||[]).length>(buf.match(/\)/g)||[]).length || (/^[a-zäöüß(]/.test(l) && l.split(/\s+/).length<=2 && !/\d/.test(l)) || (/^[a-zäöüß]/.test(l) && !/\d/.test(l) && !/^(a|an|some|etwas|eine?|zest|juice|sea)\b/i.test(l) && !/^[a-zäöüß]+\s+(und|and|oder|or)\s/.test(l) && /\b(aus|von|mit|in|of|with|for|und|and|or|oder)$/i.test(buf)))){ buf+=' '+l; continue; }
+    if(ING_HEAD.test(l.replace(/:$/,'')) && !/\d/.test(l)){ flushBuf(); ingLines.push('## '+l.replace(/:$/,'')); continue; }
     flushBuf(); buf=l;
   }
   flushBuf();
@@ -682,10 +702,13 @@ function parseRecipeText(text){
   const paras=[]; let cur='', numbered=false, pend=false;
   const ends=s=>/[.!?…:)"»“]\s*$/.test(s);
   const push=()=>{ if(cur.trim()) paras.push(cur.trim()); cur=''; pend=false; };
-  for(const l0 of blocks.step){
-    const l=l0.trim();
+  const SL=blocks.step;
+  for(let si=0; si<SL.length; si++){
+    const l=SL[si].trim();
     if(!l){ if(cur) pend=true; continue; }
     if(/^##\s/.test(l)){ push(); paras.push(l); continue; }
+    { const nx=(SL.slice(si+1).find(x=>x&&x.trim())||'').trim(); const w=l.split(/\s+/);
+      if((!cur || ends(cur)) && w.length<=6 && /^[A-ZÄÖÜ]/.test(l) && /^[A-ZÄÖÜ&]/.test(w[w.length-1]) && !/[.!?:,;)]$/.test(l) && !STEP_STOP.test(l) && !/\d/.test(l) && (/^[A-ZÄÖÜ]/.test(nx) || MARK.test(nx))){ push(); paras.push('## '+l); continue; } }
     const m=l.match(MARK);
     if(m){ push(); numbered=true; cur=l.slice(m[0].length); continue; }
     if(/^[-•*·]\s+/.test(l)){ push(); cur=l.replace(/^[-•*·]\s+/,''); continue; }
@@ -701,6 +724,8 @@ function parseRecipeText(text){
   if(steps.length>1){
     const last=steps[steps.length-1];
     if(/^(tipp|tip|hinweis|note|variante|obwohl|serviervorschlag)/i.test(last)){ r.notes=last; steps.pop(); }
+  }
+  { const post=paragraphs(blocks.post).join('\n\n').trim(); if(post) r.notes = r.notes ? r.notes+'\n\n'+post : post;
   }
   r.stepsText = steps.join('\n\n');
   // Meta
@@ -1104,6 +1129,7 @@ function renderResults(){
 /* ===================== Detail ===================== */
 let ds = null; // Detail-Zustand
 function renderDetail(keep){
+  if(isIOSApp()) preloadPDF().catch(()=>{});
   const r = getR(route.id); if(!r){ go({v:'list'}); return; }
   if(!keep || !ds || ds.id!==r.id) ds = { id:r.id, shown: r.servings||1, mode: pref.unitMode||'orig', over:{}, checked:new Set(), done:new Set() };
   const base = r.servings||1, factor = ds.shown/base;
@@ -1333,11 +1359,10 @@ function collectForm(){
 function fillFromParse(p){
   collectForm();
   const d=draft;
-  if(p.title) d.title=p.title;
+  if(p.title) d.title=decap(p.title);
   const put=(arr,text)=>{ const gs=splitGroups(text); const empty=arr.every(x=>!x.text.trim()); if(empty){ arr.splice(0,arr.length,...gs); } else arr.push(...gs); };
   if(p.ingredientsText) put(d.ingGroups, p.ingredientsText);
   if(p.stepsText) put(d.stepGroups, p.stepsText);
-  if(p.intro) d.intro=p.intro;
   if(p.notes) d.notes=p.notes;
   if(p.servings!=null){ d.servings=p.servings; d.servingsUnit=normServUnit(p.servingsUnit)||d.servingsUnit; }
   ['prep','cook','rest'].forEach(k=>{ if(p[k]!=null) d[k]=p[k]; });
@@ -1653,7 +1678,7 @@ async function saveFile(filename, data, mime){
   if(isTouchDevice()){
     try{
       const f = new File([blob], filename, {type:mime});
-      if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], title:filename}); return true; }
+      if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f]}); return true; }
     }catch(e){ if(e && e.name==='AbortError') return true; }
   }
   // Computer: normaler Sichern-Dialog, wo der Browser ihn anbietet
@@ -1975,7 +2000,7 @@ function segmentWord(o, w){
 function fixLine(o,l){
   if(l.length<40 && /^[Il|]\s+\S/.test(l) && l.split(/\s+/).length<=5 && /^[Il|]\s+(tsp|tbsp|cups?|oz|lb|EL|TL|g|kg|ml|l|[A-ZÄÖÜ][a-zäöü])/.test(l)) l='1'+l.slice(1);
   l=l.replace(/(^|\s)[ıI|l](?=\s?(?:TL|EL|Dose|Bund|Kopf|Prise|Msp|Pck|Glas|Becher)\b)/g,'$11');
-  l=l.replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/^\/\s?(?=(TL|EL)\b)/,'½ ').replace(/\bItr\b/g,'l').replace(/\b(\d+)o\b/g,'$10');
+  l=l.replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/^\/\s?(?=(TL|EL)\b)/,'½ ').replace(/\bItr\b/g,'l').replace(/\bO(?=[,.]\d)/g,'0').replace(/\b(\d+)o\b/g,'$10');
   l=l.replace(/(?<=\d)(EL|TL|g|gr|kg|ml|l|cl)\b/g,' $1');
   l=l.replace(/\b([1-9])o\b/g,'$10').replace(/(^|\s)ı\s?l\b/g,'$11 l').replace(/(^|\s)[iI]l(?=\s+[A-ZÄÖÜ])/g,'$11 l');
   l=l.replace(/^(\d)\s?%\s?/,'$1½ ').replace(/^[#%Y*]\s?(?=(l|ml|g|kg|TL|EL|Tasse|Bund|Dose|Becher|Prise)\b)/,'? ');
@@ -2040,7 +2065,7 @@ function regionCanvas(img, r){
   if(r) keep=[(r[0]-x)*s,(r[1]-y)*s,r[2]*s,r[3]*s];
   return {c, keep, ox:x, oy:y, s};
 }
-const RT = { auto:['Auto','#262624'], title:['Titel','#C99A00'], ing:['Zutaten','#D52B1E'], step:['Zubereitung','#2B55C7'] };
+const RT = { auto:['Auto','#262624'], title:['Titel','#C99A00'], ing:['Zutaten','#D52B1E'], step:['Zubereitung','#2B55C7'], note:['Notizen','#7A4FA0'] };
 function pickRegions(file, idx, total){
   return new Promise(async resolve=>{
     const url=URL.createObjectURL(file);
@@ -2048,7 +2073,7 @@ function pickRegions(file, idx, total){
     const rects=[]; let type='ing';
     sheet(`<h2>Bereiche markieren${total>1?` <span class="mono muted" style="font-size:14px">Bild ${idx+1}/${total}</span>`:''}</h2>
       <p style="font-size:14px">Am besten gelingt gerade von oben fotografierter, vollständiger Text. Schräge oder angeschnittene Fotos werden oft schlechter erkannt. Das Lesen dauert je nach Gerät etwa 10–40 Sekunden.</p><p style="font-size:14px">Optional: Art wählen und mit dem Finger einen Rahmen um Titel, Zutaten oder Zubereitung ziehen. Ohne Rahmen wird die ganze Seite gelesen.</p>
-      <div class="seg" id="rtSeg" style="margin-bottom:10px">${Object.entries(RT).map(([k,v])=>`<button data-rt="${k}" class="${k===type?'on':''}">${v[0]}</button>`).join('')}</div>
+      <div class="seg" id="rtSeg" style="margin-bottom:10px;flex-wrap:wrap">${Object.entries(RT).map(([k,v])=>`<button data-rt="${k}" class="${k===type?'on':''}">${v[0]}</button>`).join('')}</div>
       <div id="cropWrap" style="position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none"><img id="cropImg" src="${url}" alt="" style="width:100%;height:100%;display:block;pointer-events:none"><canvas id="cropCv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas><div id="cropHit" style="position:absolute;inset:-16px -12px;touch-action:none;z-index:2"></div></div>
       <div id="rectList" class="chips" style="margin-top:10px"></div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
@@ -2127,12 +2152,13 @@ async function runOCR(files){
   if(tRegs.length) title=titleFromLines(tRegs.flatMap(r=>r.lines), true);
   else { const al=ordered.length?ordered[0].regions.flatMap(r=>r.lines):[]; title=titleFromLines(al, false); }
   // Texte je Art; mehrere Rahmen einer Art im selben Bild = getrennte Listen, über Bilder hinweg = Fortsetzung
-  const grp={ing:[], step:[]}, auto=[];
+  const grp={ing:[], step:[]}, auto=[], notes=[];
   for(const j of ordered){ const k={ing:0, step:0};
-    for(const r of j.regions){ if(r.t==='auto') auto.push(r.text); else if(r.t==='ing'||r.t==='step'){ const arr=grp[r.t]; if(arr.length) arr[0]+=(r.t==='ing'?'\n':'\n\n')+r.text; else arr.push(r.text); k[r.t]++; } } }
+    for(const r of j.regions){ if(r.t==='note'){ notes.push(r.text); continue; } if(r.t==='auto') auto.push(r.text); else if(r.t==='ing'||r.t==='step'){ const arr=grp[r.t]; if(arr.length) arr[0]+=(r.t==='ing'?'\n':'\n\n')+r.text; else arr.push(r.text); k[r.t]++; } } }
   const txt = [title, auto.join('\n\n'), grp.ing.length?'Zutaten:\n'+grp.ing.join('\n'):'', grp.step.length?'Zubereitung:\n'+grp.step.join('\n\n'):''].filter(Boolean).join('\n\n');
   try{ draft.scans = [...(draft.scans||[]), ...await Promise.all(jobs.map(j=>compressScan(j.img)))]; }catch(e){}
   if(!$('#pasteText')) return;
+  if(!txt.trim() && notes.length){ collectForm(); const nt=notes.join('\n\n').trim(); draft.notes = draft.notes ? draft.notes+'\n\n'+nt : nt; renderEditor(true); toast('Notizen übernommen'); return; }
   if(!txt.trim()){ ocrProgress('Kein Text erkannt. Schärferes Foto oder Screenshot versuchen.', 0); return; }
   $('#pasteText').value = ($('#pasteText').value.trim() ? $('#pasteText').value.trim()+'\n\n' : '') + txt;
   $('#ocrState').classList.add('hidden');
@@ -2140,7 +2166,7 @@ async function runOCR(files){
   const onlyAuto = ordered.length>1 && ordered.every(j=>j.regions.every(r=>r.t==='auto'));
   if(onlyAuto){
     // mehrere Bilder ohne Rahmen: jedes Bild einzeln zerlegen, dann Zutaten und Schritte aneinanderfügen
-    const ps=ordered.map(j=>parseRecipeText(j.regions.map(r=>r.text).join('\n\n')));
+    const ps=ordered.map((j,ix)=>{ const t=j.regions.map(r=>r.text).join('\n\n'); const x=parseRecipeText(t); if(ix>0 && !x.ingredientsText && !x.stepsText){ x.stepsText=parseRecipeText('Zubereitung:\n'+t).stepsText; x.title=''; } return x; });
     const p={...ps[0]};
     p.ingredientsText=ps.map(x=>x.ingredientsText).filter(Boolean).join('\n');
     let st=''; for(const x of ps){ const s=(x.stepsText||'').trim(); if(!s) continue;
@@ -2152,7 +2178,9 @@ async function runOCR(files){
   let re=false;
   if(grp.ing.length>1){ draft.ingGroups=[...prevIG, ...grp.ing.flatMap(t=>splitGroups(parseRecipeText('Zutaten:\n'+t).ingredientsText)).filter(g=>g.text.trim())]; re=true; }
   if(grp.step.length>1){ draft.stepGroups=[...prevSG, ...grp.step.flatMap(t=>splitGroups(parseRecipeText('Zubereitung:\n'+t).stepsText)).filter(g=>g.text.trim())]; re=true; }
-  if(title && (tRegs.length || !draft._titleStrong)){ draft.title=title; if(draft.intro && draft.intro.startsWith(title)) draft.intro=draft.intro.slice(title.length).trim(); re=true; }
+  if(notes.length){ const nt=notes.map(t=>t.replace(/^(tipps?|notizen|hinweise?|notes?)\s*:?\s*\n?/i,'').trim()).filter(Boolean).join('\n\n'); if(nt){ draft.notes = draft.notes ? draft.notes+'\n\n'+nt : nt; re=true; } }
+  if(draft.title) draft.title=decap(draft.title);
+  if(title && (tRegs.length || !draft._titleStrong)){ draft.title=decap(title); if(draft.intro && draft.intro.startsWith(title)) draft.intro=draft.intro.slice(title.length).trim(); re=true; }
   // Wörter, die erst nach dem Zusammenfügen getrennter Zeilen vollständig sind, noch einmal prüfen
   const fixT=s=>String(s||'').replace(/[A-Za-zÄÖÜäöüßáàóúùôâûāō]{4,}/g, w=>fixWord(o,w));
   draft.ingGroups.forEach(g=>g.text=fixT(g.text)); draft.stepGroups.forEach(g=>g.text=fixT(g.text)); draft.title=fixT(draft.title); re=true;
@@ -2216,7 +2244,7 @@ const cleanTitle=s=>{
 const joinT=(a,b)=> !a ? b : (/[A-Za-zÄÖÜäöüß]-$/.test(a) ? a+b : a+' '+b);
 function titleFromLines(lines, isFrame){
   const angs=lines.map(l=>l.ang||0).sort((x,y)=>x-y), ma=angs[Math.floor(angs.length/2)]||0;
-  const ok=lines.filter(l=>l.conf>=(isFrame?0.6:0.8) && Math.abs((l.ang||0)-ma)<0.15 && (l.text.match(/[A-Za-zÄÖÜäöüß]/g)||[]).length>=(isFrame?3:4) && !NOISE.test(l.text));
+  const ok=lines.filter(l=>l.conf>=(isFrame?0.6:0.8) && Math.abs((l.ang||0)-ma)<0.15 && (l.text.match(/[A-Za-zÄÖÜäöüß]/g)||[]).length>=(isFrame?3:4) && !NOISE.test(l.text) && !H_ING.test(hdr(l.text)) && !H_STEP.test(hdr(l.text)) && !H_NOTES.test(hdr(l.text)));
   // Zeilen aus lauter unbekannten Wörtern (z. B. fremde Schrift, als Buchstabensalat gelesen) sind kein Titel
   const realWords=t=>{ const ws=(t.match(/[A-Za-zÄÖÜäöüß]{3,}/g)||[]); if(!ws.length||!OCR) return true; return ws.filter(w=>wordScore(OCR,w)>0).length >= Math.ceil(ws.length/2); };
   { const mh=Math.max(...ok.map(l=>l.h)); for(let i=ok.length-1;i>=0;i--) if(!realWords(ok[i].text) && (ok[i].h<mh*0.9 || ok[i].conf<0.92)) ok.splice(i,1); }
@@ -2241,6 +2269,57 @@ function ocrIntro(then){
   sheet(`<h2>Texterkennung einrichten</h2><p>Für Fotos und Screenshots lädt die App einmalig weitere Module zur Texterkennung und ein Wörterbuch, das typische Erkennungsfehler korrigiert. Diese Dateien sind nur etwa 45 MB groß. Danach läuft alles offline auf dem Gerät, nichts wird übertragen.</p><p>Das Ergebnis kann weiter Fehler enthalten – Angaben sollten deshalb stets überprüft werden. Mehrspaltige Seiten werden automatisch geordnet. Zutaten, Zubereitungsschritte und Titel lassen sich für verbesserte Erkennung mit Rahmen markieren.</p>
    <div class="stack"><button class="btn primary" data-act="ocrgo">Laden und Foto wählen</button><button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
 }
+
+/* ===================== PDF zum Drucken (iPhone/iPad als Home-Bildschirm-App) ===================== */
+const isIOSApp = () => (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && /Macintosh/.test(navigator.userAgent))) && (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone);
+let pdfLoading=null;
+function preloadPDF(){ if(window.jspdf && window.PDF_FONTS) return Promise.resolve(); if(!pdfLoading) pdfLoading=Promise.all([window.jspdf?null:loadScript('pdf/jspdf.umd.min.js'), window.PDF_FONTS?null:loadScript('pdf/fonts.js')]).catch(e=>{ pdfLoading=null; throw e; }); return pdfLoading; }
+function buildPDF(r){
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'mm',format:'a4'});
+  doc.addFileToVFS('I-R.ttf',PDF_FONTS.r); doc.addFont('I-R.ttf','I','normal'); doc.addFileToVFS('I-B.ttf',PDF_FONTS.b); doc.addFont('I-B.ttf','I','bold');
+  const PW=210, PH=297, M=15, CW=PW-2*M, PT=0.3528; let y=M;
+  const set=(sz,st,col)=>{ doc.setFont('I',st); doc.setFontSize(sz); doc.setTextColor(col||20); };
+  const wrap=(s,sz,st,w)=>{ set(sz,st); return doc.splitTextToSize(String(s||''),w); };
+  const lh=(sz,f=1.3)=>sz*PT*f;
+  // Kopf
+  let L=wrap(r.title,18,'bold',CW); set(18,'bold'); doc.text(L,M,y+6); y+=L.length*lh(18,1.15)+2;
+  const facts=[]; if(r.servings) facts.push(fmtFrac(r.servings)+' '+(r.servingsUnit||'Portionen')); if(r.prep!=null) facts.push('Vorbereitung '+fmtDuration(r.prep)); if(r.cook!=null) facts.push('Kochen/Backen '+fmtDuration(r.cook)); if(r.rest!=null) facts.push('Warten '+fmtDuration(r.rest)); if(r.difficulty) facts.push(r.difficulty);
+  const src=r.source||{}; const sl=[src.name,src.author].filter(Boolean).join(', '); if(sl) facts.push('Quelle: '+sl);
+  if(facts.length){ L=wrap(facts.join(' · '),9,'normal',CW); set(9,'normal',90); doc.text(L,M,y+3); y+=L.length*lh(9)+4; }
+  // Zutaten (zweispaltig, möglichst auf Seite 1)
+  const G=getGroups(r), items=[];
+  const mi=G.ing.length>1||G.ing.some(g=>g.t);
+  G.ing.forEach(g=>{ if(mi&&g.t) items.push({h:g.t}); plainIngLines(g.text).forEach(x=>items.push(x.h?{h:x.h}:{a:x.a,n:x.n})); });
+  const colW=(CW-8)/2, AW=20;
+  const itemH=it=> it.h ? lh(10,1.3)+1.5 : Math.max(1,wrap(it.n,10,'normal',colW-AW-2).length)*lh(10)+1.6;
+  set(12,'bold'); doc.text('Zutaten',M,y+4); y+=7;
+  const total=items.reduce((s,it)=>s+itemH(it),0); let half=total/2, acc=0, split=items.length;
+  for(let i=0;i<items.length;i++){ acc+=itemH(items[i]); if(acc>=half){ split=i+1; break; } }
+  const drawCol=(arr,x)=>{ let yy=y; for(const it of arr){ if(it.h){ set(10,'bold'); doc.text(it.h,x,yy+3.5); yy+=itemH(it); continue; }
+      set(10,'bold'); doc.text(String(it.a||''),x,yy+3.5); const nl=wrap(it.n,10,'normal',colW-AW-2); set(10,'normal'); doc.text(nl,x+AW,yy+3.5); yy+=itemH(it);
+      doc.setDrawColor(210); doc.setLineWidth(0.15); doc.line(x,yy-0.4,x+colW,yy-0.4); } return yy; };
+  const y1=drawCol(items.slice(0,split),M), y2=drawCol(items.slice(split),M+colW+8); y=Math.max(y1,y2)+5;
+  // Schritte
+  const steps=[]; let n=0; const ms=G.steps.length>1||G.steps.some(g=>g.t);
+  G.steps.forEach(g=>{ if(ms&&g.t) steps.push({h:g.t}); parseStepsText(g.text).forEach(s=>{ if(s.h) steps.push({h:s.h}); else steps.push({n:++n, t:s.t}); }); });
+  const sH=s=> s.h ? lh(11,1.3)+2 : wrap(s.t,10,'normal',CW-8).length*lh(10)+2.2;
+  const S=steps.reduce((a,s)=>a+sH(s),0)+8, avail=PH-M-y;
+  let fit=0; { let acc2=8; for(const s of steps){ acc2+=sH(s); if(acc2>avail) break; fit=acc2; } }
+  if(S>avail && fit<S/3 && S<=PH-2*M){ doc.addPage(); y=M; }
+  const need=h=>{ if(y+h>PH-M){ doc.addPage(); y=M; } };
+  need(10); set(12,'bold'); doc.text('Zubereitung',M,y+4); y+=8;
+  for(const s of steps){ const h=sH(s); need(h);
+    if(s.h){ set(11,'bold'); doc.text(s.h,M,y+4); y+=h; continue; }
+    set(10,'bold'); doc.text(String(s.n),M,y+3.5); const tl=wrap(s.t,10,'normal',CW-8); set(10,'normal'); doc.text(tl,M+8,y+3.5); y+=h; }
+  if(r.notes){ const nl=wrap(r.notes,9.5,'normal',CW-4); const h=nl.length*lh(9.5)+6; need(h); y+=2; doc.setDrawColor(180); doc.setLineWidth(0.8); doc.line(M,y,M,y+h-4); set(9.5,'normal',60); doc.text(nl,M+4,y+3.5); y+=h; }
+  return doc.output('blob');
+}
+async function sharePDF(r){
+  const blob=buildPDF(r); const f=new File([blob], slug(r.title)+'.pdf', {type:'application/pdf'});
+  try{ if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f]}); return; } }catch(e){ if(e && e.name==='AbortError') return; }
+  const u=URL.createObjectURL(blob); window.open(u,'_blank');
+}
+
 /* ===================== Vorlagen-Ansicht ===================== */
 function openViewer(list, idx){
   if(!list||!list.length) return;
@@ -2337,6 +2416,11 @@ document.addEventListener('click', async e=>{
     case 'copytext': { const r=getR(route.id); if(r) copyText(exportText(r)); break; }
     case 'print': {
       const r=getR(route.id); if(!r) break;
+      if(isIOSApp()){
+        if(window.jspdf && window.PDF_FONTS){ toast('Im Menü „Drucken“ wählen'); sharePDF(r); }
+        else { toast('Druckansicht wird vorbereitet …'); preloadPDF().then(()=>sheet(`<h2>Drucken</h2><p>Die Druckansicht ist fertig. Im folgenden Menü „Drucken“ wählen.</p><div class="stack"><button class="btn primary" data-act="printpdf">Drucken</button><button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`)).catch(()=>toast('Druckansicht konnte nicht geladen werden – Internet nötig')); }
+        break;
+      }
       // Druck direkt aus der App-Seite: funktioniert in Safari (auch iPhone) und am Computer
       let root=document.getElementById('printRoot'); if(root) root.remove();
       root=document.createElement('div'); root.id='printRoot';
@@ -2361,6 +2445,7 @@ document.addEventListener('click', async e=>{
     case 'ocr': if(window.__TEST){ ocrProgress('Die Texterkennung funktioniert in dieser Vorschau nicht.', 0); break; } try{ if(!localStorage.getItem('ocrReady')){ ocrIntro(); break; } }catch(e){} getOCR().catch(()=>{}); $('#fileOcr').click(); break;
     case 'showvia': { const f=$('#viaFld'); if(f){ f.classList.remove('hidden'); $('#f_via').focus(); } const l=$('#viaLink'); if(l) l.remove(); break; }
     case 'tagmore': tagShowAll=!tagShowAll; renderTagChips(); break;
+    case 'printpdf': { closeSheet(); const r=getR(route.id); if(r) sharePDF(r); break; }
     case 'addgroup': { collectForm(); (v==='ig'?draft.ingGroups:draft.stepGroups).push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; const cards=document.querySelectorAll('.gcard.'+v); const last=cards[cards.length-1]; if(last){ last.scrollIntoView({block:'center'}); const t=last.querySelector('.gh'); if(t) t.focus(); } break; }
     case 'rmgroup': { collectForm(); const [k,i]=v.split(':'); const arr=k==='ig'?draft.ingGroups:draft.stepGroups; arr.splice(+i,1); if(!arr.length) arr.push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'viewscan': openViewer(draft.scans, +v); break;

@@ -1,5 +1,5 @@
 /* Rezeptesammlung – Offline-Cache. Bei Änderungen an index.html VERSION erhöhen. */
-const VERSION = 'v42';
+const VERSION = 'v44';
 const SHELL = 'rk-shell-' + VERSION;
 const OCR = 'rk-ocr-v4';
 const SHELL_FILES = [
@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
   // Texterkennung: beim ersten Gebrauch laden, danach dauerhaft offline
-  if (url.pathname.includes('/ocr/')) {
+  if (url.pathname.includes('/ocr/') || url.pathname.includes('/pdf/')) {
     e.respondWith(caches.open(OCR).then(async c => {
       const hit = await c.match(req);
       if (hit) return hit;
