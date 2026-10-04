@@ -293,6 +293,7 @@ details.intro .txt{ padding:0 0 14px; max-width:68ch; color:var(--ink2); white-s
 .preview ul{ padding:0; margin:0; }
 .preview .q{ font:700 13px var(--f-mono); min-width:76px; }
 .preview .q.none{ color:var(--ink2); font-weight:400; }
+.preview li.warn{ background:color-mix(in srgb, var(--danger) 18%, transparent); }
 .preview .h{ font-weight:700; padding-top:8px; }
 .err{ color:var(--rot); font-weight:600; font-size:14px; }
 
@@ -606,7 +607,7 @@ function parseRecipeText(text){
       let k=0; for(let j=i;j<Math.min(lines.length,i+4);j++) if(lines[j] && looksIng(lines[j])) k++;
       if(k>=2) sec='ing';
     }
-    if(sec==='ing' && l && looksProse(l) && !ING_RE.test(l) && l.length>90){ sec='step'; }
+    if(sec==='ing' && l && looksProse(l) && !ING_RE.test(l) && l.length>60 && /^[A-ZÄÖÜ]/.test(l)){ sec='step'; }
     if(sec==='ing' && /^\d+[.)]\s+[A-ZÄÖÜ]/.test(l) && l.length>40){ sec='step'; }
     blocks[sec].push(l);
   }
@@ -635,17 +636,26 @@ function parseRecipeText(text){
   }
   flushBuf();
   r.ingredientsText = ingLines.map(s=>s.replace(/^[-–•*·]\s*/,'')).join('\n');
-  // Schritte
-  const paras=[]; let cur='';
-  for(const l of blocks.step){
-    if(!l){ if(cur){paras.push(cur);cur='';} continue; }
-    if(/^##\s/.test(l)){ if(cur){paras.push(cur);cur='';} paras.push(l); continue; }
-    if(/^(\d+[.)]|[-•*·])\s+/.test(l)){ if(cur) paras.push(cur); cur=l.replace(/^(\d+[.)]|[-•*·])\s+/,''); continue; }
-    cur = cur ? cur+' '+l : l;
+  // Schritte: Absätze nie mitten im Satz trennen; Nummern (1., 2), ①, 1️⃣) markieren Schritte
+  const MARK=/^\s*(?:(\d{1,2})[.)]\s+|(\d{1,2})\s*$|([①-⑳])\s*|(\d)\uFE0F?\u20E3\s*)/;
+  const paras=[]; let cur='', numbered=false, pend=false;
+  const ends=s=>/[.!?…:)"»“]\s*$/.test(s);
+  const push=()=>{ if(cur.trim()) paras.push(cur.trim()); cur=''; pend=false; };
+  for(const l0 of blocks.step){
+    const l=l0.trim();
+    if(!l){ if(cur) pend=true; continue; }
+    if(/^##\s/.test(l)){ push(); paras.push(l); continue; }
+    const m=l.match(MARK);
+    if(m){ push(); numbered=true; cur=l.slice(m[0].length); continue; }
+    if(/^[-•*·]\s+/.test(l)){ push(); cur=l.replace(/^[-•*·]\s+/,''); continue; }
+    if(pend && ends(cur) && !numbered) push(); pend=false;
+    if(!cur) cur=l;
+    else if(/[a-zäöüß]-$/.test(cur) && /^[a-zäöüß]/.test(l)) cur=cur.slice(0,-1)+l;
+    else if(/-$/.test(cur)) cur=cur+l;
+    else cur=cur+' '+l;
   }
-  if(cur) paras.push(cur);
-  const stepParas = paras.filter(p=>!/^##\s/.test(p) || true);
-  const steps=[]; for(const p of stepParas){ if(/^##\s/.test(p)) steps.push(p); else steps.push(...chunkSteps([p])); }
+  push();
+  const steps=[]; for(const p of paras){ if(/^##\s/.test(p)) steps.push(p); else if(numbered) steps.push(p); else steps.push(...chunkSteps([p])); }
   // Nachsatz (Tipps nach Linie/Strich) – kurze Absätze am Ende, die keine Anweisung sind
   if(steps.length>1){
     const last=steps[steps.length-1];
@@ -859,11 +869,11 @@ function statusText(){
 }
 const getR = id => recipes.find(r=>r.id===id);
 const STYLES=[
- ['graphit','Graphit mit Bauhausrot','#F6F6F5','#262624','#D52B1E','Geist'],
- ['abend','Abendküche','#1E2328','#ECE6DA','#F2B84B','Inter'],
+ ['graphit','Signal','#F6F6F5','#262624','#D52B1E','Geist'],
+ ['abend','Kohle','#1E2328','#ECE6DA','#F2B84B','Inter'],
  ['bauhaus','Bauhaus','#F5F3EE','#1D1B18','#CC3A2B','Archivo Black'],
- ['nordisch','Nordisch hell','#F6F5F1','#23302B','#4F7A60','Fraunces'],
- ['altrosa','Altrosa und Graublau','#F3E6E3','#3A2F30','#6F8496','DM Serif Display'],
+ ['nordisch','Moos','#F6F5F1','#23302B','#4F7A60','Fraunces'],
+ ['altrosa','Rosé','#F3E6E3','#3A2F30','#6F8496','DM Serif Display'],
  ['kontrast','Kontrast','#FFFFFF','#111111','#0047FF','Space Grotesk']];
 function applyLook(){
   const st = STYLES.some(s=>s[0]===pref.style) ? pref.style : 'graphit';
@@ -1212,7 +1222,7 @@ function renderPartPreview(card){
   el.innerHTML = '<ul>'+items.map(it=>{
     if(it.h) return `<li class="h">${esc(it.h)}</li>`;
     const d = renderIng(it,1,'orig');
-    return `<li><span class="q ${d.amount?'':'none'}" style="${d.conv?'background:color-mix(in srgb,var(--gelb) 55%,transparent)':''}">${d.amount?esc((d.approx?'ca. ':'')+d.amount+(d.unit?' '+d.unit:'')):'–'}</span><span>${esc(d.name)}</span></li>`;
+    return `<li class="${/^\?/.test(it.raw)?'warn':''}"><span class="q ${d.amount?'':'none'}" style="${d.conv?'background:color-mix(in srgb,var(--gelb) 55%,transparent)':''}">${d.amount?esc((d.approx?'ca. ':'')+d.amount+(d.unit?' '+d.unit:'')):'–'}</span><span>${esc(d.name)}</span></li>`;
   }).join('')+'</ul>';
 }
 function readGroups(sel){ return [...document.querySelectorAll(sel)].map(el=>({ t:(el.querySelector('.gh')||{value:''}).value.trim(), text:el.querySelector('.gt').value.replace(/\s+$/,'') })); }
@@ -1253,7 +1263,8 @@ function fillFromParse(p){
 async function saveDraft(){
   const d = collectForm();
   if(!d.title){ $('#formErr').textContent='Titel fehlt.'; $('#f_title').focus(); return; }
-  const r = {...d}; delete r._new; delete r.cookEstimated; delete r.cookEstimate;
+  if(d._ocrWords){ try{ learnFixes(d._ocrWords, [d.title, d.ingredientsText, d.stepsText, d.intro].join(' ')); }catch(e){} }
+  const r = {...d}; delete r._new; delete r.cookEstimated; delete r.cookEstimate; delete r._ocrWords;
   if(!r.createdAt) r.createdAt=Date.now();
   if(JSON.stringify(r).length > 250000 && r.photo){ r.photo = await shrinkDataURL(r.photo, 600); }
   draft=null;
@@ -1699,24 +1710,38 @@ function layoutText(lines, pageW, rules={h:[],v:[]}, keep=null){
 /* --- Korrektur mit Wörterbuch --- */
 const CONF={'b':['h'],'ô':['ö'],'ò':['ö'],'ō':['ö'],'û':['ü'],'â':['ä'],'ā':['ä'],'i':['ü'],'e':['c'],'B':['ß'],'f':['ß'],'á':['ä'],'à':['ä'],'a':['ä'],'o':['ö'],'ó':['ö'],'u':['ü'],'ú':['ü'],'ù':['ü'],'c':['e']};
 const SHORTW=new Set(['öl','ei','eis','tee','reis']); const PREF=['be','ge','ver','zer','ent','er','an','auf','aus','ein','ab','zu','vor','nach','über','unter','um','durch'];
+const KITCHEN=new Set(('abschmecken ablöschen anbraten andünsten anrichten anrösten anschwitzen aufkochen aufschlagen ausbacken backen blanchieren braten dünsten einkochen einweichen garen gratinieren hacken karamellisieren köcheln kochen marinieren pürieren rösten schmoren simmern unterheben verquirlen würzen zerlassen zerkleinern backofen backpapier blech bräter auflaufform springform pfanne topf schüssel sieb reibe schneebesen pürierstab küchenmaschine nudelholz '+
+'mehl zucker salz pfeffer butter sahne milch eier eigelb eiweiß hefe backpulver natron speisestärke kartoffelstärke vanille vanillezucker zimt nelken muskat kardamom kreuzkümmel koriander kurkuma paprika chili ingwer knoblauch zwiebel zwiebeln schalotten lauch möhren karotten sellerie fenchel kartoffeln tomaten tomatenmark gurke zucchini aubergine paprikaschote spinat mangold grünkohl weißkohl rotkohl wirsing blumenkohl brokkoli kohlrabi rote bete kürbis pilze champignons linsen kichererbsen bohnen erbsen reis risottoreis bulgur couscous quinoa nudeln spaghetti gnocchi semmelbrösel grieß haferflocken nüsse mandeln haselnüsse walnüsse pinienkerne sesam kirschen sauerkirschen kirsche kirschwasser himbeeren erdbeeren heidelbeeren äpfel birnen zitronen zitrone orangen limetten honig sirup ahornsirup essig balsamico olivenöl rapsöl sonnenblumenöl sojasauce senf ketchup mayonnaise joghurt quark frischkäse ricotta mascarpone parmesan mozzarella feta schafskäse ziegenkäse brühe fond gemüsebrühe hühnerbrühe wein weißwein rotwein petersilie schnittlauch dill basilikum thymian rosmarin salbei oregano minze estragon lorbeer kapern oliven sardellen thunfisch lachs kabeljau garnelen hähnchen huhn rind schwein lamm hackfleisch speck schinken wurst teig füllung glasur soße sauce dressing torte kuchen tortenboden kirschtorte sahnesteif schokolade kakao kuvertüre puderzucker gelatine prise messerspitze teelöffel esslöffel tasse becher dose glas bund zehe zehen scheibe scheiben stück portionen minuten stunden grad umluft '+
+'abseihen abtropfgewicht alufolie andickt anrösten auberginenscheiben aufeinanderschichten basilikumblättchen befüllung beiseitestellen borschtsch bällchen bärlauch cashewnüssen cremigen cremiger crispy currypaste dinkelbrötchen dinkelmehl dinkelvollkornmehl dressing edelsüßes eischnee eiweiss erdnussmus erdnusssauce erdnusssoße essigessenz fenchelknolle fenchelknollen fenchelmasse festkochend finish flohsamenschalen foliendeckel frühlingszwiebelgrün frühstücksteller garzeit gemüsebrühe granatapfelkernen hafersahne hanfsamen hellbraun hinzugießen johannisbeer johannisbeersirup kashmiri kimchi knackig kohlblätter küchenkrepp langkornreis meersalz meringue mürbeteig naturtofu nudelsalat onions paprikamark pickled pilaw reindrücken risotto rosenharissa saatenbrot salatschüssel scherennudeln sojasoße sonnenblumenkerne sriracha tahina tarte tarteform tomatenmark toppen topping verjus verkneten vorgekochter wasserbad wasserkocher weckerl weiterbacken weizenmehl weißkohlblätter zuckerrübensirup zusammenrühren sumach tahini biber verjus kimchi sriracha pul ober unterhitze kastenform tarteform mürbeteig blindbacken weckerl').split(' '));
 function wordScore(o,w,depth=0){
-  w=w.toLowerCase(); const r=o.rank.get(w);
-  if(r!==undefined) return 1000+(1-r/o.N)*999;
-  if(depth>2 || w.length<5) return 0;
+  w=w.toLowerCase(); const r=o.rank.get(w), kb=KITCHEN.has(w)?500:0;
+  if(r!==undefined) return 1000+(1-r/o.N)*999+kb;
+  if(kb) return 1000+kb;
+  if(depth>2 || w.length<7) return 0;
   let best=0;
-  for(const p of PREF) if(w.startsWith(p) && w.length-p.length>=4 && o.rank.has(w.slice(p.length))) best=Math.max(best,400);
-  for(let i=2;i<w.length-1;i++){
+  for(const p of PREF) if(w.startsWith(p) && w.length-p.length>=5 && o.rank.has(w.slice(p.length))) best=Math.max(best,400);
+  for(let i=4;i<=w.length-3;i++){
     const a=w.slice(0,i), b=w.slice(i);
     for(const aa of [a, a.endsWith('s')?a.slice(0,-1):null]){
-      if(!aa || aa.length<3 || !o.rank.has(aa)) continue;
-      if((o.rank.has(b)&&b.length>=3) || SHORTW.has(b)) best=Math.max(best,300);
-      else if(b.length>=5 && wordScore(o,b,depth+1)>=300) best=Math.max(best,200);
+      if(!aa || aa.length<4 || !(o.rank.has(aa)||KITCHEN.has(aa))) continue;
+      const kbon = (KITCHEN.has(aa)?75:0)+(KITCHEN.has(b)?75:0);
+      if(((o.rank.has(b)||KITCHEN.has(b))&&b.length>=4) || SHORTW.has(b)) best=Math.max(best,300+kbon);
+      else if(b.length>=7 && wordScore(o,b,depth+1)>=300) best=Math.max(best,200+kbon);
     }
   }
   return best;
 }
+const DIGRAPH=[['seh','sch'],['eh','ch'],['rn','m'],['cl','d'],['li','h'],['ii','ü'],['vv','w'],['ae','ä'],['oe','ö'],['ue','ü']];
+function* digraphVariants(w){
+  const low=w.toLowerCase();
+  for(const [f,t] of DIGRAPH){ let i=low.indexOf(f); while(i>=0){ yield w.slice(0,i)+t+w.slice(i+f.length); i=low.indexOf(f,i+1); } if(low.split(f).length>2) yield w.split(f).join(t); }
+}
+function* allVariants(w){ yield* wordVariants(w); for(const d of digraphVariants(w)){ yield d; yield* wordVariants(d); } }
+function learned(){ try{ return JSON.parse(localStorage.getItem('rkFix')||'{}'); }catch(e){ return {}; } }
+let LEARN=learned();
+function matchCase(src,dst){ return src[0]===src[0].toUpperCase() ? dst.charAt(0).toUpperCase()+dst.slice(1) : dst; }
 function* wordVariants(w){
-  const idx=[]; for(let i=0;i<w.length&&idx.length<5;i++) if(CONF[w[i]]) idx.push(i);
+  const idx=[]; for(let i=0;i<w.length&&idx.length<8;i++) if(CONF[w[i]]) idx.push(i);
   const n=idx.length;
   for(let mask=1; mask<(1<<n); mask++){ const l=[...w]; for(let k=0;k<n;k++) if(mask&(1<<k)) l[idx[k]]=CONF[w[idx[k]]][0]; yield l.join(''); }
   if(w.length>=6) for(let i=1;i<w.length;i++) for(const ch of 'äöüß') yield w.slice(0,i)+ch+w.slice(i);
@@ -1725,11 +1750,12 @@ function fixWord(o,w){
   const m=w.match(/^([^A-Za-zÄÖÜäöüßáàóúù]*)([A-Za-zÄÖÜäöüßáàóúù]+)([^A-Za-zÄÖÜäöüßáàóúù]*)$/);
   if(!m || m[2].length<3) return w;
   let core=m[2];
+  const lw=LEARN[core.toLowerCase()]; if(lw && lw.n>=1) return m[1]+matchCase(core,lw.to)+m[3];
   const core2=core.replace(/(?<=[a-zäöü])B(?=[a-zäöü])/g,'ß');
   const s0=wordScore(o,core2);
   if(s0>=1000) return m[1]+core2+m[3];
   let best=core2, bs=s0;
-  for(const v of wordVariants(core2)){ const s=wordScore(o,v); if(s>bs){ bs=s; best=v; } }
+  for(const v of allVariants(core2)){ const s=wordScore(o,v); if(s>bs){ bs=s; best=v; } }
   return m[1]+best+m[3];
 }
 function fixLine(o,l){
@@ -1737,7 +1763,7 @@ function fixLine(o,l){
   l=l.replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/^\/\s?(?=(TL|EL)\b)/,'½ ').replace(/\bItr\b/g,'l').replace(/\b(\d+)o\b/g,'$10');
   l=l.replace(/(?<=\d)(EL|TL|g|gr|kg|ml|l|cl)\b/g,' $1');
   l=l.replace(/\b([1-9])o\b/g,'$10').replace(/(^|\s)ı\s?l\b/g,'$11 l').replace(/(^|\s)[iI]l(?=\s+[A-ZÄÖÜ])/g,'$11 l');
-  l=l.replace(/^[%Y]\s?(?=[A-ZÄÖÜa-z])/,'½ ').replace(/^(\d)\s?%\s?/,'$1½ ');
+  l=l.replace(/^(\d)\s?%\s?/,'$1½ ').replace(/^[#%Y*]\s?(?=(l|ml|g|kg|TL|EL|Tasse|Bund|Dose|Becher|Prise)\b)/,'? ');
   l=l.replace(/\b(\d*[05])8(?=\s+[A-ZÄÖÜa-zäöü]|\))/g,'$1 g');
   l=l.replace(/^(\d+)\.(?=[A-ZÄÖÜ])/,'$1. ').replace(/(^|\s)[sS]0(?=\s?(g|ml|cl|kg)\b)/g,'$150');
   return l.split(' ').map(w=>fixWord(o,w)).join(' ');
@@ -1758,9 +1784,11 @@ function findRules(src){
   return {h:dedup(hs), v:dedup(vs)};
 }
 function rotPt(p, cx, cy, ca, sa){ const dx=p[0]-cx, dy=p[1]-cy; return [cx+dx*ca+dy*sa, cy-dx*sa+dy*ca]; }
-async function ocrCanvas(o, src, label, keep){
+async function ocrCanvas(o, src, label, keep){ const r=await ocrLines(o, src, label, keep); return layoutText(r.lines, src.width, r.rules, keep); }
+async function ocrLines(o, src, label, keep, dropEdge){
   ocrProgress(`${label} – suche Textzeilen …`, null); await paint();
   const boxes=await detectLines(o, src);
+  const t0=performance.now();
   // Schräglage bestimmen (Median der Zeilenwinkel) und für die Anordnung ausgleichen
   const angs=boxes.filter(b=>b.w>b.h*3).map(b=>Math.atan2(b.uy,b.ux)).sort((p,q)=>p-q);
   const ang=angs.length?angs[Math.floor(angs.length/2)]:0, ca=Math.cos(ang), sa=Math.sin(ang), CX=src.width/2, CY=src.height/2;
@@ -1770,6 +1798,7 @@ async function ocrCanvas(o, src, label, keep){
     const b=boxes[i];
     if(keep){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2, inK = cx>=keep[0] && cx<=keep[0]+keep[2] && cy>=keep[1] && cy<=keep[1]+keep[3];
       if(!inK && (b.x0<=3 || b.x1>=src.width-3 || b.y0<=1 || b.y1>=src.height-1)) continue; }
+    if(dropEdge && !keep && (b.y0<=2 || b.y1>=src.height-2)) continue;
     let r=await recognize(o, src, b);
     if(r && r.conf<0.85){
       for(const opt of [{grow:1.15},{contrast:1}]){ const r2=await recognize(o, src, b, opt); if(r2 && r2.conf>r.conf+0.02) r=r2; }
@@ -1782,7 +1811,7 @@ async function ocrCanvas(o, src, label, keep){
     lines.push({x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys), text:fixLine(o, r.text), conf:r.conf, inK});
   }
   let rules={h:[],v:[]}; try{ rules=findRules(src); }catch(e){}
-  return layoutText(lines, src.width, rules, keep);
+  return {lines, rules};
 }
 function regionCanvas(img, r){
   const IW=img.naturalWidth, IH=img.naturalHeight;
@@ -1792,7 +1821,7 @@ function regionCanvas(img, r){
   const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w*s)); c.height=Math.max(1,Math.round(h*s));
   c.getContext('2d').drawImage(img,x,y,w,h,0,0,c.width,c.height);
   if(r) keep=[(r[0]-x)*s,(r[1]-y)*s,r[2]*s,r[3]*s];
-  return {c, keep};
+  return {c, keep, ox:x, oy:y, s};
 }
 const RT = { auto:['Auto','#262624'], title:['Titel','#C99A00'], ing:['Zutaten','#D52B1E'], step:['Zubereitung','#2B55C7'] };
 function pickRegions(file, idx, total){
@@ -1857,22 +1886,117 @@ async function runOCR(files){
   ocrProgress(OCR ? 'Starte Texterkennung …' : 'Lade Texterkennung …', null); await paint();
   const o = await loading;
   if(o instanceof Error || !o){ ocrProgress('Die Texterkennung konnte nicht geladen werden. Beim ersten Mal braucht es Internet; auf sehr alten Geräten läuft sie nicht. Text kopieren und einfügen funktioniert immer.', 0); return; }
-  const parts={title:[],auto:[],ing:[],step:[]};
+  const area=r=>r[2]*r[3], inR=(x,y,r)=>x>=r[0]&&x<=r[0]+r[2]&&y>=r[1]&&y<=r[1]+r[3];
+  const res=[];
   try{
     let n=0; const total=jobs.reduce((s,j)=>s+Math.max(1,j.rects.length),0);
     for(const j of jobs){
-      const regs = j.rects.length ? j.rects : [{t:'auto', r:null}];
-      for(const g of regs){ n++; const rc=regionCanvas(j.img, g.r); parts[g.t].push(await ocrCanvas(o, rc.c, total>1?`Bereich ${n} von ${total}`:'Erkenne Text', rc.keep)); }
+      const regs = j.rects.length ? sortRegions(j.rects) : [{t:'auto', r:null}];
+      const out=[];
+      for(const g of regs){ n++; const rc=regionCanvas(j.img, g.r); const r=await ocrLines(o, rc.c, total>1?`Bereich ${n} von ${total}`:'Erkenne Text', rc.keep, jobs.length>1);
+        r.lines.forEach(l=>{ l.icx=rc.ox+(l.x0+l.x1)/2/rc.s; l.icy=rc.oy+(l.y0+l.y1)/2/rc.s; l.h=(l.y1-l.y0)/rc.s; });
+        out.push({g, rc, r}); }
+      // überlappende Rahmen: jede Zeile nur in einem Rahmen (dem kleineren, in dem sie liegt)
+      for(const A of out){ if(!A.g.r) continue; A.r.lines=A.r.lines.filter(l=>!out.some(B=>B!==A && B.g.r && inR(l.icx,l.icy,B.g.r) && (!inR(l.icx,l.icy,A.g.r) || area(B.g.r)<area(A.g.r)))); }
+      const regions=out.map(x=>({t:x.g.t, lines:x.r.lines, text:layoutText(x.r.lines, x.rc.c.width, x.r.rules, x.rc.keep)}));
+      res.push({regions, idx:res.length, H:j.img.naturalHeight});
     }
   }catch(e){ ocrProgress('Bei der Texterkennung ist ein Fehler aufgetreten. Bitte ein kleineres oder schärferes Bild versuchen.', 0); return; }
-  const txt = [parts.title.join(' '), parts.auto.join('\n\n'), parts.ing.length?'Zutaten:\n'+parts.ing.join('\n'):'', parts.step.length?'Zubereitung:\n'+parts.step.join('\n\n'):''].filter(Boolean).join('\n\n');
+  const ordered = orderJobs(res);
+  // Titel: Titel-Rahmen, sonst größte Zeile
+  let title='';
+  const tRegs=ordered.flatMap(j=>j.regions.filter(r=>r.t==='title'));
+  if(tRegs.length) title=titleFromLines(tRegs.flatMap(r=>r.lines), true);
+  else { const al=ordered.length?ordered[0].regions.flatMap(r=>r.lines):[]; title=titleFromLines(al, false); }
+  // Texte je Art; mehrere Rahmen einer Art im selben Bild = getrennte Listen, über Bilder hinweg = Fortsetzung
+  const grp={ing:[], step:[]}, auto=[];
+  for(const j of ordered){ const k={ing:0, step:0};
+    for(const r of j.regions){ if(r.t==='auto') auto.push(r.text); else if(r.t==='ing'||r.t==='step'){ const arr=grp[r.t]; if(k[r.t]===0 && arr.length && j.prevType && j.prevType[r.t]) arr[arr.length-1]+='\n'+r.text; else arr.push(r.text); k[r.t]++; } } }
+  const txt = [title, auto.join('\n\n'), grp.ing.length?'Zutaten:\n'+grp.ing.join('\n'):'', grp.step.length?'Zubereitung:\n'+grp.step.join('\n\n'):''].filter(Boolean).join('\n\n');
   try{ draft.scans = [...(draft.scans||[]), ...await Promise.all(jobs.map(j=>compressScan(j.img)))]; }catch(e){}
   if(!$('#pasteText')) return;
   if(!txt.trim()){ ocrProgress('Kein Text erkannt. Schärferes Foto oder Screenshot versuchen.', 0); return; }
   $('#pasteText').value = ($('#pasteText').value.trim() ? $('#pasteText').value.trim()+'\n\n' : '') + txt;
   $('#ocrState').classList.add('hidden');
-  fillFromParse(parseRecipeText($('#pasteText').value));
-  $('#parseMsg').textContent += ' Bitte Mengen kurz gegenlesen.';
+  collectForm(); const prevIG=draft.ingGroups.filter(g=>g.text.trim()), prevSG=draft.stepGroups.filter(g=>g.text.trim());
+  const onlyAuto = ordered.length>1 && ordered.every(j=>j.regions.every(r=>r.t==='auto'));
+  if(onlyAuto){
+    // mehrere Bilder ohne Rahmen: jedes Bild einzeln zerlegen, dann Zutaten und Schritte aneinanderfügen
+    const ps=ordered.map(j=>parseRecipeText(j.regions.map(r=>r.text).join('\n\n')));
+    const p={...ps[0]};
+    p.ingredientsText=ps.map(x=>x.ingredientsText).filter(Boolean).join('\n');
+    let st=''; for(const x of ps){ const s=(x.stepsText||'').trim(); if(!s) continue;
+      if(!st) st=s; else if(/-$/.test(st)) st=st.slice(0,-1)+s; else if(!/[.!?:]$/.test(st)) st=st+' '+s; else st=st+'\n\n'+s; }
+    p.stepsText=st;
+    for(const x of ps.slice(1)){ ['servings','servingsUnit','prep','cook','rest','difficulty','shelfLife'].forEach(k=>{ if(p[k]==null||p[k]==='') p[k]=x[k]; }); }
+    fillFromParse(p);
+  } else fillFromParse(parseRecipeText($('#pasteText').value));
+  let re=false;
+  if(grp.ing.length>1){ draft.ingGroups=[...prevIG, ...grp.ing.flatMap(t=>splitGroups(parseRecipeText('Zutaten:\n'+t).ingredientsText)).filter(g=>g.text.trim())]; re=true; }
+  if(grp.step.length>1){ draft.stepGroups=[...prevSG, ...grp.step.flatMap(t=>splitGroups(parseRecipeText('Zubereitung:\n'+t).stepsText)).filter(g=>g.text.trim())]; re=true; }
+  if(title){ draft.title=title; if(draft.intro && draft.intro.startsWith(title)) draft.intro=draft.intro.slice(title.length).trim(); re=true; }
+  // Wörter, die erst nach dem Zusammenfügen getrennter Zeilen vollständig sind, noch einmal prüfen
+  const fixT=s=>String(s||'').replace(/[A-Za-zÄÖÜäöüßáàóúùôâûāō]{4,}/g, w=>fixWord(o,w));
+  draft.ingGroups.forEach(g=>g.text=fixT(g.text)); draft.stepGroups.forEach(g=>g.text=fixT(g.text)); draft.title=fixT(draft.title); re=true;
+  if(re){ const msg=$('#parseMsg').textContent, p=$('#pasteText').value; renderEditor(true); $('#pasteText').value=p; $('#parseMsg').textContent=msg; }
+  draft._ocrWords=[...new Set((txt.match(/[A-Za-zÄÖÜäöüß]{4,}/g)||[]))];
+  $('#parseMsg').textContent += ' Bitte Mengen kurz gegenlesen'+(/^\?/m.test(txt)?' – rot markierte Zeilen besonders.':'.');
+}
+function learnFixes(ocrWords, finalText){
+  const fin=[...new Set((finalText.match(/[A-Za-zÄÖÜäöüß]{4,}/g)||[]).map(w=>w.toLowerCase()))];
+  const ocr=new Set(ocrWords.map(w=>w.toLowerCase())), finS=new Set(fin);
+  let ch=false;
+  for(const w of ocr){ if(finS.has(w)) continue;
+    let best=null, bs=0.7; for(const f of fin){ if(ocr.has(f) || Math.abs(f.length-w.length)>2) continue; const s=simL(w,f); if(s>bs){ bs=s; best=f; } }
+    if(best){ const e=LEARN[w]; LEARN[w]={to:best, n:(e&&e.to===best?e.n:0)+1}; ch=true; } }
+  if(ch){ const ks=Object.keys(LEARN); if(ks.length>600) ks.slice(0,ks.length-600).forEach(k=>delete LEARN[k]); try{ localStorage.setItem('rkFix', JSON.stringify(LEARN)); }catch(e){} }
+}
+function sortRegions(rs){
+  return [...rs].sort((A,B)=>{ const a=A.r,b=B.r, ov=Math.min(a[0]+a[2],b[0]+b[2])-Math.max(a[0],b[0]); return ov>0.3*Math.min(a[2],b[2]) ? a[1]-b[1] : a[0]-b[0]; });
+}
+const normL=s=>s.toLowerCase().replace(/[^a-z0-9äöüß]/g,'');
+function simL(a,b){
+  if(!a||!b) return 0; if(a===b) return 1; if(Math.abs(a.length-b.length)>Math.max(a.length,b.length)*0.3) return 0;
+  const m=a.length,n=b.length; let prev=new Array(n+1).fill(0).map((_,i)=>i);
+  for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); prev=cur; }
+  return 1-prev[n]/Math.max(m,n);
+}
+function orderJobs(res){
+  if(res.length<2) return res;
+  const N=res.length;
+  const LS=res.map(r=>r.regions.flatMap(g=>g.lines.map(l=>({n:normL(l.text), y:l.icy/r.H}))).filter(x=>x.n.length>=6));
+  // gemeinsame Zeilen finden: liegen sie unten in i und oben in j, kommt i vor j
+  const rel=[...Array(N)].map(()=>new Array(N).fill(null));
+  for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+    const m=[]; for(const a of LS[i]){ const b=LS[j].find(b=>simL(a.n,b.n)>=0.82); if(b) m.push([a,b]); }
+    if(m.length<2) continue;
+    const yi=m.reduce((s,x)=>s+x[0].y,0)/m.length, yj=m.reduce((s,x)=>s+x[1].y,0)/m.length;
+    if(Math.abs(yi-yj)<0.1) continue;
+    rel[i][j] = yi>yj ? 1 : -1; rel[j][i] = -rel[i][j];
+  }
+  const ingScore=r=>{ let s=0; for(const g of r.regions){ if(g.t==='ing') s+=5; if(g.t==='step') s-=5; for(const l of g.text.split('\n')){ if(/^\s*(ca\.\s*)?[\d½¼¾]/.test(l) && l.length<60) s+=1; else if(l.length>70) s-=1; } } return s; };
+  const idx=[...Array(N).keys()];
+  // Reihenfolge: zuerst Überlappung, sonst Zutaten vor Schritten, sonst Auswahlreihenfolge
+  idx.sort((i,j)=>{ if(rel[i][j]) return -rel[i][j]; const si=ingScore(res[i])>0, sj=ingScore(res[j])>0; return (sj-si) || i-j; });
+  for(let pass=0;pass<N;pass++) for(let k=0;k<N-1;k++){ const i=idx[k], j=idx[k+1]; if(rel[i][j]===-1){ idx[k]=j; idx[k+1]=i; } }
+  // doppelte Zeilen aus späteren Bildern entfernen
+  const seen=[]; const out=[];
+  idx.forEach((ix,pos)=>{ const r=res[ix];
+    if(pos>0){ for(const g of r.regions){ g.text=g.text.split('\n').filter(l=>{ const n=normL(l); return n.length<6 || !seen.some(s=>simL(s,n)>=0.82); }).join('\n').replace(/\n{3,}/g,'\n\n').trim(); } }
+    LS[ix].forEach(x=>seen.push(x.n));
+    r.prevType = pos>0 ? Object.fromEntries(res[idx[pos-1]].regions.map(g=>[g.t,true])) : null;
+    out.push(r); });
+  return out;
+}
+function titleFromLines(lines, isFrame){
+  const ok=lines.filter(l=>l.conf>=0.8 && (l.text.match(/[A-Za-zÄÖÜäöüß]/g)||[]).length>=4);
+  if(!ok.length) return '';
+  const hs=ok.map(l=>l.h).sort((x,y)=>x-y), med=hs[Math.floor(hs.length/2)], mx=hs[hs.length-1];
+  if(!isFrame && mx < med*1.4) return '';
+  const big=ok.filter(l=>l.h>=mx*0.8).sort((x,y)=>x.icy-y.icy);
+  let t=''; for(const l of big){ t = t ? (/-$/.test(t) ? t+l.text : t+' '+l.text) : l.text; }
+  if(isFrame){ const rest=ok.filter(l=>!big.includes(l)).sort((x,y)=>x.icy-y.icy).map(l=>l.text).join(' '); if(rest) t+=' – '+rest; }
+  return t.replace(/\s+/g,' ').trim();
 }
 function ocrIntro(then){
   try{ if(localStorage.getItem('ocrReady')) return then(); }catch(e){}
