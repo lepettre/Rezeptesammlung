@@ -1166,13 +1166,11 @@ function renderEditor(keep){
   </div></div>
   <div class="wrap"><div class="form">
     ${isNew?`<div class="importbox">
-      <h2>Aus Foto oder Text übernehmen</h2>
       <button type="button" class="dropzone" data-act="ocr">${ICON.camera||''}<b>Foto oder Screenshot</b><span>hierher ziehen oder tippen</span></button>
       <div id="ocrState" class="hidden"><div id="ocrMsg" style="font-size:14px;font-weight:600"></div><div class="ocrbar"><i id="ocrBar"></i></div></div>
       <textarea class="ta tall" id="pasteText" placeholder="Erkannter oder eingefügter Text …" style="margin-top:10px"></textarea>
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px">
         <button class="btn primary" data-act="parse">Text übernehmen</button>
-        <button class="linkish" data-act="sample">Beispieltext</button>
       </div>
       <div id="parseMsg" style="margin-top:8px;font-size:14px;font-weight:600"></div>
     </div>`:''}
@@ -1593,16 +1591,28 @@ function libSheet(){
      <p class="muted" style="font-size:13px;margin:0">${statusText()}</p>
      <button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
 }
+const isTouchDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && /Macintosh/.test(navigator.userAgent));
 async function saveFile(filename, data, mime){
   const blob = new Blob([data], {type:mime});
-  try{
-    const f = new File([blob], filename, {type:mime});
-    if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], title:filename}); return true; }
-  }catch(e){ if(e && e.name==='AbortError') return true; }
+  // Handy und Tablet: Teilen-Menü (Dateien, iCloud, Nachrichten, Drucken …)
+  if(isTouchDevice()){
+    try{
+      const f = new File([blob], filename, {type:mime});
+      if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], title:filename}); return true; }
+    }catch(e){ if(e && e.name==='AbortError') return true; }
+  }
+  // Computer: normaler Sichern-Dialog, wo der Browser ihn anbietet
+  if(window.showSaveFilePicker){
+    try{
+      const ext=(filename.split('.').pop()||'').toLowerCase();
+      const h=await window.showSaveFilePicker({suggestedName:filename, types:[{description: ext==='json'?'Backup-Datei':'Rezeptdatei', accept:{[mime]:['.'+ext]}}]});
+      const w=await h.createWritable(); await w.write(blob); await w.close(); toast('Gespeichert'); return true;
+    }catch(e){ if(e && e.name==='AbortError') return false; }
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 4000);
-  toast('Heruntergeladen');
+  toast('Gespeichert – im Download-Ordner');
   return true;
 }
 async function copyText(t){
