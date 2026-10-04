@@ -196,7 +196,30 @@ details.intro summary::-webkit-details-marker{ display:none; }
 details.intro summary::after{ content:"+"; font:400 24px/1 var(--f-disp); }
 details.intro[open] summary::after{ content:"–"; }
 details.intro .txt{ padding:0 0 14px; max-width:68ch; color:var(--ink2); white-space:pre-wrap; }
-.controls{ display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; padding:18px 0 10px; }
+.ctl{ display:grid; gap:10px; padding:16px 0 6px; max-width:520px; }
+.ctlrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.ctl .stepper{ height:42px; }
+.ctl .stepper button{ width:42px; }
+.ctl .stepper .val{ min-width:104px; font-size:14px; }
+.seg.small button{ height:30px; font-size:13px; padding:0 9px; }
+.diffb{ display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--ink2); }
+.ctl .wake{ font-size:13px; }
+.part + .part{ margin-top:26px; padding-top:6px; border-top:2px solid var(--ink); }
+.part .parthead + .cols .sechead{ font-size:20px; }
+.grphead{ font:700 15px/1.2 var(--f-body); margin:16px 0 4px; padding-bottom:6px; border-bottom:2px solid var(--ink); }
+.gcard + .gcard{ border-top:2px solid var(--line); margin-top:10px; padding-top:16px; }
+.hint{ display:block; font-style:normal; font-size:13px; color:var(--ink2); margin:8px 0 14px; }
+.parthead{ font:var(--disp-w) 26px/1.05 var(--f-disp); letter-spacing:var(--disp-ls); margin:18px 0 0; }
+.partcard{ padding:4px 0 10px; }
+.partcard + .partcard{ border-top:2px solid var(--line); margin-top:10px; padding-top:16px; }
+.parttop{ display:flex; gap:10px; align-items:flex-end; margin-bottom:12px; }
+.scans{ display:flex; gap:10px; flex-wrap:wrap; }
+.scan{ border:0; padding:0; background:none; width:84px; height:84px; border-radius:var(--rt); overflow:hidden; }
+.scan img{ width:100%; height:100%; object-fit:cover; }
+.viewer{ position:fixed; inset:0; z-index:80; background:#0d0d0d; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+.vscroll{ flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y pinch-zoom; }
+.vscroll img{ display:block; max-width:none; margin:0 auto; }
+.vbar{ display:flex; gap:8px; justify-content:center; padding:10px; flex-wrap:wrap; }
 .stepper{ display:inline-flex; align-items:stretch; border:2px solid var(--ink); background:var(--card); height:46px; border-radius:var(--r); overflow:hidden; }
 .stepper button{ width:46px; border:0; background:none; font:700 22px/1 var(--f-body); }
 .stepper .val{ display:flex; align-items:center; padding:0 10px; font:700 15px var(--f-mono); border-left:2px solid var(--ink); border-right:2px solid var(--ink); min-width:116px; justify-content:center; white-space:nowrap; }
@@ -291,7 +314,12 @@ details.intro .txt{ padding:0 0 14px; max-width:68ch; color:var(--ink2); white-s
   body{ background:#fff; color:#000; }
   .hero .cov{ max-height:7cm; aspect-ratio:auto; }
   details.intro .txt{ display:block; }
-  .cols{ display:grid !important; grid-template-columns:6.5cm 1fr; gap:1cm; }
+  .cols{ display:block !important; }
+  .inglist{ columns:2; column-gap:1cm; }
+  .ctl, .viewer{ display:none !important; }
+  .part{ break-inside:auto; }
+  .sechead{ break-after:avoid; }
+  .sechead small{ display:none; }
   .cols .ingbox{ position:static; max-height:none; }
   .step,.ing{ break-inside:avoid; }
 }
@@ -514,6 +542,8 @@ function splitSentences(p){
 function chunkSteps(paras){
   const steps=[];
   for(const p of paras){
+    for(const s of splitSentences(p)){ const t=s.trim(); if(t) steps.push(t); }
+    continue;
     if(p.length<=320){ steps.push(p); continue; }
     let cur='';
     for(const s of splitSentences(p)){
@@ -701,6 +731,35 @@ const COURSE_MIGRATE = {
   'Nachtisch':'Desserts & Süßes', 'Desserts':'Desserts & Süßes', 'Drink':'Getränke', 'Getränk':'Getränke', 'Drinks & Getränke':'Getränke',
   'Eingelegt & Fermentiert':'Pickles & Fermentiertes' };
 const COURSE_NAMES=new Set(COURSES.map(c=>c[0]));
+function getParts(r){ return (Array.isArray(r.parts) && r.parts.length) ? r.parts : [{t:'', ing:r.ingredientsText||'', steps:r.stepsText||''}]; }
+function splitGroups(text){
+  const out=[]; let cur={t:'',text:''};
+  for(const l of String(text||'').split('\n')){ const m=l.match(/^##\s*(.+)$/); if(m){ if(cur.t||cur.text.trim()) out.push(cur); cur={t:m[1].replace(/:$/,'').trim(),text:''}; } else cur.text+=(cur.text?'\n':'')+l; }
+  if(cur.t||cur.text.trim()||!out.length) out.push(cur);
+  out.forEach(g=>g.text=g.text.replace(/^\n+|\s+$/g,'')); return out;
+}
+function getGroups(r){
+  const nz=a=>Array.isArray(a)&&a.length;
+  if(nz(r.ingGroups)||nz(r.stepGroups)) return {ing:nz(r.ingGroups)?r.ingGroups:[{t:'',text:''}], steps:nz(r.stepGroups)?r.stepGroups:[{t:'',text:''}]};
+  if(Array.isArray(r.parts)&&r.parts.length){ const ps=r.parts; const ing=ps.filter(p=>p.ing).map(p=>({t:p.t||'',text:p.ing})), st=ps.filter(p=>p.steps).map(p=>({t:p.t||'',text:p.steps})); return {ing:ing.length?ing:[{t:'',text:''}], steps:st.length?st:[{t:'',text:''}]}; }
+  return {ing:[{t:'',text:r.ingredientsText||''}], steps:[{t:'',text:r.stepsText||''}]};
+}
+function flattenGroups(g){
+  const f=(arr,sep)=>{ const multi=arr.length>1||arr.some(x=>x.t); return arr.map(x=>(multi&&x.t?'## '+x.t+sep:'')+(x.text||'')).join(sep).trim(); };
+  return {ingredientsText:f(g.ing,'\n'), stepsText:f(g.steps,'\n\n')};
+}
+function flattenParts(parts){
+  const multi = parts.length>1 || parts.some(p=>p.t);
+  return { ingredientsText: parts.map(p=>(multi&&p.t?'## '+p.t+'\n':'')+(p.ing||'')).join('\n').trim(),
+           stepsText: parts.map(p=>(multi&&p.t?'## '+p.t+'\n\n':'')+(p.steps||'')).join('\n\n').trim() };
+}
+const PERSON_RE=/^(personen|person|pers\.?|people|persons|serves|servings|portion)$/i;
+function normServUnit(u){ return u && PERSON_RE.test(u.trim()) ? 'Portionen' : (u||''); }
+function migrateRecipe(r){
+  let ch=migrateCourses(r);
+  if(r.servingsUnit && PERSON_RE.test(r.servingsUnit.trim())){ r.servingsUnit='Portionen'; ch=true; }
+  return ch;
+}
 function migrateCourses(r){
   const cs=r.courses||[];
   if(cs.every(c=>COURSE_NAMES.has(c))) return false;
@@ -769,7 +828,7 @@ let persisted = null;
 async function initStore(){
   try{
     recipes = await idbAll();
-    for(const r of recipes){ if(migrateCourses(r)) await idbTx(s=>s.put(r)); }
+    for(const r of recipes){ if(migrateRecipe(r)) await idbTx(s=>s.put(r)); }
     // Altbestand aus localStorage übernehmen
     try{ const old=JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(Array.isArray(old) && old.length){ for(const r of old){ delete r._local; if(!recipes.some(x=>x.id===r.id)){ recipes.push(r); await idbTx(s=>s.put(r)); } } localStorage.removeItem(LS_KEY); } }catch(e){}
   }catch(e){ toast('Speicher nicht verfügbar – privater Modus?'); }
@@ -861,7 +920,7 @@ function filtered(){
       if(filt.time==='long'){ if(m<=120) return false; } else if(m>+filt.time) return false;
     }
     if(q){
-      const hay = [r.title,r.by,r.via,(r.tags||[]).join(' '),(r.courses||[]).join(' '),r.ingredientsText,r.source&&r.source.name,r.source&&r.source.author].join(' ').toLowerCase();
+      const hay = [r.title,r.by,r.via,(r.tags||[]).join(' '),(r.courses||[]).join(' '),getGroups(r).ing.map(g=>g.t+' '+g.text).join(' '),r.source&&r.source.name,r.source&&r.source.author].join(' ').toLowerCase();
       if(!q.split(/\s+/).every(w=>hay.includes(w))) return false;
     }
     return true;
@@ -954,8 +1013,7 @@ function renderDetail(keep){
   const r = getR(route.id); if(!r){ go({v:'list'}); return; }
   if(!keep || !ds || ds.id!==r.id) ds = { id:r.id, shown: r.servings||1, mode: pref.unitMode||'orig', over:{}, checked:new Set(), done:new Set() };
   const base = r.servings||1, factor = ds.shown/base;
-  const ings = parseIngredientsText(r.ingredientsText);
-  const steps = parseStepsText(r.stepsText);
+  const G = getGroups(r);
   const a=activeMin(r), t=totalMin(r);
   const facts = [];
   if(r.prep!=null) facts.push(['Vorbereitung', fmtDuration(r.prep)]);
@@ -963,21 +1021,24 @@ function renderDetail(keep){
   if(r.rest!=null) facts.push(['Warten / Ruhen', fmtDuration(r.rest)]);
   if(t!=null && (r.rest!=null || r.total!=null)) facts.push(['Gesamt', fmtDuration(t)]);
   else if(a!=null && r.prep!=null && r.cook!=null) facts.push(['Zubereitungszeit', fmtDuration(a)]);
-  if(r.difficulty){ const lv={leicht:1,mittel:2,anspruchsvoll:3}[r.difficulty]||0; facts.push(['Schwierigkeit', `<span class="diff">${[1,2,3].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join('')}</span>${esc(r.difficulty)}`, true]); }
+  const lv={leicht:1,mittel:2,anspruchsvoll:3}[r.difficulty]||0;
+  const diffHTML = r.difficulty ? `<span class="diffb"><span class="diff">${[1,2,3].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join('')}</span>${esc(r.difficulty)}</span>` : '';
   if(r.shelfLife) facts.push(['Haltbarkeit', r.shelfLife]);
   const unitName = r.servingsUnit || (r.servings?'Portionen':'');
-  let ingIdx=-1;
-  const ingHTML = ings.map((it)=>{
-    if(it.h) return `<li class="grp">${esc(it.h)}</li>`;
-    ingIdx++; const i=ingIdx;
-    const d = renderIng(it, factor, ds.mode, ds.over[i]);
-    const amt = d.amount ? `${d.approx?'<span class="approx">ca. </span>':''}${esc(d.amount)}${d.unit?' '+esc(d.unit):''}` : '';
-    return `<li class="ing ${ds.checked.has(i)?'done':''}" data-act="check" data-i="${i}">
-      <button class="qty ${d.conv?'conv':''} ${factor!==1&&d.amount?'scaled':''}" ${d.conv?`data-act="unit" data-i="${i}" data-u="${d.u}" aria-label="Einheit wechseln"`:'tabindex="-1"'}>${amt}</button>
-      <span class="nm">${esc(d.name)}</span></li>`;
-  }).join('');
-  let si=-1;
-  const stepHTML = steps.map(s=>{ if(s.h) return `<li class="grp">${esc(s.h)}</li>`; si++; return `<li class="step ${ds.done.has(si)?'done':''}" data-act="stepdone" data-i="${si}"><p>${esc(s.t)}</p></li>`; }).join('');
+  let ingIdx=-1, si=-1;
+  const gh=(arr,g)=> (arr.length>1||g.t) ? `<h4 class="grphead">${esc(g.t||'')}</h4>` : '';
+  const ingHTML = G.ing.map(g=>gh(G.ing,g)+'<ul class="inglist">'+parseIngredientsText(g.text).map(it=>{
+      if(it.h) return `<li class="grp">${esc(it.h)}</li>`;
+      ingIdx++; const i=ingIdx;
+      const d = renderIng(it, factor, ds.mode, ds.over[i]);
+      const amt = d.amount ? `${d.approx?'<span class="approx">ca. </span>':''}${esc(d.amount)}${d.unit?' '+esc(d.unit):''}` : '';
+      return `<li class="ing ${ds.checked.has(i)?'done':''}" data-act="check" data-i="${i}">
+        <button class="qty ${d.conv?'conv':''} ${factor!==1&&d.amount?'scaled':''}" ${d.conv?`data-act="unit" data-i="${i}" data-u="${d.u}" aria-label="Einheit wechseln"`:'tabindex="-1"'}>${amt}</button>
+        <span class="nm">${esc(d.name)}</span></li>`; }).join('')+'</ul>').join('');
+  const stepHTML = G.steps.map(g=>gh(G.steps,g)+'<ol class="steps">'+parseStepsText(g.text).map(s=>{ if(s.h) return `<li class="grp">${esc(s.h)}</li>`; si++; return `<li class="step ${ds.done.has(si)?'done':''}" data-act="stepdone" data-i="${si}"><p>${esc(s.t)}</p></li>`; }).join('')+'</ol>').join('');
+  const partHTML = `<div class="cols">
+      <section class="ingbox"><h2 class="sechead">Zutaten <small>Antippen wechselt die Einheit</small></h2>${ingIdx>=0?ingHTML:'<p class="muted">Keine Zutaten erfasst.</p>'}</section>
+      <section><h2 class="sechead">Zubereitung <small>Antippen hakt ab</small></h2>${si>=0?stepHTML:'<p class="muted">Keine Schritte erfasst.</p>'}</section></div>`;
   const src = r.source||{};
   const srcLine = [src.name, src.author, src.page].filter(Boolean).map(esc).join(', ');
   app.innerHTML = `
@@ -994,18 +1055,19 @@ function renderDetail(keep){
     <div class="marks">${(r.courses||[]).map(c=>`<span class="course">${glyph(c)}${esc(c)}</span>`).join('')}${(r.tags||[]).map(t=>`<span class="tagtxt">#${esc(t)}</span>`).join('')}</div>
     ${facts.length?`<dl class="facts">${facts.map(f=>`<div><dt>${f[0]}</dt><dd>${f[2]?f[1]:esc(f[1])}</dd></div>`).join('')}</dl>`:''}
     ${r.intro?`<details class="intro"><summary>Einleitung</summary><div class="txt">${esc(r.intro)}</div></details>`:''}
-    <div class="controls">
-      <div class="stepper"><button data-act="less" aria-label="Weniger">−</button><span class="val ${factor!==1?'scaled':''}">${r.servings?`${fmtFrac(ds.shown)} ${esc(unitName)}`:`${fmtFrac(ds.shown)}× Rezept`}</span><button data-act="more" aria-label="Mehr">+</button></div>
-      <span class="seg">${[['orig','Original'],['metric','Metrisch'],['us','US']].map(([k,l])=>`<button class="${ds.mode===k?'on':''}" data-act="mode" data-v="${k}">${l}</button>`).join('')}</span>
-      <button class="wake ${wakeLock?'on':''}" data-act="wake"><span class="sw"></span>Bildschirm bleibt an</button>
+    <div class="ctl">
+      <div class="ctlrow">
+        <div class="stepper"><button data-act="less" aria-label="Weniger">−</button><span class="val ${factor!==1?'scaled':''}">${r.servings?`${fmtFrac(ds.shown)} ${esc(unitName)}`:`${fmtFrac(ds.shown)}× Rezept`}</span><button data-act="more" aria-label="Mehr">+</button></div>
+        ${diffHTML}
+      </div>
+      <div class="ctlrow">
+        <span class="seg small">${[['orig','Original'],['metric','Metrisch'],['us','US']].map(([k,l])=>`<button class="${ds.mode===k?'on':''}" data-act="mode" data-v="${k}">${l}</button>`).join('')}</span>
+        <button class="wake ${wakeLock?'on':''}" data-act="wake"><span class="sw"></span>Bildschirm an</button>
+      </div>
     </div>
-    <div class="cols">
-      <section class="ingbox"><h2 class="sechead">Zutaten <small>Antippen wechselt die Einheit</small></h2><ul class="inglist">${ingHTML||'<li class="muted">Keine Zutaten erfasst.</li>'}</ul></section>
-      <section><h2 class="sechead">Zubereitung <small>Antippen hakt ab</small></h2><ol class="steps">${stepHTML||'<li class="muted">Keine Schritte erfasst.</li>'}</ol>
-        ${r.notes?`<div class="notes">${esc(r.notes)}</div>`:''}
-        ${(srcLine||src.url)?`<div class="sourcebox">Quelle: ${srcLine}${src.url?`<br><a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url)}</a>`:''}</div>`:''}
-      </section>
-    </div>
+    ${partHTML}
+    ${r.notes?`<div class="notes">${esc(r.notes)}</div>`:''}
+    ${(srcLine||src.url)?`<div class="sourcebox">Quelle: ${srcLine}${src.url?`<br><a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url)}</a>`:''}</div>`:''}
     <div class="actions">
       <button class="btn primary" data-act="share">${ICON.share} Teilen</button>
       <button class="btn" data-act="copytext">${ICON.copy} Text kopieren</button>
@@ -1036,11 +1098,12 @@ function releaseWake(){ if(wakeLock){ try{ wakeLock.release(); }catch(e){} wakeL
 
 /* ===================== Editor ===================== */
 let draft = null;
-function blankRecipe(){ return { id:newId(), by:myName(), via:'', title:'', photo:'', courses:[], tags:[], servings:null, servingsUnit:'', prep:null, cook:null, rest:null, total:null, difficulty:'', shelfLife:'', intro:'', ingredientsText:'', stepsText:'', notes:'', source:{name:'',author:'',page:'',url:''}, fav:false, createdAt:Date.now() }; }
+function blankRecipe(){ return { id:newId(), ingGroups:[{t:'',text:''}], stepGroups:[{t:'',text:''}], scans:[], by:myName(), via:'', title:'', photo:'', courses:[], tags:[], servings:null, servingsUnit:'', prep:null, cook:null, rest:null, total:null, difficulty:'', shelfLife:'', intro:'', ingredientsText:'', stepsText:'', notes:'', source:{name:'',author:'',page:'',url:''}, fav:false, createdAt:Date.now() }; }
 function renderEditor(keep){
   const isNew = !route.id;
   if(!(keep && draft)) draft = isNew ? (draft && draft._new ? draft : {...blankRecipe(), _new:true}) : JSON.parse(JSON.stringify(getR(route.id)||blankRecipe()));
   draft.source = draft.source||{};
+  if(!draft.ingGroups || !draft.stepGroups){ const G=getGroups(draft); draft.ingGroups=G.ing.map(x=>({...x})); draft.stepGroups=G.steps.map(x=>({...x})); }
   const durVal = m => m==null ? '' : (m%60===0 && m>=60 ? (m/60)+' h' : (m>60 ? Math.floor(m/60)+':'+String(m%60).padStart(2,'0') : String(m)));
   app.innerHTML = `
   <div class="bar"><div class="wrap">
@@ -1060,6 +1123,7 @@ function renderEditor(keep){
       </div>
       <div id="parseMsg" style="margin-top:8px;font-size:14px;font-weight:600"></div>
     </div>`:''}
+    ${(draft.scans&&draft.scans.length)?`<div class="fset"><h2>Vorlage</h2><p class="muted" style="font-size:13px;margin:-4px 0 10px">Zum Abgleichen antippen und vergrößern.</p><div class="scans">${draft.scans.map((s,i)=>`<button type="button" class="scan" data-act="viewscan" data-v="${i}"><img src="${s}" alt="Vorlage ${i+1}"></button>`).join('')}</div><button type="button" class="linkish" data-act="rmscans" style="border:0;background:none;padding:8px 0;text-decoration:underline;color:var(--ink2)">Vorlage entfernen</button></div>`:''}
     <div class="fset"><h2>Rezept</h2>
       <label class="fld"><span>Titel</span><input class="in" id="f_title" value="${esc(draft.title)}" autocomplete="off"></label>
       <div class="fld"><span>Foto (optional)</span><div class="photo"><div class="cov" id="photoPrev">${cover(draft)}</div>
@@ -1084,13 +1148,14 @@ function renderEditor(keep){
       <label class="fld"><span>Haltbarkeit</span><input class="in" id="f_shelf" value="${esc(draft.shelfLife)}" placeholder="3 Tage im Kühlschrank"></label>
     </div>
     <div class="fset"><h2>Zutaten</h2>
-      <label class="fld"><textarea class="ta tall mono" id="f_ing" spellcheck="false" placeholder="150 g Risottoreis&#10;2 Knoblauchzehen&#10;## Für die Soße&#10;1 Dose Tomaten">${esc(draft.ingredientsText)}</textarea>
-      <em>Eine Zutat pro Zeile. Zwischenüberschrift mit ## davor oder Doppelpunkt am Ende. Gelb markierte Mengen werden umgerechnet.</em></label>
-      <div class="preview" id="ingPrev"></div>
+      <div id="igBox">${draft.ingGroups.map((g,i)=>groupEditHTML('ig',g,i,draft.ingGroups.length)).join('')}</div>
+      <button type="button" class="btn" data-act="addgroup" data-v="ig">${ICON.plus} Weitere Zutatenliste</button>
+      <em class="hint">Zum Beispiel für Teig und Glasur.</em>
     </div>
     <div class="fset"><h2>Zubereitung</h2>
-      <label class="fld"><textarea class="ta tall" id="f_steps" placeholder="Schritte durch Leerzeile trennen.">${esc(draft.stepsText)}</textarea>
-      <em>Leerzeile trennt Schritte. Abschnitt mit ## davor, z. B. „## Anrichten“.</em></label>
+      <div id="sgBox">${draft.stepGroups.map((g,i)=>groupEditHTML('sg',g,i,draft.stepGroups.length)).join('')}</div>
+      <button type="button" class="btn" data-act="addgroup" data-v="sg">${ICON.plus} Weitere Schrittfolge</button>
+      <em class="hint">Nur nötig, wenn Teile getrennt zubereitet werden.</em>
     </div>
     <div class="fset"><h2>Texte</h2>
       <label class="fld"><span>Einleitung</span><textarea class="ta" id="f_intro">${esc(draft.intro)}</textarea></label>
@@ -1110,8 +1175,8 @@ function renderEditor(keep){
       ${isNew?'':`<button class="btn danger" data-act="delete">${ICON.trash} Löschen</button>`}
     </div>
   </div></div>`;
-  renderCourseChips(); renderTagChips(); renderIngPreview();
-  $('#f_ing').addEventListener('input', ()=>{ draft.ingredientsText=$('#f_ing').value; renderIngPreview(); });
+  renderCourseChips(); renderTagChips(); document.querySelectorAll('.gcard.ig').forEach(renderPartPreview);
+  $('#igBox').addEventListener('input', e=>{ if(e.target.classList.contains('gt')) renderPartPreview(e.target.closest('.gcard')); });
   $('#f_tag').addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===','){ e.preventDefault(); addTag(); } });
 }
 function renderCourseChips(){
@@ -1129,9 +1194,17 @@ function addTag(v){
   for(let t of vals){ t=t.charAt(0).toUpperCase()+t.slice(1); if(!draft.tags.includes(t)) draft.tags.push(t); }
   if(v==null) inp.value=''; renderTagChips();
 }
-function renderIngPreview(){
-  const items = parseIngredientsText(draft.ingredientsText);
-  const el=$('#ingPrev'); if(!el) return;
+function groupEditHTML(kind,g,i,n){
+  const ing=kind==='ig';
+  return `<div class="gcard ${kind}" data-gi="${i}">
+    ${n>1?`<div class="parttop"><label class="fld" style="flex:1;margin:0"><span>Überschrift</span><input class="in gh" value="${esc(g.t||'')}" placeholder="${ing?'z. B. Teig, Glasur, Soße':'z. B. Teig, Füllung, Fertigstellen'}"></label><button type="button" class="btn ghost" data-act="rmgroup" data-v="${kind}:${i}" style="align-self:flex-end">Entfernen</button></div>`:''}
+    <label class="fld"><textarea class="ta tall ${ing?'mono':''} gt" spellcheck="${ing?'false':'true'}" placeholder="${ing?'150 g Risottoreis&#10;2 Knoblauchzehen':'Schritte durch Leerzeile trennen.'}">${esc(g.text||'')}</textarea>
+    <em>${ing?'Eine Zutat pro Zeile. Gelb markierte Mengen werden umgerechnet.':'Leerzeile trennt Schritte.'}</em></label>
+    ${ing?'<div class="preview pp"></div>':''}
+  </div>`;
+}
+function renderPartPreview(card){
+  if(!card) return; const el=card.querySelector('.pp'); if(!el) return; const items=parseIngredientsText(card.querySelector('.gt').value);
   if(!items.length){ el.innerHTML=''; return; }
   el.innerHTML = '<ul>'+items.map(it=>{
     if(it.h) return `<li class="h">${esc(it.h)}</li>`;
@@ -1139,14 +1212,15 @@ function renderIngPreview(){
     return `<li><span class="q ${d.amount?'':'none'}" style="${d.conv?'background:color-mix(in srgb,var(--gelb) 55%,transparent)':''}">${d.amount?esc((d.approx?'ca. ':'')+d.amount+(d.unit?' '+d.unit:'')):'–'}</span><span>${esc(d.name)}</span></li>`;
   }).join('')+'</ul>';
 }
+function readGroups(sel){ return [...document.querySelectorAll(sel)].map(el=>({ t:(el.querySelector('.gh')||{value:''}).value.trim(), text:el.querySelector('.gt').value.replace(/\s+$/,'') })); }
 function collectForm(){
   const d=draft;
   d.title=$('#f_title').value.trim();
   const sv=$('#f_serv').value.trim().replace(',','.'); d.servings = sv ? (parseFloat(sv)||null) : null;
-  d.servingsUnit=$('#f_servu').value.trim();
+  d.servingsUnit=normServUnit($('#f_servu').value.trim());
   d.prep=parseDuration($('#f_prep').value); d.cook=parseDuration($('#f_cook').value); d.rest=parseDuration($('#f_rest').value);
   d.shelfLife=$('#f_shelf').value.trim();
-  d.ingredientsText=$('#f_ing').value.replace(/\s+$/,''); d.stepsText=$('#f_steps').value.replace(/\s+$/,'');
+  d.ingGroups=readGroups('.gcard.ig'); d.stepGroups=readGroups('.gcard.sg'); delete d.parts; Object.assign(d, flattenGroups({ing:d.ingGroups, steps:d.stepGroups}));
   d.intro=$('#f_intro').value.trim(); d.notes=$('#f_notes').value.trim();
   d.by=$('#f_by').value.trim(); d.via=$('#f_via').value.trim();
   d.source={ name:$('#f_src').value.trim(), author:$('#f_auth').value.trim(), page:$('#f_page').value.trim(), url:$('#f_url').value.trim() };
@@ -1156,11 +1230,12 @@ function fillFromParse(p){
   collectForm();
   const d=draft;
   if(p.title) d.title=p.title;
-  if(p.ingredientsText) d.ingredientsText=p.ingredientsText;
-  if(p.stepsText) d.stepsText=p.stepsText;
+  const put=(arr,text)=>{ const gs=splitGroups(text); const empty=arr.every(x=>!x.text.trim()); if(empty){ arr.splice(0,arr.length,...gs); } else arr.push(...gs); };
+  if(p.ingredientsText) put(d.ingGroups, p.ingredientsText);
+  if(p.stepsText) put(d.stepGroups, p.stepsText);
   if(p.intro) d.intro=p.intro;
   if(p.notes) d.notes=p.notes;
-  if(p.servings!=null){ d.servings=p.servings; d.servingsUnit=p.servingsUnit||d.servingsUnit; }
+  if(p.servings!=null){ d.servings=p.servings; d.servingsUnit=normServUnit(p.servingsUnit)||d.servingsUnit; }
   ['prep','cook','rest'].forEach(k=>{ if(p[k]!=null) d[k]=p[k]; });
   d.cookEstimate = p.cookEstimate||null;
   if(p.difficulty) d.difficulty=p.difficulty;
@@ -1169,7 +1244,7 @@ function fillFromParse(p){
   if(p.source && p.source.name && !d.source.name) d.source.name=p.source.name;
   const paste=$('#pasteText').value;
   renderEditor(true); $('#pasteText').value=paste;
-  const n = parseIngredientsText(d.ingredientsText).filter(x=>!x.h).length, s = parseStepsText(d.stepsText).filter(x=>!x.h).length;
+  const n = d.ingGroups.reduce((s,x)=>s+parseIngredientsText(x.text).filter(y=>!y.h).length,0), s = d.stepGroups.reduce((s2,x)=>s2+parseStepsText(x.text).filter(y=>!y.h).length,0);
   $('#parseMsg').textContent = `Erkannt: ${n} ${n===1?'Zutat':'Zutaten'}, ${s} ${s===1?'Schritt':'Schritte'}${d.servings?`, ${d.servings} ${d.servingsUnit||'Portionen'}`:''}. Bitte unten prüfen.`;
 }
 async function saveDraft(){
@@ -1207,8 +1282,8 @@ async function onPhotoPicked(file){
 
 /* ===================== Export ===================== */
 function slug(s){ return (s||'rezept').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)||'rezept'; }
-function plainIngLines(r){
-  return parseIngredientsText(r.ingredientsText).map(it=>{
+function plainIngLines(text){
+  return parseIngredientsText(text).map(it=>{
     if(it.h) return {h:it.h};
     const d=renderIng(it,1,'orig');
     return {a: d.amount ? ((d.approx?'ca. ':'')+d.amount+(d.unit?' '+d.unit:'')) : '', n:d.name};
@@ -1225,10 +1300,11 @@ function exportText(r){
   if(r.difficulty) meta.push('Schwierigkeit: '+r.difficulty);
   if(r.shelfLife) meta.push('Haltbarkeit: '+r.shelfLife);
   if(meta.length) L.push(meta.join(' | '),'');
+  const G=getGroups(r), mi=G.ing.length>1||G.ing.some(g=>g.t), ms=G.steps.length>1||G.steps.some(g=>g.t);
   L.push('ZUTATEN');
-  plainIngLines(r).forEach(x=> L.push(x.h ? '\n'+x.h+':' : '– '+(x.a?x.a+' ':'')+x.n));
+  G.ing.forEach(g=>{ if(mi) L.push('',(g.t||'')+':'); plainIngLines(g.text).forEach(x=> L.push(x.h ? '\n'+x.h+':' : '– '+(x.a?x.a+' ':'')+x.n)); });
   L.push('','ZUBEREITUNG');
-  let n=0; parseStepsText(r.stepsText).forEach(s=>{ if(s.h) L.push('',s.h+':'); else L.push(`${++n}. ${s.t}`); });
+  G.steps.forEach(g=>{ if(ms) L.push('',(g.t||'')+':'); let n=0; parseStepsText(g.text).forEach(s=>{ if(s.h) L.push('',s.h+':'); else L.push(`${++n}. ${s.t}`); }); });
   if(r.notes) L.push('','TIPP',r.notes);
   const src=r.source||{}; const sl=[src.name,src.author,src.page].filter(Boolean).join(', ');
   if(sl||src.url) L.push('','Quelle: '+sl+(src.url?' '+src.url:''));
@@ -1248,7 +1324,7 @@ dl div{padding:9px 16px 9px 0;margin-right:16px}dt{font-size:12px;color:var(--in
 .intro{color:var(--ink2);margin:18px 0 0;max-width:68ch;white-space:pre-wrap;font-size:15px}
 .cols{display:grid;grid-template-columns:1fr;gap:8px 44px;margin-top:10px}
 @media(min-width:700px){.cols{grid-template-columns:minmax(230px,300px) 1fr}}
-h2{font:var(--disp-w) 22px/1 var(--f-disp);margin:24px 0 8px}
+h2{font:var(--disp-w) 22px/1 var(--f-disp);margin:24px 0 8px}h3{font:var(--disp-w) 19px/1 var(--f-disp);margin:20px 0 8px}h2.part{font-size:26px;margin-top:34px;padding-top:14px;border-top:2px solid var(--ink)}
 ul.ing{list-style:none;margin:0;padding:0}ul.ing li{display:grid;grid-template-columns:86px 1fr;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
 ul.ing li b{font:700 13.5px/1.4 var(--f-mono)}ul.ing li.h{display:block;font-weight:700;border-bottom:2px solid var(--ink);padding-top:14px}
 ol{list-style:none;margin:0;padding:0;counter-reset:s}ol li{display:grid;grid-template-columns:38px 1fr;padding:11px 0;border-bottom:1px solid var(--line);max-width:70ch}
@@ -1262,7 +1338,7 @@ footer{margin-top:34px;padding-top:10px;border-top:2px solid var(--ink);font-siz
 .toc a{color:inherit;text-decoration:none;font-weight:600}.toc small{display:block;color:var(--ink2);font-size:12.5px}
 article{padding-top:40px;margin-top:40px;border-top:6px solid var(--ink)}.top{font-size:13px;color:var(--blau)}
 @page{size:A4;margin:16mm 15mm}
-@media print{body{background:#fff;color:#000;font-size:11pt}main{padding:0;max-width:none}.photo{max-height:6.5cm}.cols{grid-template-columns:6cm 1fr}li{break-inside:avoid}h2{break-after:avoid}footer,.top{display:none}article{break-before:page;border:0;margin:0;padding:0}}
+@media print{body{background:#fff;color:#000;font-size:11pt}main{padding:0;max-width:none}.photo{max-height:6.5cm}.cols{display:block}ul.ing{columns:2;column-gap:1cm}ul.ing li{break-inside:avoid}li{break-inside:avoid}h3{break-after:avoid}h2{break-after:avoid}footer,.top{display:none}article{break-before:page;border:0;margin:0;padding:0}}
 .gl *{fill:var(--gl-fill);stroke:var(--gl-stroke);stroke-width:var(--gl-sw)}.ic{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.marks svg{width:14px;height:14px}`;
 function recipeBody(r, withPhoto, h){
   const src=r.source||{}; const sl=[src.name,src.author,src.page].filter(Boolean).map(esc).join(', ');
@@ -1276,17 +1352,16 @@ function recipeBody(r, withPhoto, h){
   const courseMarks = (r.courses||[]).map(c=>`<span class="c">${glyph(c,'')}${esc(c)}</span>`).join('');
   const H = h||'h1';
   return `${withPhoto&&r.photo?`<img class="photo" src="${r.photo}" alt="">`:''}
-<${H} style="font:400 clamp(30px,7vw,52px)/.98 'Archivo Black','Arial Black',Arial,sans-serif;margin:0 0 12px">${esc(r.title)}</${H}>
+<${H} style="font:var(--disp-w) clamp(30px,7vw,52px)/1 var(--f-disp);letter-spacing:var(--disp-ls);margin:0 0 12px">${esc(r.title)}</${H}>
 ${personLine(r)?`<p class="by">${esc(personLine(r))}</p>`:''}
 <div class="marks">${courseMarks}${(r.tags||[]).map(t=>`<span class="t">#${esc(t)}</span>`).join('')}</div>
 ${facts.length?`<dl>${facts.map(f=>`<div><dt>${f[0]}</dt><dd>${f[1]}</dd></div>`).join('')}</dl>`:''}
 ${r.intro?`<p class="intro">${esc(r.intro)}</p>`:''}
-<div class="cols">
-<section><h2>Zutaten</h2><ul class="ing">${plainIngLines(r).map(x=>x.h?`<li class="h">${esc(x.h)}</li>`:`<li><b>${esc(x.a)}</b><span>${esc(x.n)}</span></li>`).join('')}</ul></section>
-<section><h2>Zubereitung</h2><ol>${parseStepsText(r.stepsText).map(s=>s.h?`<li class="h">${esc(s.h)}</li>`:`<li><span>${esc(s.t)}</span></li>`).join('')}</ol>
+${(()=>{ const G=getGroups(r), mi=G.ing.length>1||G.ing.some(g=>g.t), ms=G.steps.length>1||G.steps.some(g=>g.t);
+  return `<div class="cols"><section><h2>Zutaten</h2>${G.ing.map(g=>`${mi?`<h3>${esc(g.t||'')}</h3>`:''}<ul class="ing">${plainIngLines(g.text).map(x=>x.h?`<li class="h">${esc(x.h)}</li>`:`<li><b>${esc(x.a)}</b><span>${esc(x.n)}</span></li>`).join('')}</ul>`).join('')}</section>
+<section><h2>Zubereitung</h2>${G.steps.map(g=>`${ms?`<h3>${esc(g.t||'')}</h3>`:''}<ol>${parseStepsText(g.text).map(s=>s.h?`<li class="h">${esc(s.h)}</li>`:`<li><span>${esc(s.t)}</span></li>`).join('')}</ol>`).join('')}</section></div>`; })()}
 ${r.notes?`<div class="notes">${esc(r.notes)}</div>`:''}
-${(sl||src.url)?`<p class="src">Quelle: ${sl}${src.url?`<br><a href="${esc(src.url)}">${esc(src.url)}</a>`:''}</p>`:''}
-</section></div>`;
+${(sl||src.url)?`<p class="src">Quelle: ${sl}${src.url?`<br><a href="${esc(src.url)}">${esc(src.url)}</a>`:''}</p>`:''}`;
 }
 let FONT_CSS='';
 const THEME_VARS=['paper','paper2','card','ink','ink2','line','rot','on-rot','blau','gelb','on-gelb','f-disp','f-body','f-mono','disp-w','disp-ls','g-rot','g-blau','g-gelb','g-ink','gl-fill','gl-stroke','gl-sw'];
@@ -1313,7 +1388,7 @@ async function loadFontCSS(){
 }
 const APP_URL='https://lepettre.github.io/Rezeptesammlung/';
 function madeWith(name){ const l=`<a href="${APP_URL}">${APP_URL.replace(/\/$/,'')}</a>`; return name ? `Geteilt aus der Rezeptesammlung von ${esc(name)}, erstellt mit ${l}` : `Erstellt mit ${l}`; }
-function cleanForExport(r, withPhoto){ const c={...r}; delete c._local; if(!withPhoto) c.photo=''; if(!c.by && myName() && !c.via) c.by=myName(); return c; }
+function cleanForExport(r, withPhoto){ const c={...r}; delete c._local; delete c.scans; if(!withPhoto) c.photo=''; if(!c.by && myName() && !c.via) c.by=myName(); return c; }
 function dataScript(obj){ return `<script type="application/json" id="rezeptkasten-data">${JSON.stringify(obj).replace(/</g,'\\u003c')}<\/script>`; }
 function exportHTML(r){
   const c = cleanForExport(r, true);
@@ -1420,7 +1495,7 @@ async function importFile(file){
     let added=0, updated=0, lastId=null;
     for(const it of items){
       const r = {...blankRecipe(), ...it}; delete r._local; delete r.cookEstimated; delete r.cookEstimate;
-      migrateCourses(r);
+      migrateRecipe(r);
       if(foreign){
         if(!it.by) r.by = from;
         if(r.by!==from) r.via = from; else r.via = it.via||'';
@@ -1597,10 +1672,14 @@ function layoutText(lines, pageW, rules={h:[],v:[]}, keep=null){
     else chains.push({lines:[l], x0:l.x0, x1:l.x1, y0:l.y0});
   }
   for(const c of chains){ const ds=c.lines.slice(1).map(l=>l.dy); const pitch=ds.length?med(ds):lh; c.lines.forEach((l,i)=>{ l.para = i>0 && (l.dy > pitch*1.6 || l.ruleBefore); }); }
-  // 3. Schnipsel am Rand eines markierten Rahmens verwerfen
+  // 3. Bei Rahmen: ganze Textblöcke (durch Weißraum getrennt) übernehmen, die überwiegend im Rahmen liegen
   let ch=chains;
-  if(keep){ const kx0=keep[0], kx1=keep[0]+keep[2]; const big=Math.max(...ch.map(c=>c.lines.length));
-    ch=ch.filter(c=>!(c.lines.length<=2 && big>3 && (c.x0<=kx0+lh*1.5 || c.x1>=kx1-lh*1.5))); }
+  if(keep){
+    const blocks=[];
+    for(const c of chains){ let cur=null; c.lines.forEach((l,i)=>{ if(!cur || l.para){ cur={lines:[], x0:1e9, x1:-1e9, y0:l.y0}; blocks.push(cur); } cur.lines.push(l); cur.x0=Math.min(cur.x0,l.x0); cur.x1=Math.max(cur.x1,l.x1); }); }
+    ch=blocks.filter(b=>{ const inside=b.lines.filter(l=>l.inK).length; return inside>0 && inside >= b.lines.length*0.5; });
+    ch.forEach(b=>{ b.lines.forEach((l,i)=>{ if(i===0) l.para=false; }); });
+  }
   ch=ch.filter(c=>!c.lines.every(l=>/^\d{1,3}\.?$/.test(l.text.trim())));
   // 4. Lesereihenfolge: Spaltenbänder von links nach rechts, darin von oben nach unten
   ch.forEach(c=>{ c.lx=med(c.lines.map(l=>l.x0)); });
@@ -1682,11 +1761,8 @@ async function ocrCanvas(o, src, label, keep){
   for(let i=0;i<boxes.length;i++){
     if(i%4===0) ocrProgress(`${label} – Zeile ${i+1} von ${boxes.length}`, boxes.length? i/boxes.length : 0);
     const b=boxes[i];
-    if(keep){ const km=keep[0]+keep[2]/2;
-      if(b.x1 >= src.width-3 && b.x0 > km) continue;
-      if(b.x0 <= 3 && b.x1 < km) continue;
-      if((b.y0 <= 1 || b.y1 >= src.height-1) && (Math.min(b.y1,keep[1]+keep[3])-Math.max(b.y0,keep[1])) < 0.5*(b.y1-b.y0)) continue; }
-    if(keep){ const ix=Math.max(0,Math.min(b.x1,keep[0]+keep[2])-Math.max(b.x0,keep[0])), iy=Math.max(0,Math.min(b.y1,keep[1]+keep[3])-Math.max(b.y0,keep[1])); if(iy < 0.5*(b.y1-b.y0) || ix < 0.35*(b.x1-b.x0)) continue; }
+    if(keep){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2, inK = cx>=keep[0] && cx<=keep[0]+keep[2] && cy>=keep[1] && cy<=keep[1]+keep[3];
+      if(!inK && (b.x0<=3 || b.x1>=src.width-3 || b.y0<=1 || b.y1>=src.height-1)) continue; }
     let r=await recognize(o, src, b);
     if(r && r.conf<0.85){
       for(const opt of [{grow:1.15},{contrast:1}]){ const r2=await recognize(o, src, b, opt); if(r2 && r2.conf>r.conf+0.02) r=r2; }
@@ -1695,7 +1771,8 @@ async function ocrCanvas(o, src, label, keep){
     if(!/[A-Za-zÄÖÜäöüß0-9½]/.test(r.text)) continue;
     const cs=[b.c0,[b.c0[0]+b.ux*b.w,b.c0[1]+b.uy*b.w],[b.c0[0]+b.ux*b.w-b.uy*b.h,b.c0[1]+b.uy*b.w+b.ux*b.h],[b.c0[0]-b.uy*b.h,b.c0[1]+b.ux*b.h]].map(p=>rotPt(p,CX,CY,ca,sa));
     const xs=cs.map(p=>p[0]), ys=cs.map(p=>p[1]);
-    lines.push({x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys), text:fixLine(o, r.text), conf:r.conf});
+    const ccx=(b.x0+b.x1)/2, ccy=(b.y0+b.y1)/2; const inK = !keep || (ccx>=keep[0] && ccx<=keep[0]+keep[2] && ccy>=keep[1] && ccy<=keep[1]+keep[3]);
+    lines.push({x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys), text:fixLine(o, r.text), conf:r.conf, inK});
   }
   let rules={h:[],v:[]}; try{ rules=findRules(src); }catch(e){}
   return layoutText(lines, src.width, rules, keep);
@@ -1703,7 +1780,7 @@ async function ocrCanvas(o, src, label, keep){
 function regionCanvas(img, r){
   const IW=img.naturalWidth, IH=img.naturalHeight;
   let x=0,y=0,w=IW,h=IH, keep=null;
-  if(r){ const px=Math.max(40,r[2]*0.15), py=Math.max(20,r[3]*0.06); x=Math.max(0,r[0]-px); y=Math.max(0,r[1]-py); w=Math.min(IW,r[0]+r[2]+px)-x; h=Math.min(IH,r[1]+r[3]+py)-y; }
+  if(r){ const px=Math.max(60,r[2]*0.2), py=Math.max(40,r[3]*0.12); x=Math.max(0,r[0]-px); y=Math.max(0,r[1]-py); w=Math.min(IW,r[0]+r[2]+px)-x; h=Math.min(IH,r[1]+r[3]+py)-y; }
   const s = Math.min(1, 2400/Math.max(w,h)) * (r && Math.max(w,h)<900 ? Math.min(2, 1400/Math.max(w,h)) : 1);
   const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(w*s)); c.height=Math.max(1,Math.round(h*s));
   c.getContext('2d').drawImage(img,x,y,w,h,0,0,c.width,c.height);
@@ -1717,7 +1794,7 @@ function pickRegions(file, idx, total){
     let img; try{ img=await loadImg(url); }catch(e){ URL.revokeObjectURL(url); toast('Bild nicht lesbar'); resolve(null); return; }
     const rects=[]; let type='ing';
     sheet(`<h2>Bereiche markieren${total>1?` <span class="mono muted" style="font-size:14px">Bild ${idx+1}/${total}</span>`:''}</h2>
-      <p style="font-size:14px">Optional: Art wählen und mit dem Finger einen Rahmen um Titel, Zutaten oder Zubereitung ziehen. Ohne Rahmen wird die ganze Seite gelesen.</p>
+      <p style="font-size:14px">Am besten gelingt gerade von oben fotografierter, vollständiger Text. Schräge oder angeschnittene Fotos werden oft schlechter erkannt.</p><p style="font-size:14px">Optional: Art wählen und mit dem Finger einen Rahmen um Titel, Zutaten oder Zubereitung ziehen. Ohne Rahmen wird die ganze Seite gelesen.</p>
       <div class="seg" id="rtSeg" style="margin-bottom:10px">${Object.entries(RT).map(([k,v])=>`<button data-rt="${k}" class="${k===type?'on':''}">${v[0]}</button>`).join('')}</div>
       <div id="cropWrap" style="position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none"><img id="cropImg" src="${url}" alt="" style="width:100%;height:100%;display:block;pointer-events:none"><canvas id="cropCv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas></div>
       <div id="rectList" class="chips" style="margin-top:10px"></div>
@@ -1742,13 +1819,13 @@ function pickRegions(file, idx, total){
         const col=css(RT[r.t][1]); const x=r.x*sc,y=r.y*sc,w=r.w*sc,h=r.h*sc;
         ctx.globalAlpha=.16; ctx.fillStyle=col; ctx.fillRect(x,y,w,h); ctx.globalAlpha=1;
         ctx.lineWidth=3; ctx.strokeStyle=col; ctx.strokeRect(x+1.5,y+1.5,w-3,h-3);
-        const label=(i+1)+' '+RT[r.t][0]; ctx.font='700 12px Geist, Arial, sans-serif';
+        const label=RT[r.t][0]; ctx.font='700 12px Geist, Arial, sans-serif';
         const lw=ctx.measureText(label).width+14, lh=20;
         let ly = y-lh-2 >= 0 ? y-lh-2 : (y+h+lh+2 <= dh ? y+h+2 : y+3);
         let lx = Math.min(Math.max(0,x), dw-lw);
         ctx.fillStyle=col; ctx.fillRect(lx,ly,lw,lh); ctx.fillStyle=r.t==='title'?'#1D1B18':'#fff'; ctx.fillText(label,lx+7,ly+14);
       });
-      const L=$('#rectList'); if(L) L.innerHTML = rects.length ? rects.map((r,i)=>`<button type="button" class="chip" data-rdel="${i}" style="border-color:${RT[r.t][1]}"><span style="display:inline-block;width:10px;height:10px;background:${RT[r.t][1]}"></span>${i+1} ${RT[r.t][0]} ✕</button>`).join('') : '<span class="muted" style="font-size:13px">Noch kein Rahmen – die ganze Seite wird gelesen.</span>';
+      const L=$('#rectList'); if(L) L.innerHTML = rects.length ? rects.map((r,i)=>`<button type="button" class="chip" data-rdel="${i}" style="border-color:${RT[r.t][1]}"><span style="display:inline-block;width:10px;height:10px;background:${RT[r.t][1]}"></span>${RT[r.t][0]} ✕</button>`).join('') : '<span class="muted" style="font-size:13px">Noch kein Rahmen – die ganze Seite wird gelesen.</span>';
     }
     const pt = e => { const b=cv.getBoundingClientRect(); return {x:Math.max(0,Math.min(dw,e.clientX-b.left))/sc, y:Math.max(0,Math.min(dh,e.clientY-b.top))/sc}; };
     cv.addEventListener('pointerdown', e=>{ e.preventDefault(); cv.setPointerCapture(e.pointerId); const p=pt(e); drag={x0:p.x,y0:p.y,x:p.x,y:p.y,w:0,h:0,t:type}; });
@@ -1781,6 +1858,7 @@ async function runOCR(files){
     }
   }catch(e){ ocrProgress('Bei der Texterkennung ist ein Fehler aufgetreten. Bitte ein kleineres oder schärferes Bild versuchen.', 0); return; }
   const txt = [parts.title.join(' '), parts.auto.join('\n\n'), parts.ing.length?'Zutaten:\n'+parts.ing.join('\n'):'', parts.step.length?'Zubereitung:\n'+parts.step.join('\n\n'):''].filter(Boolean).join('\n\n');
+  try{ draft.scans = [...(draft.scans||[]), ...await Promise.all(jobs.map(j=>compressScan(j.img)))]; }catch(e){}
   if(!$('#pasteText')) return;
   if(!txt.trim()){ ocrProgress('Kein Text erkannt. Schärferes Foto oder Screenshot versuchen.', 0); return; }
   $('#pasteText').value = ($('#pasteText').value.trim() ? $('#pasteText').value.trim()+'\n\n' : '') + txt;
@@ -1793,6 +1871,29 @@ function ocrIntro(then){
   sheet(`<h2>Texterkennung einrichten</h2><p>Für Fotos und Screenshots lädt die App einmalig weitere Module zur Texterkennung und ein Wörterbuch, das typische Erkennungsfehler korrigiert. Diese Dateien sind nur etwa 45 MB groß. Danach läuft alles offline auf dem Gerät, nichts wird übertragen.</p><p>Das Ergebnis kann weiter Fehler enthalten – Angaben sollten deshalb stets überprüft werden. Mehrspaltige Seiten werden automatisch geordnet. Zutaten, Zubereitungsschritte und Titel lassen sich für verbesserte Erkennung mit Rahmen markieren.</p>
    <div class="stack"><button class="btn primary" data-act="ocrgo">Laden und Foto wählen</button><button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
 }
+/* ===================== Vorlagen-Ansicht ===================== */
+function openViewer(list, idx){
+  if(!list||!list.length) return;
+  let z=1, i=idx||0;
+  const v=document.createElement('div'); v.className='viewer'; v.id='viewer';
+  v.innerHTML=`<div class="vscroll"><img alt="Vorlage"></div><div class="vbar"><button class="btn" data-z="-">−</button><button class="btn" data-z="+">+</button>${list.length>1?'<button class="btn" data-n="1">Nächste</button>':''}<button class="btn primary" data-close="1">Schließen</button></div>`;
+  document.body.appendChild(v);
+  const img=v.querySelector('img'), sc=v.querySelector('.vscroll');
+  const show=()=>{ img.src=list[i]; img.style.width=(z*100)+'%'; };
+  v.addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.close) v.remove();
+    if(b.dataset.z==='+'){ z=Math.min(5,z*1.5); show(); }
+    if(b.dataset.z==='-'){ z=Math.max(1,z/1.5); show(); }
+    if(b.dataset.n){ i=(i+1)%list.length; z=1; show(); sc.scrollTo(0,0); } });
+  let lastTap=0; img.addEventListener('click', e=>{ const now=Date.now(); if(now-lastTap<350){ const rect=img.getBoundingClientRect(); const fx=(e.clientX-rect.left)/rect.width, fy=(e.clientY-rect.top)/rect.height; z = z>1?1:2.5; show(); requestAnimationFrame(()=>{ sc.scrollLeft=fx*img.offsetWidth-sc.clientWidth/2; sc.scrollTop=fy*img.offsetHeight-sc.clientHeight/2; }); } lastTap=now; });
+  show();
+}
+async function compressScan(img){
+  const M=1800, s=Math.min(1, M/Math.max(img.naturalWidth,img.naturalHeight));
+  const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*s); c.height=Math.round(img.naturalHeight*s);
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height); return c.toDataURL('image/jpeg',0.72);
+}
+
 /* ===================== Sheets, Toast ===================== */
 function sheet(html, modal){
   closeSheet();
@@ -1864,7 +1965,11 @@ document.addEventListener('click', async e=>{
     case 'edit': draft=null; go({v:'edit', id:route.id}); break;
     case 'share': { const r=getR(route.id); if(r) withName(()=>saveFile(slug(r.title)+'.html', exportHTML(getR(r.id)), 'text/html')); break; }
     case 'copytext': { const r=getR(route.id); if(r) copyText(exportText(r)); break; }
-    case 'print': try{ window.print(); }catch(err){ toast('Drucken hier gesperrt – „Teilen“ und dort drucken'); } break;
+    case 'print': {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+      const r=getR(route.id);
+      if(standalone && /iPhone|iPad|iPod/.test(navigator.userAgent) && r){ toast('Im Teilen-Menü „Drucken“ wählen'); saveFile(slug(r.title)+'.html', exportHTML(r), 'text/html'); break; }
+      try{ window.print(); }catch(err){ toast('Drucken hier nicht möglich – „Teilen“ und dort drucken'); } break; }
     case 'delete': { const id=route.id; const r=getR(id); if(!r) break;
       confirmSheet('Rezept löschen?', `„${r.title}“ wird endgültig entfernt.`, 'Löschen', async()=>{ draft=null; await removeRecipe(id); go({v:'list'}); toast('Gelöscht'); }); break; }
     /* Editor */
@@ -1873,6 +1978,10 @@ document.addEventListener('click', async e=>{
     case 'parse': { const t=$('#pasteText').value; if(!t.trim()){ $('#parseMsg').textContent='Erst Text einfügen.'; break; } fillFromParse(parseRecipeText(t)); break; }
     case 'sample': $('#pasteText').value=SAMPLE; break;
     case 'ocr': if(window.__TEST){ ocrProgress('Die Texterkennung funktioniert in dieser Vorschau nicht.', 0); break; } try{ if(!localStorage.getItem('ocrReady')){ ocrIntro(); break; } }catch(e){} getOCR().catch(()=>{}); $('#fileOcr').click(); break;
+    case 'addgroup': { collectForm(); (v==='ig'?draft.ingGroups:draft.stepGroups).push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; const cards=document.querySelectorAll('.gcard.'+v); const last=cards[cards.length-1]; if(last){ last.scrollIntoView({block:'center'}); const t=last.querySelector('.gh'); if(t) t.focus(); } break; }
+    case 'rmgroup': { collectForm(); const [k,i]=v.split(':'); const arr=k==='ig'?draft.ingGroups:draft.stepGroups; arr.splice(+i,1); if(!arr.length) arr.push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
+    case 'viewscan': openViewer(draft.scans, +v); break;
+    case 'rmscans': { collectForm(); draft.scans=[]; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'usecook': { collectForm(); draft.cook=draft.cookEstimate; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'photo': $('#filePhoto').click(); break;
     case 'nophoto': { collectForm(); draft.photo=''; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
