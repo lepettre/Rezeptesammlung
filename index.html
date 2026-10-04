@@ -284,6 +284,9 @@ details.intro .txt{ padding:0 0 14px; max-width:68ch; color:var(--ink2); white-s
 .importbox .btn.primary{ background:var(--ink); color:var(--paper); }
 .ocrbar{ height:6px; background:var(--line); margin-top:8px; }
 .ocrbar i{ display:block; height:100%; background:var(--ink); width:0; transition:width .2s; }
+.ocrbar i.busy{ background:repeating-linear-gradient(90deg,var(--ink) 0 20px,transparent 20px 40px); background-size:40px 100%; animation:busy .8s linear infinite; }
+@keyframes busy{ to{ background-position:40px 0; } }
+.fld > .seg{ display:inline-flex; }
 .importbox .linkish{ border:0; background:none; text-decoration:underline; padding:0 4px; font-size:14.5px; color:inherit; }
 .preview{ margin:8px 0 0; font-size:14px; }
 .preview li{ list-style:none; padding:3px 0; border-bottom:1px dashed var(--line); display:flex; gap:10px; }
@@ -1136,7 +1139,7 @@ function renderEditor(keep){
     <div class="fset"><h2>Eckdaten</h2>
       <div class="grid2">
         <label class="fld"><span>Menge</span><input class="in" id="f_serv" inputmode="decimal" value="${draft.servings??''}" placeholder="4"></label>
-        <label class="fld"><span>Einheit</span><input class="in" id="f_servu" value="${esc(draft.servingsUnit)}" placeholder="Portionen, Stück, Teller"></label>
+        <label class="fld"><span>Einheit</span><input class="in" id="f_servu" value="${esc(draft.servingsUnit)}" placeholder="Portionen, Stück"></label>
       </div>
       <div class="grid3">
         <label class="fld"><span>Vorbereitung</span><input class="in" id="f_prep" value="${durVal(draft.prep)}" placeholder="20 Min."></label>
@@ -1426,7 +1429,7 @@ function shareLibrary(scope, withPhoto){
 }
 function addSheet(){
   sheet(`<div class="stack addopts">
-    <button class="btn" data-act="addphoto">${ICON.camera}<span><b>Foto oder Screenshot</b><small>Text wird erkannt (kann ungenau sein, Text kopiert einfügen ist genauer)</small></span></button>
+    <button class="btn" data-act="addphoto">${ICON.camera}<span><b>Foto oder Screenshot</b><small>Texterkennung, dauert ca. 10–40 Sek. Kopierter Text ist genauer.</small></span></button>
     <button class="btn" data-act="addtext">${ICON.copy}<span><b>Text einfügen</b><small>z. B. von einer Website oder aus einer Nachricht kopiert</small></span></button>
     <button class="btn" data-act="addblank">${ICON.edit}<span><b>Selbst schreiben</b><small>Leere Rezeptvorlage selbst ausfüllen</small></span></button>
     <button class="btn" data-act="importfile">${ICON.folder}<span><b>Datei importieren</b><small>Geteiltes Rezept, Sammlung von Freunden oder dein Backup</small></span></button>
@@ -1534,7 +1537,8 @@ function backup(){
 /* ===================== Texterkennung (lokal, PaddleOCR) ===================== */
 let OCR=null, ocrLoading=null;
 function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('script')); document.head.appendChild(s); }); }
-function ocrProgress(msg, p){ const st=$('#ocrState'); if(!st) return; st.classList.remove('hidden'); $('#ocrMsg').textContent=msg; $('#ocrBar').style.width = (p==null?0:Math.round(p*100))+'%'; }
+function ocrProgress(msg, p){ const st=$('#ocrState'); if(!st) return; st.classList.remove('hidden'); $('#ocrMsg').textContent=msg; const b=$('#ocrBar'); b.classList.toggle('busy', p==null); b.style.width = p==null ? '100%' : Math.round(p*100)+'%'; }
+const paint = () => new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 const ocrBase = () => new URL('ocr/', location.href).href;
 async function fetchOk(u){ const r=await fetch(u); if(!r.ok) throw new Error(u); return r; }
 /* große Dateien liegen in Teilen (GitHub-Upload-Grenze) und werden hier zusammengesetzt */
@@ -1554,12 +1558,14 @@ async function getOCR(){
     const det = await ort.InferenceSession.create(await fetchParts(B+'det.onnx', 2), opt);
     ocrProgress('Lade Texterkennung …', .45);
     const rec = await ort.InferenceSession.create(await fetchParts(B+'rec.onnx', 3), opt);
-    ocrProgress('Lade Wörterbuch …', .8);
+    ocrProgress('Lade Wörterbuch …', .8); await paint();
     let dict=(await (await fetchOk(B+'rec_dict.txt')).text()).replace(/\r/g,'').split('\n'); if(dict[dict.length-1]==='') dict.pop();
     const words=(await (await fetchOk(B+'woerter.txt')).text()).split('\n');
+    ocrProgress('Bereite Wörterbuch vor …', .92); await paint();
     const rank=new Map(); words.forEach((w,i)=>{ if(w) rank.set(w,i); });
     OCR={det, rec, chars:['', ...dict, ' '], rank, N:words.length};
     try{ localStorage.setItem('ocrReady','1'); }catch(e){}
+    ocrProgress('Texterkennung bereit', 1);
     return OCR;
   })();
   try{ return await ocrLoading; }catch(e){ ocrLoading=null; throw e; }
@@ -1753,13 +1759,14 @@ function findRules(src){
 }
 function rotPt(p, cx, cy, ca, sa){ const dx=p[0]-cx, dy=p[1]-cy; return [cx+dx*ca+dy*sa, cy-dx*sa+dy*ca]; }
 async function ocrCanvas(o, src, label, keep){
+  ocrProgress(`${label} – suche Textzeilen …`, null); await paint();
   const boxes=await detectLines(o, src);
   // Schräglage bestimmen (Median der Zeilenwinkel) und für die Anordnung ausgleichen
   const angs=boxes.filter(b=>b.w>b.h*3).map(b=>Math.atan2(b.uy,b.ux)).sort((p,q)=>p-q);
   const ang=angs.length?angs[Math.floor(angs.length/2)]:0, ca=Math.cos(ang), sa=Math.sin(ang), CX=src.width/2, CY=src.height/2;
   const lines=[];
   for(let i=0;i<boxes.length;i++){
-    if(i%4===0) ocrProgress(`${label} – Zeile ${i+1} von ${boxes.length}`, boxes.length? i/boxes.length : 0);
+    if(i%3===0){ ocrProgress(`${label} – lese Zeile ${i+1} von ${boxes.length}`, boxes.length? i/boxes.length : 0); await paint(); }
     const b=boxes[i];
     if(keep){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2, inK = cx>=keep[0] && cx<=keep[0]+keep[2] && cy>=keep[1] && cy<=keep[1]+keep[3];
       if(!inK && (b.x0<=3 || b.x1>=src.width-3 || b.y0<=1 || b.y1>=src.height-1)) continue; }
@@ -1794,7 +1801,7 @@ function pickRegions(file, idx, total){
     let img; try{ img=await loadImg(url); }catch(e){ URL.revokeObjectURL(url); toast('Bild nicht lesbar'); resolve(null); return; }
     const rects=[]; let type='ing';
     sheet(`<h2>Bereiche markieren${total>1?` <span class="mono muted" style="font-size:14px">Bild ${idx+1}/${total}</span>`:''}</h2>
-      <p style="font-size:14px">Am besten gelingt gerade von oben fotografierter, vollständiger Text. Schräge oder angeschnittene Fotos werden oft schlechter erkannt.</p><p style="font-size:14px">Optional: Art wählen und mit dem Finger einen Rahmen um Titel, Zutaten oder Zubereitung ziehen. Ohne Rahmen wird die ganze Seite gelesen.</p>
+      <p style="font-size:14px">Am besten gelingt gerade von oben fotografierter, vollständiger Text. Schräge oder angeschnittene Fotos werden oft schlechter erkannt. Das Lesen dauert je nach Gerät etwa 10–40 Sekunden.</p><p style="font-size:14px">Optional: Art wählen und mit dem Finger einen Rahmen um Titel, Zutaten oder Zubereitung ziehen. Ohne Rahmen wird die ganze Seite gelesen.</p>
       <div class="seg" id="rtSeg" style="margin-bottom:10px">${Object.entries(RT).map(([k,v])=>`<button data-rt="${k}" class="${k===type?'on':''}">${v[0]}</button>`).join('')}</div>
       <div id="cropWrap" style="position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none"><img id="cropImg" src="${url}" alt="" style="width:100%;height:100%;display:block;pointer-events:none"><canvas id="cropCv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas></div>
       <div id="rectList" class="chips" style="margin-top:10px"></div>
@@ -1847,6 +1854,7 @@ async function runOCR(files){
   const jobs=[];
   for(let i=0;i<files.length;i++){ const j=await pickRegions(files[i], i, files.length); if(j) jobs.push(j); }
   if(!jobs.length) return;
+  ocrProgress(OCR ? 'Starte Texterkennung …' : 'Lade Texterkennung …', null); await paint();
   const o = await loading;
   if(o instanceof Error || !o){ ocrProgress('Die Texterkennung konnte nicht geladen werden. Beim ersten Mal braucht es Internet; auf sehr alten Geräten läuft sie nicht. Text kopieren und einfügen funktioniert immer.', 0); return; }
   const parts={title:[],auto:[],ing:[],step:[]};
