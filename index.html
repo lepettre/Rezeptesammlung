@@ -489,7 +489,7 @@ function parseIngredientsText(text){
 }
 /* zerlegt Fließtext-Zutaten ("2 Zwiebeln, 150 g Reis, Salz; für die Soße: …") in Zeilen */
 function explodeIngredientLine(line){
-  const parts = splitOutsideParens(line, [';']);
+  const parts = splitOutsideParens(line.replace(/\s+[•·]\s*/g,'; ').replace(/[•·]\s*$/,''), [';']);
   const res=[];
   for(let p of parts){
     let m;
@@ -525,10 +525,12 @@ function fmtDuration(min){
 }
 
 /* ===== Freitext-Import ===== */
-const H_ING = /^(zutaten|ingredients?|einkaufsliste|du brauchst|you(?:'|’)?ll need|what you need)\s*(:|$|für\s+(ca\.\s*)?\d|for\s+\d|\(|-)/i;
-const H_STEP = /^(zubereitung|method|instructions?|directions?|preparation|anleitung|so geht(?:'|’)?s|und so geht(?:'|’)?s|schritte|steps)\s*(:|$)/i;
+const H_ING = /^(zutaten|ingredients?|einkaufsliste|du brauchst|ihr braucht|man braucht|was (?:ihr|du) brauch\w*|you(?:'|’)?ll need|what you need|rezept\b[^:]{0,40})\s*(:|$|für\s+(ca\.\s*)?\d|for\s+\d|\(|-)/i;
+const H_STEP = /^(zubereitung|method|instructions?|directions?|preparation|anleitung|so geht(?:'|’)?s|und so geht(?:'|’)?s|so wird(?:'|’)?s gemacht|schritte|steps|step by step)\s*(:|$)/i;
+const NOISE = /(ist am Kiosk|als Abo\b|zeit\.de\/|faz\.net|^Foto\s|^Anzeige$|^Von [A-ZÄÖÜ][a-zäöü]+ [A-ZÄÖÜ][a-zäöü]+$|^Vor \d+ (Tagen|Stunden|Minuten|Wochen)$|^(Gespeichert|Antworten|Zurück|Sprechen.*|Pause|Mehr anzeigen|Rezept speichern|Drucken|Teilen|Zum Rezept springen|Das neue)$|^\d{1,2}:\d{2}\b|^[\d.,\s]{3,}$|^([@#]\S+\s*)+$|ZEITmagazin \d+\/\d{4}|ZEITmagazin WOCHENMARKT|^Seite \d+$|\b\d+ von \d+$|^Zeitmagazin\b|\bkcal\b|^Pro Portion)/i;
+const hdr = l => l.replace(/^[^\p{L}\d]+/u,'').trim();
 const H_SUBSTEP = /^(anrichten|servieren|fertigstellen|garnieren|to serve|assembly|finish)\s*:?$/i;
-const SERV_RE = /(?:zutaten\s+)?(?:für|for|serves|ergibt|makes|portionen:?)\s*(?:ca\.\s*)?(\d+)(?:\s*[-–]\s*(\d+))?\s*([A-Za-zÄÖÜäöüß]+)?/i;
+const SERV_RE = /(?:zutaten\s+)?(?:für|for|serves|ergibt|makes|portionen:?)\s*(?:ca\.\s*)?(\d+)(?:\s*(?:[-–]|bis|to)\s*(\d+))?\s*([A-Za-zÄÖÜäöüß]+)?/i;
 const ABBR = /(?:\b(?:z|u|v|d|s|o|ca|bzw|evtl|ggf|inkl|gem|std|min|max|esp|etc|vgl|nr|bspw|zb|e|ca|i|approx|tbsp|tsp|el|tl|msp|pck)\.)$/i;
 
 function splitSentences(p){
@@ -578,24 +580,27 @@ function parseRecipeText(text){
   let lines = String(text||'').replace(/\r/g,'').replace(/\u00a0/g,' ').split('\n').map(l=>l.replace(/\s+/g,' ').trim());
   lines = joinWrapped(lines);
   // Sektionen markieren
-  let sec='pre'; const blocks={pre:[],ing:[],step:[],post:[]};
+  let sec='pre', lastPre=''; const blocks={pre:[],ing:[],step:[],post:[]};
   const meta=[];
   for(let i=0;i<lines.length;i++){
     let l=lines[i];
     if(!l){ blocks[sec].push(''); continue; }
+    if(NOISE.test(l)) continue;
+    const lh0=hdr(l);
     // Metazeilen
     if(/^(zeitbedarf|zubereitungszeit|arbeitszeit|kochzeit|backzeit|ruhezeit|gesamtzeit|prep(?:aration)? time|cook(?:ing)? time|total time|dauer)\b/i.test(l) || (/^\d+\s*(?:[-–]\s*\d+\s*)?(min|minuten|std|stunden|h)\b/i.test(l) && l.length<45)){ meta.push(l); continue; }
     if(/^(schwierigkeit|schwierigkeitsgrad|difficulty|level)\b/i.test(l)){ meta.push(l); continue; }
     if(/^(haltbarkeit|hält sich|haltbar)\b/i.test(l)){ meta.push(l); continue; }
     if(/^(vegan|vegetarisch|vegetarian|glutenfrei|laktosefrei)$/i.test(l)){ r.tags.push(cap(l.toLowerCase())); continue; }
     if(/^(©|quelle:|source:|aus:|from:)/i.test(l) || /(erschienen|übersetzt|translated by|published)/i.test(l) && l.length<160){ r.source.name = (r.source.name? r.source.name+' · ' : '') + l.replace(/^(quelle|source|aus|from):\s*/i,''); continue; }
-    if(H_ING.test(l)){
+    if(H_ING.test(lh0)){
+      if(!r.title && lastPre && lastPre.length<70 && !/^\d/.test(lastPre) && /für|for/i.test(lh0)) { r.title=lastPre; r.titleStrong=true; const k=blocks.pre.lastIndexOf(lastPre); if(k>=0) blocks.pre.splice(k,1); }
       sec='ing';
       const sm=l.match(SERV_RE); if(sm && r.servings==null){ r.servings=+sm[1]; r.servingsUnit=sm[3]||''; }
       const rest = l.replace(/^[^:]*:\s*/,''); if(rest!==l && rest) blocks.ing.push(rest);
       continue;
     }
-    if(H_STEP.test(l)){ sec='step'; const rest=l.replace(/^[^:]*:\s*/,''); if(rest!==l && rest) blocks.step.push(rest); continue; }
+    if(H_STEP.test(lh0)){ sec='step'; const rest=l.replace(/^[^:]*:\s*/,''); if(rest!==l && rest) blocks.step.push(rest); continue; }
     if(sec==='step' && H_SUBSTEP.test(l)){ blocks.step.push(''); blocks.step.push('## '+cap(l.replace(/:$/,'').toLowerCase())); blocks.step.push(''); continue; }
     if(/^(für|for|serves|ergibt|makes)\s+(ca\.\s*)?\d+/i.test(l) && l.length<60){
       const sm=l.match(SERV_RE); if(sm){ r.servings=+sm[1]; r.servingsUnit=(sm[3]||'').replace(/:$/,''); }
@@ -607,9 +612,9 @@ function parseRecipeText(text){
       let k=0; for(let j=i;j<Math.min(lines.length,i+4);j++) if(lines[j] && looksIng(lines[j])) k++;
       if(k>=2) sec='ing';
     }
-    if(sec==='ing' && l && looksProse(l) && !ING_RE.test(l) && l.length>60 && /^[A-ZÄÖÜ]/.test(l)){ sec='step'; }
+    if(sec==='ing' && l && !ING_RE.test(l) && !/[,;]\s*\d/.test(l) && (l.split(/\s+/).length>=7 || (/[.!?]$/.test(l) && l.split(/\s+/).length>=4))){ sec='step'; }
     if(sec==='ing' && /^\d+[.)]\s+[A-ZÄÖÜ]/.test(l) && l.length>40){ sec='step'; }
-    blocks[sec].push(l);
+    blocks[sec].push(l); if(sec==='pre') lastPre=l;
   }
   // Titel
   const pre = blocks.pre;
@@ -838,6 +843,27 @@ async function idbTx(fn){ const db=await getDB(); return new Promise((res,rej)=>
 const pref = (()=>{ try{ return JSON.parse(localStorage.getItem(LS_PREF)||'{}'); }catch(e){ return {}; } })();
 function savePref(){ try{ localStorage.setItem(LS_PREF, JSON.stringify(pref)); }catch(e){} }
 let persisted = null;
+
+/* Beispielrezepte für neue Nutzer (eigene Texte, frei verwendbar) */
+const SEEDS=[
+ {id:'beispiel-dal', title:'Rotes Linsen-Dal mit Kokos', courses:['Hauptgerichte','Suppen & Eintöpfe'], tags:['Beispiel','Vegan','Indisch','Schnell'],
+  servings:4, servingsUnit:'Portionen', prep:10, cook:25, difficulty:'leicht', shelfLife:'3 Tage im Kühlschrank',
+  intro:'Ein Beispielrezept zum Ausprobieren der App. Du kannst es bearbeiten, teilen oder löschen.',
+  ingGroups:[{t:'',text:'1 Zwiebel\n2 Knoblauchzehen\n1 Stück Ingwer (ca. 3 cm)\n2 EL Öl\n1 TL Kreuzkümmel\n2 TL Currypulver\n1 TL Kurkuma\n250 g rote Linsen\n1 Dose Kokosmilch (400 ml)\n1 Dose gehackte Tomaten (400 g)\n500 ml Gemüsebrühe\n1 Limette\nSalz\n½ Bund Koriander'}],
+  stepGroups:[{t:'',text:'Zwiebel, Knoblauch und Ingwer fein hacken.\n\nÖl in einem Topf erhitzen und die Zwiebel darin etwa 5 Minuten glasig dünsten.\n\nKnoblauch, Ingwer und die Gewürze dazugeben und 1 Minute anrösten.\n\nLinsen abspülen und mit Kokosmilch, Tomaten und Brühe in den Topf geben.\n\nAufkochen und etwa 20 Minuten leise köcheln lassen, bis die Linsen weich sind.\n\nMit Salz und Limettensaft abschmecken und mit gehacktem Koriander bestreuen.'}],
+  notes:'Dazu passen Reis oder Fladenbrot.'},
+ {id:'beispiel-kuchen', title:'Zitronen-Joghurt-Kuchen mit Glasur', courses:['Backen','Desserts & Süßes'], tags:['Beispiel','Vegetarisch','Klassiker'],
+  servings:1, servingsUnit:'Kastenform', prep:15, cook:50, rest:30, difficulty:'leicht', shelfLife:'4 Tage, gut abgedeckt',
+  intro:'Ein Beispiel für ein Rezept mit zwei Zutatenlisten und einer gemeinsamen Zubereitung.',
+  ingGroups:[{t:'Teig',text:'2 Bio-Zitronen\n3 Eier\n180 g Zucker\n1 Prise Salz\n150 g Naturjoghurt\n120 ml neutrales Öl\n250 g Mehl\n2 TL Backpulver'},{t:'Glasur',text:'150 g Puderzucker\n3 EL Zitronensaft'}],
+  stepGroups:[{t:'',text:'Backofen auf 175 °C Ober-/Unterhitze vorheizen und eine Kastenform einfetten.\n\nZitronen heiß waschen, die Schale fein abreiben und den Saft auspressen.\n\nEier, Zucker und Salz schaumig schlagen, dann Joghurt, Öl, Zitronenschale und 3 EL Zitronensaft unterrühren.\n\nMehl und Backpulver mischen und kurz unterheben.\n\nDen Teig in die Form füllen und 45–50 Minuten backen, bis an einem Holzstäbchen kein Teig mehr kleben bleibt.\n\nDen Kuchen 10 Minuten in der Form abkühlen lassen, dann stürzen.\n\nPuderzucker mit dem restlichen Zitronensaft glatt rühren und über den lauwarmen Kuchen gießen.'}],
+  notes:''}
+];
+async function seedIfNew(){
+  try{ if(recipes.length || localStorage.getItem('rkSeeded')) return; localStorage.setItem('rkSeeded','1'); }catch(e){ return; }
+  const now=Date.now();
+  for(const [i,s] of SEEDS.entries()){ const r={...blankRecipe(), ...s, by:'', via:'', createdAt:now-i*1000, source:{name:'Beispielrezept',author:'',page:'',url:''}}; Object.assign(r, flattenGroups({ing:r.ingGroups, steps:r.stepGroups})); await persist(r); }
+}
 async function initStore(){
   try{
     recipes = await idbAll();
@@ -845,6 +871,7 @@ async function initStore(){
     // Altbestand aus localStorage übernehmen
     try{ const old=JSON.parse(localStorage.getItem(LS_KEY)||'null'); if(Array.isArray(old) && old.length){ for(const r of old){ delete r._local; if(!recipes.some(x=>x.id===r.id)){ recipes.push(r); await idbTx(s=>s.put(r)); } } localStorage.removeItem(LS_KEY); } }catch(e){}
   }catch(e){ toast('Speicher nicht verfügbar – privater Modus?'); }
+  try{ await seedIfNew(); }catch(e){}
   loaded = true;
   try{ if(navigator.storage && navigator.storage.persist) persisted = await navigator.storage.persist(); }catch(e){}
   onDataChanged();
@@ -1251,6 +1278,7 @@ function fillFromParse(p){
   if(p.servings!=null){ d.servings=p.servings; d.servingsUnit=normServUnit(p.servingsUnit)||d.servingsUnit; }
   ['prep','cook','rest'].forEach(k=>{ if(p[k]!=null) d[k]=p[k]; });
   d.cookEstimate = p.cookEstimate||null;
+  d._titleStrong = !!p.titleStrong;
   if(p.difficulty) d.difficulty=p.difficulty;
   if(p.shelfLife) d.shelfLife=p.shelfLife;
   (p.tags||[]).forEach(t=>{ if(!d.tags.includes(t)) d.tags.push(t); });
@@ -1264,7 +1292,7 @@ async function saveDraft(){
   const d = collectForm();
   if(!d.title){ $('#formErr').textContent='Titel fehlt.'; $('#f_title').focus(); return; }
   if(d._ocrWords){ try{ learnFixes(d._ocrWords, [d.title, d.ingredientsText, d.stepsText, d.intro].join(' ')); }catch(e){} }
-  const r = {...d}; delete r._new; delete r.cookEstimated; delete r.cookEstimate; delete r._ocrWords;
+  const r = {...d}; delete r._new; delete r.cookEstimated; delete r.cookEstimate; delete r._ocrWords; delete r._titleStrong;
   if(!r.createdAt) r.createdAt=Date.now();
   if(JSON.stringify(r).length > 250000 && r.photo){ r.photo = await shrinkDataURL(r.photo, 600); }
   draft=null;
@@ -1756,9 +1784,26 @@ function fixWord(o,w){
   if(s0>=1000) return m[1]+core2+m[3];
   let best=core2, bs=s0;
   for(const v of allVariants(core2)){ const s=wordScore(o,v); if(s>bs){ bs=s; best=v; } }
+  if(bs===0 && core2.length>=9){ const seg=segmentWord(o, core2); if(seg) return m[1]+seg+m[3]; }
   return m[1]+best+m[3];
 }
+const SMALLW=new Set(['und','mit','in','im','an','am','zu','zum','zur','der','die','das','den','dem','des','ein','eine','einen','einem','vom','von','bei','auf','aus','für','bis','so','es','sie','etwas','ca','and','with','the','of','to','or']);
+function segmentWord(o, w){
+  // zusammengeklebte Wörter trennen: erst an Groß-/Kleinschreibung, dann per Wörterbuch
+  if(/[a-zäöüß][A-ZÄÖÜ]/.test(w)){ const parts=w.split(/(?<=[a-zäöüß])(?=[A-ZÄÖÜ])/); if(parts.length<=4) return parts.map(p=>fixWord(o,p)).join(' '); }
+  const low=w.toLowerCase(), n=low.length; if(n>40) return null;
+  const best=new Array(n+1).fill(null); best[0]={s:0,cut:[]};
+  for(let i=0;i<n;i++){ if(!best[i]) continue;
+    for(let j=i+2;j<=Math.min(n,i+22);j++){ const piece=low.slice(i,j);
+      const ok = (piece.length>=4 && (o.rank.has(piece)||KITCHEN.has(piece))) || SMALLW.has(piece);
+      if(!ok) continue; const sc=best[i].s + (SMALLW.has(piece)?0.5:1) + piece.length*0.1 - 1.2;
+      if(!best[j] || sc>best[j].s) best[j]={s:sc, cut:[...best[i].cut, j]}; } }
+  if(!best[n] || best[n].cut.length<2 || best[n].cut.length>6) return null;
+  let out=[], k=0; for(const c of best[n].cut){ out.push(w.slice(k,c)); k=c; }
+  return out.join(' ');
+}
 function fixLine(o,l){
+  if(l.length<40 && /^[Il|]\s+\S/.test(l) && l.split(/\s+/).length<=5 && /^[Il|]\s+(tsp|tbsp|cups?|oz|lb|EL|TL|g|kg|ml|l|[A-ZÄÖÜ][a-zäöü])/.test(l)) l='1'+l.slice(1);
   l=l.replace(/(^|\s)[ıI|l](?=\s?(?:TL|EL|Dose|Bund|Kopf|Prise|Msp|Pck|Glas|Becher)\b)/g,'$11');
   l=l.replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/(\d)o(?=\d|\s?(?:g|ml|kg|cl|Min)\b)/g,'$10').replace(/^\/\s?(?=(TL|EL)\b)/,'½ ').replace(/\bItr\b/g,'l').replace(/\b(\d+)o\b/g,'$10');
   l=l.replace(/(?<=\d)(EL|TL|g|gr|kg|ml|l|cl)\b/g,' $1');
@@ -1785,7 +1830,7 @@ function findRules(src){
 }
 function rotPt(p, cx, cy, ca, sa){ const dx=p[0]-cx, dy=p[1]-cy; return [cx+dx*ca+dy*sa, cy-dx*sa+dy*ca]; }
 async function ocrCanvas(o, src, label, keep){ const r=await ocrLines(o, src, label, keep); return layoutText(r.lines, src.width, r.rules, keep); }
-async function ocrLines(o, src, label, keep, dropEdge){
+async function ocrLines(o, src, label, keep, dropEdge, hi){
   ocrProgress(`${label} – suche Textzeilen …`, null); await paint();
   const boxes=await detectLines(o, src);
   const t0=performance.now();
@@ -1799,16 +1844,18 @@ async function ocrLines(o, src, label, keep, dropEdge){
     if(keep){ const cx=(b.x0+b.x1)/2, cy=(b.y0+b.y1)/2, inK = cx>=keep[0] && cx<=keep[0]+keep[2] && cy>=keep[1] && cy<=keep[1]+keep[3];
       if(!inK && (b.x0<=3 || b.x1>=src.width-3 || b.y0<=1 || b.y1>=src.height-1)) continue; }
     if(dropEdge && !keep && (b.y0<=2 || b.y1>=src.height-2)) continue;
-    let r=await recognize(o, src, b);
+    if(!keep && src.height/src.width>=1.8){ const cyy=(b.y0+b.y1)/2/src.height; if(cyy<0.06 || cyy>0.94) continue; }
+    const RS = hi && hi.s<0.999 ? hi.img : src, RB = hi && hi.s<0.999 ? {...b, c0:[hi.ox+b.c0[0]/hi.s, hi.oy+b.c0[1]/hi.s], w:b.w/hi.s, h:b.h/hi.s} : b;
+    let r=await recognize(o, RS, RB);
     if(r && r.conf<0.85){
-      for(const opt of [{grow:1.15},{contrast:1}]){ const r2=await recognize(o, src, b, opt); if(r2 && r2.conf>r.conf+0.02) r=r2; }
+      for(const opt of [{grow:1.15},{contrast:1}]){ const r2=await recognize(o, RS, RB, opt); if(r2 && r2.conf>r.conf+0.02) r=r2; }
     }
     if(!r || !r.text || r.conf<0.5) continue;
     if(!/[A-Za-zÄÖÜäöüß0-9½]/.test(r.text)) continue;
     const cs=[b.c0,[b.c0[0]+b.ux*b.w,b.c0[1]+b.uy*b.w],[b.c0[0]+b.ux*b.w-b.uy*b.h,b.c0[1]+b.uy*b.w+b.ux*b.h],[b.c0[0]-b.uy*b.h,b.c0[1]+b.ux*b.h]].map(p=>rotPt(p,CX,CY,ca,sa));
     const xs=cs.map(p=>p[0]), ys=cs.map(p=>p[1]);
     const ccx=(b.x0+b.x1)/2, ccy=(b.y0+b.y1)/2; const inK = !keep || (ccx>=keep[0] && ccx<=keep[0]+keep[2] && ccy>=keep[1] && ccy<=keep[1]+keep[3]);
-    lines.push({x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys), text:fixLine(o, r.text), conf:r.conf, inK});
+    lines.push({x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys), text:fixLine(o, r.text), conf:r.conf, inK, ang:Math.atan2(b.uy,b.ux)});
   }
   let rules={h:[],v:[]}; try{ rules=findRules(src); }catch(e){}
   return {lines, rules};
@@ -1893,7 +1940,7 @@ async function runOCR(files){
     for(const j of jobs){
       const regs = j.rects.length ? sortRegions(j.rects) : [{t:'auto', r:null}];
       const out=[];
-      for(const g of regs){ n++; const rc=regionCanvas(j.img, g.r); const r=await ocrLines(o, rc.c, total>1?`Bereich ${n} von ${total}`:'Erkenne Text', rc.keep, jobs.length>1);
+      for(const g of regs){ n++; const rc=regionCanvas(j.img, g.r); const r=await ocrLines(o, rc.c, total>1?`Bereich ${n} von ${total}`:'Erkenne Text', rc.keep, jobs.length>1, {img:j.img, ox:rc.ox, oy:rc.oy, s:rc.s});
         r.lines.forEach(l=>{ l.icx=rc.ox+(l.x0+l.x1)/2/rc.s; l.icy=rc.oy+(l.y0+l.y1)/2/rc.s; l.h=(l.y1-l.y0)/rc.s; });
         out.push({g, rc, r}); }
       // überlappende Rahmen: jede Zeile nur in einem Rahmen (dem kleineren, in dem sie liegt)
@@ -1934,7 +1981,7 @@ async function runOCR(files){
   let re=false;
   if(grp.ing.length>1){ draft.ingGroups=[...prevIG, ...grp.ing.flatMap(t=>splitGroups(parseRecipeText('Zutaten:\n'+t).ingredientsText)).filter(g=>g.text.trim())]; re=true; }
   if(grp.step.length>1){ draft.stepGroups=[...prevSG, ...grp.step.flatMap(t=>splitGroups(parseRecipeText('Zubereitung:\n'+t).stepsText)).filter(g=>g.text.trim())]; re=true; }
-  if(title){ draft.title=title; if(draft.intro && draft.intro.startsWith(title)) draft.intro=draft.intro.slice(title.length).trim(); re=true; }
+  if(title && (tRegs.length || !draft._titleStrong)){ draft.title=title; if(draft.intro && draft.intro.startsWith(title)) draft.intro=draft.intro.slice(title.length).trim(); re=true; }
   // Wörter, die erst nach dem Zusammenfügen getrennter Zeilen vollständig sind, noch einmal prüfen
   const fixT=s=>String(s||'').replace(/[A-Za-zÄÖÜäöüßáàóúùôâûāō]{4,}/g, w=>fixWord(o,w));
   draft.ingGroups.forEach(g=>g.text=fixT(g.text)); draft.stepGroups.forEach(g=>g.text=fixT(g.text)); draft.title=fixT(draft.title); re=true;
@@ -1989,11 +2036,13 @@ function orderJobs(res){
   return out;
 }
 function titleFromLines(lines, isFrame){
-  const ok=lines.filter(l=>l.conf>=0.8 && (l.text.match(/[A-Za-zÄÖÜäöüß]/g)||[]).length>=4);
+  const angs=lines.map(l=>l.ang||0).sort((x,y)=>x-y), ma=angs[Math.floor(angs.length/2)]||0;
+  const ok=lines.filter(l=>l.conf>=0.8 && Math.abs((l.ang||0)-ma)<0.15 && (l.text.match(/[A-Za-zÄÖÜäöüß]/g)||[]).length>=4 && !NOISE.test(l.text));
   if(!ok.length) return '';
   const hs=ok.map(l=>l.h).sort((x,y)=>x-y), med=hs[Math.floor(hs.length/2)], mx=hs[hs.length-1];
   if(!isFrame && mx < med*1.4) return '';
   const big=ok.filter(l=>l.h>=mx*0.8).sort((x,y)=>x.icy-y.icy);
+  if(big.length>3 || big.reduce((s,l)=>s+l.text.length,0)>80) return '';
   let t=''; for(const l of big){ t = t ? (/-$/.test(t) ? t+l.text : t+' '+l.text) : l.text; }
   if(isFrame){ const rest=ok.filter(l=>!big.includes(l)).sort((x,y)=>x.icy-y.icy).map(l=>l.text).join(' '); if(rest) t+=' – '+rest; }
   return t.replace(/\s+/g,' ').trim();
