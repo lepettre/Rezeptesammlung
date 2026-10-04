@@ -222,6 +222,7 @@ body.dropping::after{ content:"Fotos oder Rezeptdatei hier ablegen"; position:fi
 .dropzone b{ font-size:16px; }
 .dropzone span{ font-size:13px; color:var(--ink2); }
 body.dropping .dropzone, .dropzone:hover{ border-color:var(--rot); }
+mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inherit; padding:0 2px; border-radius:3px; }
 .viewer{ position:fixed; inset:0; z-index:80; background:#0d0d0d; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 .vscroll{ flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y pinch-zoom; }
 .vscroll img{ display:block; max-width:none; margin:0 auto; }
@@ -364,7 +365,7 @@ const UNIT_ALIAS = {
   'stück':'stk', stk:'stk', st:'stk', stck:'stk', piece:'stk', pieces:'stk',
   dose:'dose', dosen:'dose', can:'dose', cans:'dose', tin:'dose', tins:'dose',
   glas:'glas', 'gläser':'glas', jar:'glas', jars:'glas', becher:'becher', bund:'bund', bunch:'bund', bunches:'bund',
-  zehe:'zehe', zehen:'zehe', clove:'zehe', cloves:'zehe', pck:'pck', 'päckchen':'pck', packung:'pck', pkg:'pck', pk:'pck', tüte:'pck',
+  zehe:'zehe', zehen:'zehe', clove:'zehe', cloves:'zehe', pck:'pck', 'päckchen':'pck', packung:'pck', pkg:'pck', pk:'pck', pkt:'pck', 'päck':'pck', tüte:'pck',
   handvoll:'handvoll', handful:'handvoll', stange:'stange', stangen:'stange', stalk:'stange', stalks:'stange',
   kopf:'kopf', 'köpfe':'kopf', head:'kopf', scheibe:'scheibe', scheiben:'scheibe', slice:'scheibe', slices:'scheibe',
   zweig:'zweig', zweige:'zweig', sprig:'zweig', sprigs:'zweig', knolle:'knolle', knollen:'knolle',
@@ -388,15 +389,38 @@ function num(s){
 const LIQUID_RE=/\b(gin|vodka|wodka|rum|whisk(e)?y|bourbon|tequila|mezcal|brandy|cognac|vermouth|wermut|lik(ö|oe)r|liqueur|campari|aperol|bitters?|tonic|soda|juice|saft|sirup|syrup|wasser|water|milch|milk|sahne|cream|wein|wine|sherry|port|espresso|kaffee|coffee|tee|tea|brühe|broth|stock|öl|oil|essig|vinegar|prosecco|champagne|sekt|bier|beer)\b/i;
 /* Eine Zutatenzeile → {q,q2,u,uRaw,name,approx} */
 const ING_RE = new RegExp(String.raw`^\s*(?:[-–•*·]\s*)?((?:ca\.?|circa|etwa|approx\.?|about|ungefähr|gut)\s+)?(${QTY})(?:\s*(?:-|–|—|bis|to|or|oder)\s*(${QTY}))?(?:\s*(?!x\s)([A-Za-zÄÖÜäöüß\-]+)\.?)?(?=\s|$|,|\))(.*)$`,'i');
+/* ausgeschriebene Zahlen am Zeilenanfang → Ziffern (nur für die Auswertung, Original bleibt gespeichert) */
+const NUMW={'eine halbe':0.5,'ein halber':0.5,'ein halbes':0.5,'einen halben':0.5,'anderthalb':1.5,'eineinhalb':1.5,'zweieinhalb':2.5,'dreieinhalb':3.5,
+  'ein':1,'eine':1,'einen':1,'zwei':2,'drei':3,'vier':4,'fünf':5,'sechs':6,'sieben':7,'acht':8,'neun':9,'zehn':10,'elf':11,'zwölf':12,'halbe':0.5,'halber':0.5,'halbes':0.5,
+  'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'twelve':12,'half a':0.5,'half':0.5};
+const NUMW_RE=new RegExp('^('+Object.keys(NUMW).sort((a,b)=>b.length-a.length).map(k=>k.replace(' ','\\s+')).join('|')+')\\s+(?=\\S)','i');
+const EMB_RE=/^(.*?\b)(?:(von|of)\s+)?(einer\s+halben|eines\s+halben|einer|eines|einem|\d+(?:[.,]\d+)?|½|¼|¾|⅓|\d\/\d)\s+(?=[A-ZÄÖÜ(])(.*)$/;
+const PLURAL={zitrone:'Zitronen',limette:'Limetten',orange:'Orangen',zwiebel:'Zwiebeln',knoblauchzehe:'Knoblauchzehen',tomate:'Tomaten',gurke:'Gurken',möhre:'Möhren',karotte:'Karotten',banane:'Bananen',paprikaschote:'Paprikaschoten',schalotte:'Schalotten'};
+function normQtyText(raw){
+  let s=raw.replace(/^[-–•*·]\s*/,'');
+  const m=s.match(NUMW_RE);
+  if(m){ const k=m[1].toLowerCase().replace(/\s+/g,' '), v=NUMW[k], after=s.slice(m[0].length);
+    if(v!=null && (!/^(ein|eine|einen)$/.test(k) || /^[A-ZÄÖÜ]/.test(after)) && !/^paar\b/i.test(after)) s=String(v).replace('.',',')+' '+after; }
+  s=s.replace(/^(\d)(\d)\/(2|3|4|8)(?=\s)/,(x,d1,d2,den)=>+d2<+den ? `${d1} ${d2}/${den}` : x);
+  s=s.replace(/^(\d+)1\s+(?=(Brühe|Wasser|Milch|Sahne|Wein|Weißwein|Rotwein|Saft|Gemüsebrühe|Hühnerbrühe|Fond|Vollmilch|Buttermilch)\b)/,(x,d)=>+d<=5?`${d} l `:x);
+  return s;
+}
 function parseIng(line){
   const raw = line.trim();
+  line = normQtyText(raw);
   const out = {raw, q:null, q2:null, u:null, uRaw:null, name:raw, approx:false};
-  const m = raw.match(ING_RE);
-  if(!m) { out.name = raw.replace(/^[-–•*·]\s*/,''); return out; }
+  const m = line.match(ING_RE);
+  if(!m) {
+    out.name = raw.replace(/^[-–•*·]\s*/,'');
+    const e = out.name.match(EMB_RE);
+    if(e && e[1].length<=30 && !/\d/.test(e[1])){ const w=e[3].toLowerCase().replace(/\s+/g,' '); const q = /halben/.test(w)?0.5 : /^(einer|eines|einem)$/.test(w)?1 : num(e[3]); if(q!=null) out.emb={pre:e[1], von:e[2]||'', post:e[4], word:e[3], q}; }
+    return out;
+  }
   const after = (m[4]||'') + (m[5]||'');
   if(/^\s*x\s/i.test(after) || /^\s*[x×]\s*\d/.test(after)) return out; // "2 x 2 cm Stück"
   out.approx = !!m[1];
   out.q = num(m[2]); out.q2 = m[3]!=null ? num(m[3]) : null;
+  const fr = String(m[2]).trim().match(/^(\d+)\/(\d+)$/);
   let unitWord = m[4], rest = m[5]||'';
   if(unitWord){
     const key = unitWord.toLowerCase().replace(/\.$/,'');
@@ -406,6 +430,7 @@ function parseIng(line){
   }
   out.name = rest.replace(/^\s*[.,]?\s*/,'').trim();
   if(out.u==='oz' && LIQUID_RE.test(out.name)){ out.u='floz'; out.uRaw='fl oz'; }
+  if(fr && !out.u && out.q2==null && +fr[2]===+fr[1]+1 && /^[A-ZÄÖÜ][a-zäöüß-]*(n|en|s)\b/.test(out.name)){ out.q=+fr[1]; out.q2=+fr[2]; }
   return out;
 }
 
@@ -456,6 +481,11 @@ function unitLabel(u,q,uRaw,mode){
 }
 /* liefert {amount,unit,name,conv,raw} für die Anzeige */
 function renderIng(ing, factor, mode, override){
+  if(ing.q==null && ing.emb && factor!==1){
+    const e=ing.emb, q=e.q*factor, word=e.post.split(/\s/)[0], rest=e.post.slice(word.length);
+    const pl = q>1.05 ? (PLURAL[word.toLowerCase()]||word) : word;
+    return {amount:'', unit:'', name:`${e.pre}${e.von?e.von+' ':(/^(einer|eines|einem)/i.test(e.word)?'von ':'')}${fmtFrac(q)} ${pl}${rest}`.replace(/\s+/g,' ').trim(), approx:false, conv:false, scaledName:true};
+  }
   if(ing.q==null) return {amount:'', unit:'', name:ing.name, approx:false, conv:false};
   let q = ing.q*factor, q2 = ing.q2!=null ? ing.q2*factor : null, u = ing.u;
   let target = override || (u ? pickUnit(q,u,mode) : null);
@@ -910,6 +940,16 @@ function statusText(){
   return standalone ? 'Alles bleibt auf diesem Gerät, nichts wird übertragen.' : 'Tipp: Am Smartphone im Browsermenü „Zum Home-Bildschirm“ wählen und dort ablegen – dann ist die Rezeptesammlung aufrufbar wie eine App. Sie überträgt weiterhin keine Daten und läuft lokal.';
 }
 const getR = id => recipes.find(r=>r.id===id);
+const STEP_Q=/(\d+(?:[.,]\d+)?|[½¼¾⅓⅔])\s?(g|kg|ml|l|EL|TL|Tassen?|Becher|Prisen?|Dosen?|Eier|Eigelb|Eiweiß)(?![A-Za-zÄÖÜäöüß])/g;
+function scaleStepText(t,f){
+  let out='', last=0;
+  for(const m of t.matchAll(STEP_Q)){
+    const q=num(m[1]); if(q==null) continue;
+    const k=m[2].toLowerCase(); const u=UNIT_ALIAS[k]||UNIT_ALIAS[k.replace(/n$/,'')]||null;
+    out+=esc(t.slice(last,m.index))+`<mark class="sc">${fmtQty(q*f,u)} ${esc(m[2])}</mark>`; last=m.index+m[0].length;
+  }
+  return out+esc(t.slice(last));
+}
 const STYLES=[
  ['graphit','Signal','#F6F6F5','#262624','#D52B1E','Geist'],
  ['abend','Kohle','#1E2328','#ECE6DA','#F2B84B','Inter'],
@@ -1088,8 +1128,8 @@ function renderDetail(keep){
       const amt = d.amount ? `${d.approx?'<span class="approx">ca. </span>':''}${esc(d.amount)}${d.unit?' '+esc(d.unit):''}` : '';
       return `<li class="ing ${ds.checked.has(i)?'done':''}" data-act="check" data-i="${i}">
         <button class="qty ${d.conv?'conv':''} ${factor!==1&&d.amount?'scaled':''}" ${d.conv?`data-act="unit" data-i="${i}" data-u="${d.u}" aria-label="Einheit wechseln"`:'tabindex="-1"'}>${amt}</button>
-        <span class="nm">${esc(d.name)}</span></li>`; }).join('')+'</ul>').join('');
-  const stepHTML = G.steps.map(g=>gh(G.steps,g)+'<ol class="steps">'+parseStepsText(g.text).map(s=>{ if(s.h) return `<li class="grp">${esc(s.h)}</li>`; si++; return `<li class="step ${ds.done.has(si)?'done':''}" data-act="stepdone" data-i="${si}"><p>${esc(s.t)}</p></li>`; }).join('')+'</ol>').join('');
+        <span class="nm">${d.scaledName?`<mark class="sc">${esc(d.name)}</mark>`:esc(d.name)}</span></li>`; }).join('')+'</ul>').join('');
+  const stepHTML = G.steps.map(g=>gh(G.steps,g)+'<ol class="steps">'+parseStepsText(g.text).map(s=>{ if(s.h) return `<li class="grp">${esc(s.h)}</li>`; si++; return `<li class="step ${ds.done.has(si)?'done':''}" data-act="stepdone" data-i="${si}"><p>${factor!==1?scaleStepText(s.t,factor):esc(s.t)}</p></li>`; }).join('')+'</ol>').join('');
   const partHTML = `<div class="cols">
       <section class="ingbox"><h2 class="sechead">Zutaten <small>Antippen wechselt die Einheit</small></h2>${ingIdx>=0?ingHTML:'<p class="muted">Keine Zutaten erfasst.</p>'}</section>
       <section><h2 class="sechead">Zubereitung <small>Antippen hakt ab</small></h2>${si>=0?stepHTML:'<p class="muted">Keine Schritte erfasst.</p>'}</section></div>`;
@@ -1123,10 +1163,8 @@ function renderDetail(keep){
     ${r.notes?`<div class="notes">${esc(r.notes)}</div>`:''}
     ${(srcLine||src.url)?`<div class="sourcebox">Quelle: ${srcLine}${src.url?`<br><a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url)}</a>`:''}</div>`:''}
     <div class="actions">
-      <button class="btn primary" data-act="share">${ICON.share} Teilen</button>
       <button class="btn" data-act="copytext">${ICON.copy} Text kopieren</button>
       <button class="btn" data-act="print">${ICON.print} Drucken</button>
-      <button class="btn" data-act="edit">${ICON.edit} Bearbeiten</button>
       <button class="btn danger" data-act="delete">${ICON.trash} Löschen</button>
     </div>
   </div>`;
@@ -1227,21 +1265,38 @@ function renderEditor(keep){
   renderCourseChips(); renderTagChips(); document.querySelectorAll('.gcard.ig').forEach(renderPartPreview);
   $('#igBox').addEventListener('input', e=>{ if(e.target.classList.contains('gt')) renderPartPreview(e.target.closest('.gcard')); });
   $('#f_tag').addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===','){ e.preventDefault(); addTag(); } });
+  $('#f_tag').addEventListener('input', ()=>renderTagChips());
 }
 function renderCourseChips(){
   $('#courseChips').innerHTML = COURSES.map(c=>c[0]).map(c=>`<button type="button" class="chip ${draft.courses.includes(c)?'on':''}" data-act="tcourse" data-v="${esc(c)}">${glyph(c)}${esc(c)}</button>`).join('');
 }
+let tagShowAll=false;
+function tagSimilar(a,b){
+  a=a.toLowerCase(); b=b.toLowerCase(); if(!a||!b) return false;
+  if(a===b || a.startsWith(b) || b.startsWith(a)) return true;
+  const n=Math.min(a.length,b.length); if(n>=5 && a.slice(0,5)===b.slice(0,5)) return true;
+  return simL(a,b)>=0.75;
+}
 function renderTagChips(){
   $('#tagChips').innerHTML = draft.tags.length ? draft.tags.map(t=>`<button type="button" class="chip tag on" data-act="rmtag" data-v="${esc(t)}">${esc(t)} ✕</button>`).join('') : '<span class="muted" style="font-size:14px">Noch keine.</span>';
   const freq={}; recipes.forEach(r=>(r.tags||[]).forEach(t=>freq[t]=(freq[t]||0)+1));
-  const own = Object.keys(freq).sort((x,y)=>freq[y]-freq[x]);
-  const sugg = [...new Set([...own, ...DEFAULT_TAGS])].filter(t=>!draft.tags.includes(t)).slice(0,12);
-  $('#tagSugg').innerHTML = sugg.map(t=>`<button type="button" class="chip tag" data-act="tagadd" data-v="${esc(t)}">${esc(t)}</button>`).join('');
+  const all = [...new Set([...Object.keys(freq).sort((x,y)=>freq[y]-freq[x]||x.localeCompare(y,'de')), ...DEFAULT_TAGS])].filter(t=>!draft.tags.includes(t));
+  const q=($('#f_tag')||{value:''}).value.split(',').pop().trim();
+  let html='';
+  if(q){
+    const sim=all.filter(t=>tagSimilar(t,q));
+    html = sim.length ? `<span class="muted" style="font-size:13px;width:100%">Gibt es schon:</span>`+sim.map(t=>`<button type="button" class="chip tag" data-act="tagadd" data-v="${esc(t)}" style="border-color:var(--rot)">${esc(t)}</button>`).join('') : '';
+  } else {
+    const shown = tagShowAll ? all : all.slice(0,14);
+    html = shown.map(t=>`<button type="button" class="chip tag" data-act="tagadd" data-v="${esc(t)}">${esc(t)}${freq[t]?` <small style="opacity:.6">${freq[t]}</small>`:''}</button>`).join('')
+      + (all.length>14 ? `<button type="button" class="chip" data-act="tagmore">${tagShowAll?'Weniger':'Alle '+all.length+' anzeigen'}</button>` : '');
+  }
+  $('#tagSugg').innerHTML = html;
 }
 function addTag(v){
   const inp=$('#f_tag'); const vals = (v!=null?[v]:inp.value.split(',')).map(x=>x.trim()).filter(Boolean);
   for(let t of vals){ t=t.charAt(0).toUpperCase()+t.slice(1); if(!draft.tags.includes(t)) draft.tags.push(t); }
-  if(v==null) inp.value=''; renderTagChips();
+  inp.value=''; renderTagChips();
 }
 function groupEditHTML(kind,g,i,n){
   const ing=kind==='ig';
@@ -1994,7 +2049,7 @@ function pickRegions(file, idx, total){
     sheet(`<h2>Bereiche markieren${total>1?` <span class="mono muted" style="font-size:14px">Bild ${idx+1}/${total}</span>`:''}</h2>
       <p style="font-size:14px">Am besten gelingt gerade von oben fotografierter, vollständiger Text. Schräge oder angeschnittene Fotos werden oft schlechter erkannt. Das Lesen dauert je nach Gerät etwa 10–40 Sekunden.</p><p style="font-size:14px">Optional: Art wählen und mit dem Finger einen Rahmen um Titel, Zutaten oder Zubereitung ziehen. Ohne Rahmen wird die ganze Seite gelesen.</p>
       <div class="seg" id="rtSeg" style="margin-bottom:10px">${Object.entries(RT).map(([k,v])=>`<button data-rt="${k}" class="${k===type?'on':''}">${v[0]}</button>`).join('')}</div>
-      <div id="cropWrap" style="position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none"><img id="cropImg" src="${url}" alt="" style="width:100%;height:100%;display:block;pointer-events:none"><canvas id="cropCv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas></div>
+      <div id="cropWrap" style="position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none"><img id="cropImg" src="${url}" alt="" style="width:100%;height:100%;display:block;pointer-events:none"><canvas id="cropCv" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas><div id="cropHit" style="position:absolute;inset:-16px -12px;touch-action:none;z-index:2"></div></div>
       <div id="rectList" class="chips" style="margin-top:10px"></div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
         <button class="btn primary" id="cropGo">Lesen</button><button class="btn ghost" id="cropCancel">Abbrechen</button></div>`, true);
@@ -2026,10 +2081,11 @@ function pickRegions(file, idx, total){
       const L=$('#rectList'); if(L) L.innerHTML = rects.length ? rects.map((r,i)=>`<button type="button" class="chip" data-rdel="${i}" style="border-color:${RT[r.t][1]}"><span style="display:inline-block;width:10px;height:10px;background:${RT[r.t][1]}"></span>${RT[r.t][0]} ✕</button>`).join('') : '<span class="muted" style="font-size:13px">Noch kein Rahmen – die ganze Seite wird gelesen.</span>';
     }
     const pt = e => { const b=cv.getBoundingClientRect(); return {x:Math.max(0,Math.min(dw,e.clientX-b.left))/sc, y:Math.max(0,Math.min(dh,e.clientY-b.top))/sc}; };
-    cv.addEventListener('pointerdown', e=>{ e.preventDefault(); cv.setPointerCapture(e.pointerId); const p=pt(e); drag={x0:p.x,y0:p.y,x:p.x,y:p.y,w:0,h:0,t:type}; });
-    cv.addEventListener('pointermove', e=>{ if(!drag) return; const p=pt(e); drag.x=Math.min(drag.x0,p.x); drag.y=Math.min(drag.y0,p.y); drag.w=Math.abs(p.x-drag.x0); drag.h=Math.abs(p.y-drag.y0); draw(); });
-    cv.addEventListener('pointerup', ()=>{ if(drag && drag.w*sc>14 && drag.h*sc>9) rects.push({x:drag.x,y:drag.y,w:drag.w,h:drag.h,t:drag.t}); drag=null; draw(); });
-    cv.addEventListener('pointercancel', ()=>{ drag=null; draw(); });
+    const hit=$('#cropHit');
+    hit.addEventListener('pointerdown', e=>{ e.preventDefault(); hit.setPointerCapture(e.pointerId); const p=pt(e); drag={x0:p.x,y0:p.y,x:p.x,y:p.y,w:0,h:0,t:type}; });
+    hit.addEventListener('pointermove', e=>{ if(!drag) return; const p=pt(e); drag.x=Math.min(drag.x0,p.x); drag.y=Math.min(drag.y0,p.y); drag.w=Math.abs(p.x-drag.x0); drag.h=Math.abs(p.y-drag.y0); draw(); });
+    hit.addEventListener('pointerup', ()=>{ if(drag && drag.w*sc>14 && drag.h*sc>9) rects.push({x:drag.x,y:drag.y,w:drag.w,h:drag.h,t:drag.t}); drag=null; draw(); });
+    hit.addEventListener('pointercancel', ()=>{ drag=null; draw(); });
     $('#rtSeg').addEventListener('click', e=>{ const b=e.target.closest('[data-rt]'); if(!b) return; type=b.dataset.rt; document.querySelectorAll('#rtSeg button').forEach(x=>x.classList.toggle('on',x===b)); });
     const done = v => { closeSheet(); URL.revokeObjectURL(url); resolve(v); };
     $('#rectList').addEventListener('click', e=>{ const b=e.target.closest('[data-rdel]'); if(!b) return; rects.splice(+b.dataset.rdel,1); draw(); });
@@ -2073,7 +2129,7 @@ async function runOCR(files){
   // Texte je Art; mehrere Rahmen einer Art im selben Bild = getrennte Listen, über Bilder hinweg = Fortsetzung
   const grp={ing:[], step:[]}, auto=[];
   for(const j of ordered){ const k={ing:0, step:0};
-    for(const r of j.regions){ if(r.t==='auto') auto.push(r.text); else if(r.t==='ing'||r.t==='step'){ const arr=grp[r.t]; if(k[r.t]===0 && arr.length && j.prevType && j.prevType[r.t]) arr[arr.length-1]+='\n'+r.text; else arr.push(r.text); k[r.t]++; } } }
+    for(const r of j.regions){ if(r.t==='auto') auto.push(r.text); else if(r.t==='ing'||r.t==='step'){ const arr=grp[r.t]; if(arr.length) arr[0]+=(r.t==='ing'?'\n':'\n\n')+r.text; else arr.push(r.text); k[r.t]++; } } }
   const txt = [title, auto.join('\n\n'), grp.ing.length?'Zutaten:\n'+grp.ing.join('\n'):'', grp.step.length?'Zubereitung:\n'+grp.step.join('\n\n'):''].filter(Boolean).join('\n\n');
   try{ draft.scans = [...(draft.scans||[]), ...await Promise.all(jobs.map(j=>compressScan(j.img)))]; }catch(e){}
   if(!$('#pasteText')) return;
@@ -2150,17 +2206,35 @@ function orderJobs(res){
     out.push(r); });
   return out;
 }
+const cleanTitle=s=>{
+  let t=String(s||'').replace(/\s+/g,' ').trim();
+  // Zeichenmüll und lose Einzelzeichen am Anfang/Ende entfernen; Titel beginnt mit einem Wort, meist großgeschrieben
+  t=t.replace(/^([^A-Za-zÄÖÜäöüß0-9]+|\b[A-Za-zÄÖÜäöüß]{1,2}\b[\s.,:;]+)+(?=[A-ZÄÖÜ])/,'');
+  t=t.replace(/^[^A-Za-zÄÖÜäöüß]+/,'').replace(/[\s,;:·•\-–]+$/,'');
+  return t;
+};
+const joinT=(a,b)=> !a ? b : (/[A-Za-zÄÖÜäöüß]-$/.test(a) ? a+b : a+' '+b);
 function titleFromLines(lines, isFrame){
   const angs=lines.map(l=>l.ang||0).sort((x,y)=>x-y), ma=angs[Math.floor(angs.length/2)]||0;
-  const ok=lines.filter(l=>l.conf>=0.8 && Math.abs((l.ang||0)-ma)<0.15 && (l.text.match(/[A-Za-zÄÖÜäöüß]/g)||[]).length>=4 && !NOISE.test(l.text));
+  const ok=lines.filter(l=>l.conf>=(isFrame?0.6:0.8) && Math.abs((l.ang||0)-ma)<0.15 && (l.text.match(/[A-Za-zÄÖÜäöüß]/g)||[]).length>=(isFrame?3:4) && !NOISE.test(l.text));
+  // Zeilen aus lauter unbekannten Wörtern (z. B. fremde Schrift, als Buchstabensalat gelesen) sind kein Titel
+  const realWords=t=>{ const ws=(t.match(/[A-Za-zÄÖÜäöüß]{3,}/g)||[]); if(!ws.length||!OCR) return true; return ws.filter(w=>wordScore(OCR,w)>0).length >= Math.ceil(ws.length/2); };
+  { const mh=Math.max(...ok.map(l=>l.h)); for(let i=ok.length-1;i>=0;i--) if(!realWords(ok[i].text) && (ok[i].h<mh*0.9 || ok[i].conf<0.92)) ok.splice(i,1); }
   if(!ok.length) return '';
   const hs=ok.map(l=>l.h).sort((x,y)=>x-y), med=hs[Math.floor(hs.length/2)], mx=hs[hs.length-1];
-  if(!isFrame && mx < med*1.4) return '';
+  if(isFrame){
+    // Im Titel-Rahmen: alle Zeilen in Lesereihenfolge; große Zeilen bilden den Namen, kleinere den Untertitel
+    const ord=[...ok].sort((x,y)=>x.icy-y.icy || x.icx-y.icx);
+    let main='', sub=''; let inMain=true;
+    for(const l of ord){ const t=cleanTitle(l.text)+(/[A-Za-zÄÖÜäöüß]-\s*$/.test(l.text)?'-':''); if(!t||t==='-') continue;
+      if(inMain && (l.h>=mx*0.6 || !main || /-$/.test(main))) main=joinT(main,t); else { inMain=false; sub=joinT(sub,t); } }
+    return cleanTitle(main + (sub?' – '+sub:''));
+  }
+  if(mx < med*1.4) return '';
   const big=ok.filter(l=>l.h>=mx*0.8).sort((x,y)=>x.icy-y.icy);
   if(big.length>3 || big.reduce((s,l)=>s+l.text.length,0)>80) return '';
-  let t=''; for(const l of big){ t = t ? (/-$/.test(t) ? t+l.text : t+' '+l.text) : l.text; }
-  if(isFrame){ const rest=ok.filter(l=>!big.includes(l)).sort((x,y)=>x.icy-y.icy).map(l=>l.text).join(' '); if(rest) t+=' – '+rest; }
-  return t.replace(/\s+/g,' ').trim();
+  let t=''; for(const l of big) t=joinT(t, l.text);
+  return cleanTitle(t);
 }
 function ocrIntro(then){
   try{ if(localStorage.getItem('ocrReady')) return then(); }catch(e){}
@@ -2262,12 +2336,20 @@ document.addEventListener('click', async e=>{
     case 'share': { const r=getR(route.id); if(r) withName(()=>saveFile(slug(r.title)+'.html', exportHTML(getR(r.id)), 'text/html')); break; }
     case 'copytext': { const r=getR(route.id); if(r) copyText(exportText(r)); break; }
     case 'print': {
-      const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-      const r=getR(route.id);
-      if(standalone && /iPhone|iPad|iPod/.test(navigator.userAgent) && r){ toast('Im Teilen-Menü „Drucken“ wählen'); saveFile(slug(r.title)+'.html', exportHTML(r), 'text/html'); break; }
-      if(r){ const f=document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
-        f.onload=()=>{ setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(err){ toast('Drucken hier nicht möglich – „Teilen“ und dort drucken'); } setTimeout(()=>f.remove(), 60000); }, 300); };
-        f.srcdoc=exportHTML(r); }
+      const r=getR(route.id); if(!r) break;
+      // Druck direkt aus der App-Seite: funktioniert in Safari (auch iPhone) und am Computer
+      let root=document.getElementById('printRoot'); if(root) root.remove();
+      root=document.createElement('div'); root.id='printRoot';
+      root.innerHTML=`<style>${PRINT_CSS}
+        @media screen{#printRoot{display:none}}
+        @media print{body>*:not(#printRoot){display:none!important} html,body{background:#fff!important;padding:0!important;margin:0!important}
+          #printRoot .pp.l{display:none} #printRoot .pp.p{display:block}
+          @media (orientation:landscape){#printRoot .pp.p{display:none} #printRoot .pp.l{display:block}}}
+        @page{margin:14mm}</style>${printLayouts(r)}`;
+      document.body.appendChild(root);
+      const clean=()=>{ const x=document.getElementById('printRoot'); if(x) x.remove(); window.removeEventListener('afterprint', clean); };
+      window.addEventListener('afterprint', clean);
+      setTimeout(()=>{ try{ window.print(); }catch(err){ toast('Drucken hier nicht möglich – „Teilen“ und dort drucken'); } }, 50);
       break; }
     case 'delete': { const id=route.id; const r=getR(id); if(!r) break;
       confirmSheet('Rezept löschen?', `„${r.title}“ wird endgültig entfernt.`, 'Löschen', async()=>{ draft=null; await removeRecipe(id); go({v:'list'}); toast('Gelöscht'); }); break; }
@@ -2278,6 +2360,7 @@ document.addEventListener('click', async e=>{
     case 'sample': $('#pasteText').value=SAMPLE; break;
     case 'ocr': if(window.__TEST){ ocrProgress('Die Texterkennung funktioniert in dieser Vorschau nicht.', 0); break; } try{ if(!localStorage.getItem('ocrReady')){ ocrIntro(); break; } }catch(e){} getOCR().catch(()=>{}); $('#fileOcr').click(); break;
     case 'showvia': { const f=$('#viaFld'); if(f){ f.classList.remove('hidden'); $('#f_via').focus(); } const l=$('#viaLink'); if(l) l.remove(); break; }
+    case 'tagmore': tagShowAll=!tagShowAll; renderTagChips(); break;
     case 'addgroup': { collectForm(); (v==='ig'?draft.ingGroups:draft.stepGroups).push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; const cards=document.querySelectorAll('.gcard.'+v); const last=cards[cards.length-1]; if(last){ last.scrollIntoView({block:'center'}); const t=last.querySelector('.gh'); if(t) t.focus(); } break; }
     case 'rmgroup': { collectForm(); const [k,i]=v.split(':'); const arr=k==='ig'?draft.ingGroups:draft.stepGroups; arr.splice(+i,1); if(!arr.length) arr.push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'viewscan': openViewer(draft.scans, +v); break;
