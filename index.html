@@ -216,6 +216,12 @@ details.intro .txt{ padding:0 0 14px; max-width:68ch; color:var(--ink2); white-s
 .scans{ display:flex; gap:10px; flex-wrap:wrap; }
 .scan{ border:0; padding:0; background:none; width:84px; height:84px; border-radius:var(--rt); overflow:hidden; }
 .scan img{ width:100%; height:100%; object-fit:cover; }
+body.dropping::after{ content:"Fotos oder Rezeptdatei hier ablegen"; position:fixed; inset:12px; z-index:90; display:flex; align-items:center; justify-content:center; text-align:center; padding:20px; font:var(--disp-w) 22px/1.2 var(--f-disp); color:var(--ink); background:color-mix(in srgb, var(--paper) 88%, transparent); border:3px dashed var(--rot); border-radius:var(--rt); pointer-events:none; }
+.dropzone{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:100%; min-height:110px; margin:4px 0 10px; padding:16px; border:2px dashed var(--line); border-radius:var(--rt); background:var(--card); color:var(--ink); font:inherit; cursor:pointer; text-align:center; }
+.dropzone svg{ width:26px; height:26px; color:var(--rot); }
+.dropzone b{ font-size:16px; }
+.dropzone span{ font-size:13px; color:var(--ink2); }
+body.dropping .dropzone, .dropzone:hover{ border-color:var(--rot); }
 .viewer{ position:fixed; inset:0; z-index:80; background:#0d0d0d; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 .vscroll{ flex:1; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y pinch-zoom; }
 .vscroll img{ display:block; max-width:none; margin:0 auto; }
@@ -912,7 +918,7 @@ const STYLES=[
  ['altrosa','Rosé','#F3E6E3','#3A2F30','#6F8496','DM Serif Display'],
  ['kontrast','Kontrast','#FFFFFF','#111111','#0047FF','Space Grotesk']];
 function applyLook(){
-  const st = STYLES.some(s=>s[0]===pref.style) ? pref.style : 'graphit';
+  const st = STYLES.some(s=>s[0]===pref.style) ? pref.style : 'nordisch';
   document.documentElement.dataset.style = st;
   const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', STYLES.find(s=>s[0]===st)[2]);
 }
@@ -1161,8 +1167,7 @@ function renderEditor(keep){
   <div class="wrap"><div class="form">
     ${isNew?`<div class="importbox">
       <h2>Aus Foto oder Text übernehmen</h2>
-      <p>Mehrere Bilder werden nacheinander gelesen.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"><button class="btn primary" data-act="ocr">Foto oder Screenshot</button></div>
+      <button type="button" class="dropzone" data-act="ocr">${ICON.camera||''}<b>Foto oder Screenshot</b><span>hierher ziehen oder tippen</span></button>
       <div id="ocrState" class="hidden"><div id="ocrMsg" style="font-size:14px;font-weight:600"></div><div class="ocrbar"><i id="ocrBar"></i></div></div>
       <textarea class="ta tall" id="pasteText" placeholder="Erkannter oder eingefügter Text …" style="margin-top:10px"></textarea>
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px">
@@ -1438,14 +1443,108 @@ const APP_URL='https://lepettre.github.io/Rezeptesammlung/';
 function madeWith(name){ const l=`<a href="${APP_URL}">${APP_URL.replace(/\/$/,'')}</a>`; return name ? `Geteilt aus der Rezeptesammlung von ${esc(name)}, erstellt mit ${l}` : `Erstellt mit ${l}`; }
 function cleanForExport(r, withPhoto){ const c={...r}; delete c._local; delete c.scans; if(!withPhoto) c.photo=''; if(!c.by && myName() && !c.via) c.by=myName(); return c; }
 function dataScript(obj){ return `<script type="application/json" id="rezeptkasten-data">${JSON.stringify(obj).replace(/</g,'\\u003c')}<\/script>`; }
+/* ===================== Drucklayout (Hoch- und Querformat, vorab berechnet) ===================== */
+const PRINT_CSS = `
+.pp{font:10pt/1.38 var(--f-body);color:#111;background:#fff}
+.pp h1{font:var(--disp-w) 19pt/1.08 var(--f-disp);letter-spacing:var(--disp-ls);margin:0 0 1.5mm}
+.pp .pmeta{font-size:8.5pt;color:#444;margin:0 0 4mm}
+.pp .pmeta b{color:#111}
+.pp h3{font:var(--disp-w) 12pt/1.1 var(--f-disp);margin:0 0 2mm}
+.pp h4{font-weight:700;font-size:9.5pt;margin:2.5mm 0 1mm;break-after:avoid}
+.pp ul.pi{list-style:none;margin:0;padding:0}
+.pp ul.pi li{display:grid;grid-template-columns:19mm 1fr;gap:2mm;padding:.7mm 0;border-bottom:.2mm solid #ccc;break-inside:avoid}
+.pp ul.pi li b{font-weight:700}
+.pp .icols{column-gap:6mm}
+.pp .icols h4:first-child{margin-top:0}
+.pp ol.ps{list-style:none;margin:0;padding:0}
+.pp ol.ps li{display:grid;grid-template-columns:6mm 1fr;padding:1mm 0;border-bottom:.2mm solid #ddd;break-inside:avoid}
+.pp ol.ps li i{font-style:normal;font-weight:700}
+.pp ol.ps li::before,.pp ul.pi li::before{content:none!important;display:none!important}
+.pp ol.ps,.pp ul.pi{counter-reset:none}
+.pp ol.ps li,.pp ul.pi li{max-width:none}
+.pp .scols{column-gap:8mm}
+.pp .side{display:grid;gap:8mm;align-items:start}
+.pp .brk{break-before:page}
+.pp .pnotes{margin-top:3mm;padding:2mm 3mm;border-left:1.2mm solid #bbb;white-space:pre-wrap;break-inside:avoid}
+.pp .pintro{color:#333;margin:0 0 3mm;white-space:pre-wrap}
+.pp .gap{height:4mm}`;
+function ppParts(r){
+  const G=getGroups(r), mi=G.ing.length>1||G.ing.some(g=>g.t), ms=G.steps.length>1||G.steps.some(g=>g.t);
+  const facts=[]; if(r.servings) facts.push(`<b>${fmtFrac(r.servings)} ${esc(r.servingsUnit||'Portionen')}</b>`);
+  if(r.prep!=null) facts.push('Vorbereitung '+fmtDuration(r.prep)); if(r.cook!=null) facts.push('Kochen/Backen '+fmtDuration(r.cook));
+  if(r.rest!=null) facts.push('Warten '+fmtDuration(r.rest)); if(r.difficulty) facts.push(esc(r.difficulty));
+  const src=r.source||{}; const sl=[src.name,src.author].filter(Boolean).map(esc).join(', ');
+  if(sl) facts.push('Quelle: '+sl);
+  const head=`<h1>${esc(r.title)}</h1><div class="pmeta">${facts.join(' · ')}${personLine(r)?' · '+esc(personLine(r)):''}</div>`;
+  const ing=G.ing.map(g=>(mi&&g.t?`<h4>${esc(g.t)}</h4>`:'')+'<ul class="pi">'+plainIngLines(g.text).map(x=>x.h?`<li style="display:block;font-weight:700;border:0">${esc(x.h)}</li>`:`<li><b>${esc(x.a)}</b><span>${esc(x.n)}</span></li>`).join('')+'</ul>').join('');
+  const steps=[]; let n=0;
+  G.steps.forEach(g=>{ if(ms&&g.t) steps.push({h:true, html:`<h4>${esc(g.t)}</h4>`}); parseStepsText(g.text).forEach(s=>{ if(s.h) steps.push({h:true, html:`<h4>${esc(s.h)}</h4>`}); else { n++; steps.push({html:`<li><i>${n}</i><span>${esc(s.t)}</span></li>`}); } }); });
+  return {head, ing, steps, notes:r.notes?`<div class="pnotes">${esc(r.notes)}</div>`:'', intro:r.intro?`<p class="pintro">${esc(r.intro)}</p>`:''};
+}
+const stepsHTML=(arr)=>{ let out='', open=false; for(const s of arr){ if(s.h){ if(open){ out+='</ol>'; open=false; } out+=s.html; } else { if(!open){ out+='<ol class="ps">'; open=true; } out+=s.html; } } if(open) out+='</ol>'; return out; };
+let MEAS=null;
+function measureMM(html, widthMM, scale=1){
+  if(!MEAS){ MEAS=document.createElement('div'); MEAS.style.cssText='position:absolute;left:-10000px;top:0;visibility:hidden'; document.body.appendChild(MEAS); const st=document.createElement('style'); st.textContent=PRINT_CSS; document.head.appendChild(st); }
+  MEAS.innerHTML=`<div class="pp" style="width:${widthMM}mm;font-size:${10*scale}pt">${html}</div>`;
+  const px=MEAS.firstChild.getBoundingClientRect().height; return px/3.7795;
+}
+function stepHeights(parts, widthMM, scale){
+  MEAS || measureMM('',10);
+  MEAS.innerHTML=`<div class="pp" style="width:${widthMM}mm;font-size:${10*scale}pt">${parts.steps.map(s=>`<div class="m">${s.h?s.html:'<ol class="ps">'+s.html+'</ol>'}</div>`).join('')}</div>`;
+  return [...MEAS.firstChild.children].map(e=>e.getBoundingClientRect().height/3.7795);
+}
+function splitAt(hs, avail){ let s=0, k=0; for(;k<hs.length;k++){ if(s+hs[k]>avail) break; s+=hs[k]; } while(k>0 && hs.length && hs[k-1]!==undefined && k<hs.length && hs[k-1]>0 && false){} return {k, used:s}; }
+function layoutPortrait(r, p){
+  const W=180, H=250; const hh=measureMM(p.head, W);
+  let ic=2, sc=1, hi=0; outer: for(const s of [1,.9,.82]) for(const c of [2,3]){ hi=measureMM(`<div class="icols" style="columns:${c}">${p.ing}</div>`, W, s); ic=c; sc=s; if(hh+hi+8<=H) break outer; }
+  const ingBlock=`<h3>Zutaten</h3><div class="icols" style="columns:${ic}">${p.ing}</div><div class="gap"></div>`;
+  const hs=stepHeights(p, W, sc), S=hs.reduce((a,b)=>a+b,0), hn=p.notes?measureMM(p.notes,W,sc):0, hin=p.intro?measureMM(p.intro,W,sc):0;
+  const avail=H-hh-hi-14;
+  const wrap=b=>`<div class="pp p" style="font-size:${10*sc}pt">${b}</div>`;
+  if(S+hn<=avail) return wrap(p.head+(S+hn+hin<=avail?p.intro:'')+ingBlock+'<h3>Zubereitung</h3>'+stepsHTML(p.steps)+p.notes);
+  const {k, used}=splitAt(hs, avail);
+  if(used>=S/3 || S+hn>H-10) return wrap(p.head+ingBlock+'<h3>Zubereitung</h3>'+stepsHTML(p.steps.slice(0,k))+'<div class="brk"></div>'+stepsHTML(p.steps.slice(k))+p.notes);
+  return wrap(p.head+ingBlock+'<div class="brk"></div><h3>Zubereitung</h3>'+stepsHTML(p.steps)+p.notes);
+}
+function layoutLandscape(r, p){
+  const W=267, H=168, IW=80, SW=W-IW-8; const hh=measureMM(p.head, W);
+  const wrap=b=>`<div class="pp l">${b}</div>`;
+  const hi1=measureMM(`<h3>Zutaten</h3>${p.ing}`, IW);
+  const hn=p.notes?measureMM(p.notes,SW):0;
+  if(hh+hi1<=H){
+    const avail=H-hh-4;
+    const hs=stepHeights(p, SW, 1), S=hs.reduce((a,b)=>a+b,0);
+    const side=(st, cols)=>`<div class="side" style="grid-template-columns:${IW}mm 1fr"><div><h3>Zutaten</h3>${p.ing}</div><div><h3>Zubereitung</h3><div class="scols" style="columns:${cols}">${st}</div></div></div>`;
+    if(S+hn<=avail) return wrap(p.head+side(stepsHTML(p.steps)+p.notes,1));
+    const two=measureMM(`<h3>Zubereitung</h3><div class="scols" style="columns:2">${stepsHTML(p.steps)}${p.notes}</div>`, SW);
+    if(two<=avail) return wrap(p.head+side(stepsHTML(p.steps)+p.notes,2));
+    const {k, used}=splitAt(hs, avail-8);
+    const fullTwo=measureMM(`<div class="scols" style="columns:2">${stepsHTML(p.steps)}${p.notes}</div>`, W);
+    if(used>=S/3 || fullTwo>H-10) return wrap(p.head+side(stepsHTML(p.steps.slice(0,k)),1)+'<div class="brk"></div><div class="scols" style="columns:2">'+stepsHTML(p.steps.slice(k))+p.notes+'</div>');
+    return wrap(p.head+`<h3>Zutaten</h3><div class="icols" style="columns:3">${p.ing}</div><div class="brk"></div><h3>Zubereitung</h3><div class="scols" style="columns:2">${stepsHTML(p.steps)}${p.notes}</div>`);
+  }
+  // sehr viele Zutaten: volle Breite, drei Spalten
+  const hiF=measureMM(`<h3>Zutaten</h3><div class="icols" style="columns:3">${p.ing}</div>`, W);
+  const rest=H-hh-hiF-8, st2=measureMM(`<div class="scols" style="columns:2">${stepsHTML(p.steps)}${p.notes}</div>`, W);
+  const ingF=`<h3>Zutaten</h3><div class="icols" style="columns:3">${p.ing}</div><div class="gap"></div>`;
+  const stF=`<h3>Zubereitung</h3><div class="scols" style="columns:2">${stepsHTML(p.steps)}${p.notes}</div>`;
+  if(st2<=rest || rest>=st2/3/2) return wrap(p.head+ingF+stF);
+  return wrap(p.head+ingF+'<div class="brk"></div>'+stF);
+}
+function printLayouts(r){ try{ const p=ppParts(r); return layoutPortrait(r,p)+layoutLandscape(r,p); }catch(e){ return ''; } }
+const PRINT_SWITCH=`@media screen{.pp{display:none}}
+@media print{html,body{background:#fff!important;max-width:none!important;width:auto!important;padding:0!important;margin:0!important}.screen,footer,.top,.toc,.libhead{display:none!important}.pp.l{display:none}.pp+.pp.p,.pp.l+.pp.p{break-before:page}
+@media (orientation:landscape){.pp.p{display:none}.pp.l{display:block}}}
+@page{margin:14mm}`;
+
 function exportHTML(r){
   const c = cleanForExport(r, true);
   return `<!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(r.title)}</title><style>${exportFontCSS()}${themeVarsCSS()}${EXPORT_CSS}</style></head>
-<body><main>${recipeBody(c, true)}
+<title>${esc(r.title)}</title><style>${exportFontCSS()}${themeVarsCSS()}${EXPORT_CSS}${PRINT_CSS}${PRINT_SWITCH}</style></head>
+<body><main class="screen">${recipeBody(c, true)}
 <footer>${madeWith(myName())}</footer>
-</main>
+</main>${printLayouts(c)}
 ${dataScript({format:'rezeptkasten', version:2, kind:'recipe', from:myName(), exported:new Date().toISOString(), recipe:c})}
 </body></html>`;
 }
@@ -1456,13 +1555,13 @@ function exportLibraryHTML(list, withPhoto){
   const d = new Date().toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'});
   return `<!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${head}</title><style>${exportFontCSS()}${themeVarsCSS()}${EXPORT_CSS}</style></head>
+<title>${head}</title><style>${exportFontCSS()}${themeVarsCSS()}${EXPORT_CSS}${PRINT_CSS}${PRINT_SWITCH}@media print{main{display:none}.ppr+.ppr{break-before:page}}</style></head>
 <body><main id="top">
 <header class="libhead"><h1>${head}</h1><p>${items.length} ${items.length===1?'Rezept':'Rezepte'}, Stand ${d}.</p></header>
 <ul class="toc">${items.map((r,i)=>`<li><a href="#r${i}">${esc(r.title)}</a><small>${[(r.courses||[]).join(', '), personKey(r)!=='–'&&personKey(r)!==name?'von '+esc(personKey(r)):''].filter(Boolean).join(' – ')}</small></li>`).join('')}</ul>
 ${items.map((r,i)=>`<article id="r${i}">${recipeBody(r, withPhoto, 'h2')}<p><a class="top" href="#top">↑ Inhalt</a></p></article>`).join('\n')}
 <footer>${madeWith(name)}</footer>
-</main>
+</main>${items.map(r=>'<section class="ppr">'+printLayouts(r)+'</section>').join('')}
 ${dataScript({format:'rezeptkasten', version:2, kind:'library', from:name, exported:new Date().toISOString(), recipes:items})}
 </body></html>`;
 }
@@ -2114,7 +2213,7 @@ document.addEventListener('click', async e=>{
     case 'addphoto': closeSheet(); if(window.__TEST){ draft=null; go({v:'edit', id:null}); ocrProgress('Die Texterkennung funktioniert in dieser Vorschau nicht.', 0); break; }
       try{ if(!localStorage.getItem('ocrReady')){ ocrIntro(); break; } }catch(e){}
       draft=null; go({v:'edit', id:null}); getOCR().catch(()=>{}); $('#fileOcr').click(); break;
-    case 'ocrgo': closeSheet(); if(route.v!=='edit'){ draft=null; go({v:'edit', id:null}); } getOCR().catch(()=>{}); $('#fileOcr').click(); break;
+    case 'ocrgo': closeSheet(); if(route.v!=='edit'){ draft=null; go({v:'edit', id:null}); } getOCR().catch(()=>{}); if(pendingDrop){ const f=pendingDrop; pendingDrop=null; runOCR(f); } else $('#fileOcr').click(); break;
     case 'addtext': {
       closeSheet(); draft=null; go({v:'edit', id:null});
       let clip=null; try{ if(navigator.clipboard && navigator.clipboard.readText) clip = navigator.clipboard.readText(); }catch(err){}
@@ -2156,7 +2255,10 @@ document.addEventListener('click', async e=>{
       const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
       const r=getR(route.id);
       if(standalone && /iPhone|iPad|iPod/.test(navigator.userAgent) && r){ toast('Im Teilen-Menü „Drucken“ wählen'); saveFile(slug(r.title)+'.html', exportHTML(r), 'text/html'); break; }
-      try{ window.print(); }catch(err){ toast('Drucken hier nicht möglich – „Teilen“ und dort drucken'); } break; }
+      if(r){ const f=document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
+        f.onload=()=>{ setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(err){ toast('Drucken hier nicht möglich – „Teilen“ und dort drucken'); } setTimeout(()=>f.remove(), 60000); }, 300); };
+        f.srcdoc=exportHTML(r); }
+      break; }
     case 'delete': { const id=route.id; const r=getR(id); if(!r) break;
       confirmSheet('Rezept löschen?', `„${r.title}“ wird endgültig entfernt.`, 'Löschen', async()=>{ draft=null; await removeRecipe(id); go({v:'list'}); toast('Gelöscht'); }); break; }
     /* Editor */
@@ -2181,6 +2283,25 @@ document.addEventListener('click', async e=>{
   }
 });
 $('#fileImport').addEventListener('change', e=>{ const f=e.target.files[0]; e.target.value=''; importFile(f); });
+/* Ziehen und Ablegen: Fotos lesen, Rezeptdateien importieren */
+let pendingDrop=null;
+const hasFiles=e=>e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files');
+document.addEventListener('dragover', e=>{ if(!hasFiles(e)) return; e.preventDefault(); document.body.classList.add('dropping'); });
+document.addEventListener('dragleave', e=>{ if(!e.relatedTarget) document.body.classList.remove('dropping'); });
+document.addEventListener('drop', async e=>{
+  if(!hasFiles(e)) return; e.preventDefault(); document.body.classList.remove('dropping');
+  const files=[...e.dataTransfer.files];
+  const imgs=files.filter(f=>/^image\//.test(f.type) || /\.(heic|jpe?g|png|webp)$/i.test(f.name));
+  const docs=files.filter(f=>!imgs.includes(f) && /\.(html?|json)$/i.test(f.name));
+  for(const f of docs) await importFile(f);
+  if(!imgs.length) return;
+  closeSheet();
+  if(route.v!=='edit'){ draft=null; go({v:'edit', id:null}); }
+  if(window.__TEST){ ocrProgress('Die Texterkennung funktioniert in dieser Vorschau nicht.', 0); return; }
+  let ready=false; try{ ready=!!localStorage.getItem('ocrReady'); }catch(err){}
+  if(!ready){ pendingDrop=imgs; ocrIntro(); return; }
+  runOCR(imgs);
+});
 $('#fileOcr').addEventListener('change', e=>{ const f=[...e.target.files]; e.target.value=''; runOCR(f); });
 $('#filePhoto').addEventListener('change', e=>{ const f=e.target.files[0]; e.target.value=''; onPhotoPicked(f); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !$('#cropCv')) closeSheet(); });
