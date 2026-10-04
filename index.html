@@ -773,8 +773,17 @@ function flattenParts(parts){
 }
 const PERSON_RE=/^(personen|person|pers\.?|people|persons|serves|servings|portion)$/i;
 function normServUnit(u){ return u && PERSON_RE.test(u.trim()) ? 'Portionen' : (u||''); }
+function srcLineEdit(s){ s=s||{}; return [s.name, s.page, s.url].filter(Boolean).join(', '); }
+function parseSrc(text, author){
+  const t=String(text||'').trim(); const m=t.match(/https?:\/\/\S+/);
+  const url=m?m[0].replace(/[,.;)]+$/,''):''; const name=t.replace(m?m[0]:'','').replace(/[\s,;–-]+$/,'').replace(/^[\s,;–-]+/,'').trim();
+  return {name, author:author||'', page:'', url};
+}
 function migrateRecipe(r){
   let ch=migrateCourses(r);
+  const s=r.source||{};
+  if(s.page){ s.name=[s.name,s.page].filter(Boolean).join(', '); s.page=''; r.source=s; ch=true; }
+  if(r.by && !r.via && myName() && r.by!==myName()){ if(!s.author){ s.author=r.by; r.source=s; } r.by=myName(); ch=true; }
   if(r.servingsUnit && PERSON_RE.test(r.servingsUnit.trim())){ r.servingsUnit='Portionen'; ch=true; }
   return ch;
 }
@@ -922,7 +931,6 @@ const myName = () => (pref.name||'').trim();
 function personLine(r){
   const by=(r.by||'').trim(), via=(r.via||'').trim();
   if(!by && !via) return '';
-  if(by && via && via!==by) return `Rezept von ${by}, von ${via} geteilt`;
   return `Von ${via||by} geteilt`;
 }
 const fmtDate = t => t ? new Date(t).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'}) : '';
@@ -1202,12 +1210,10 @@ function renderEditor(keep){
       <label class="fld"><span>Notizen & Tipps</span><textarea class="ta" id="f_notes">${esc(draft.notes)}</textarea></label>
     </div>
     <div class="fset"><h2>Quelle</h2>
-      <div class="grid2"><label class="fld"><span>Rezept von</span><input class="in" id="f_by" value="${esc(draft.by||'')}" placeholder="${esc(myName()||'z. B. Oma Ruth')}"></label>
-      <label class="fld"><span>Geteilt von</span><input class="in" id="f_via" value="${esc(draft.via||'')}" placeholder="–"></label></div>
-      <label class="fld"><span>Buch, Zeitung, Website</span><input class="in" id="f_src" value="${esc(draft.source.name)}" placeholder="FAS, 27.9.2026"></label>
-      <div class="grid2"><label class="fld"><span>Autor:in</span><input class="in" id="f_auth" value="${esc(draft.source.author)}"></label>
-      <label class="fld"><span>Seite / Ausgabe</span><input class="in" id="f_page" value="${esc(draft.source.page)}"></label></div>
-      <label class="fld"><span>Link</span><input class="in" id="f_url" type="url" inputmode="url" value="${esc(draft.source.url)}" placeholder="https://"></label>
+      <label class="fld"><span>Buch, Zeitung, Website oder Link</span><input class="in" id="f_src" value="${esc(srcLineEdit(draft.source))}" placeholder="z. B. FAS, 27.9.2026, S. 45 oder Link"></label>
+      <label class="fld"><span>Autor:in</span><input class="in" id="f_auth" value="${esc(draft.source.author||'')}" placeholder="z. B. Katrin Hummel"></label>
+      ${draft.via?'':`<button type="button" class="linkish" data-act="showvia" id="viaLink" style="border:0;background:none;padding:4px 0 10px;text-decoration:underline;color:var(--ink2)">+ Geteilt von</button>`}
+      <label class="fld ${draft.via?'':'hidden'}" id="viaFld"><span>Geteilt von</span><input class="in" id="f_via" value="${esc(draft.via||'')}" placeholder="z. B. Monika"></label>
     </div>
     <div id="formErr" class="err"></div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:20px">
@@ -1262,8 +1268,8 @@ function collectForm(){
   d.shelfLife=$('#f_shelf').value.trim();
   d.ingGroups=readGroups('.gcard.ig'); d.stepGroups=readGroups('.gcard.sg'); delete d.parts; Object.assign(d, flattenGroups({ing:d.ingGroups, steps:d.stepGroups}));
   d.intro=$('#f_intro').value.trim(); d.notes=$('#f_notes').value.trim();
-  d.by=$('#f_by').value.trim(); d.via=$('#f_via').value.trim();
-  d.source={ name:$('#f_src').value.trim(), author:$('#f_auth').value.trim(), page:$('#f_page').value.trim(), url:$('#f_url').value.trim() };
+  d.via=$('#f_via').value.trim(); if(!d.by) d.by=myName();
+  d.source=parseSrc($('#f_src').value, $('#f_auth').value.trim());
   return d;
 }
 function fillFromParse(p){
@@ -2159,6 +2165,7 @@ document.addEventListener('click', async e=>{
     case 'parse': { const t=$('#pasteText').value; if(!t.trim()){ $('#parseMsg').textContent='Erst Text einfügen.'; break; } fillFromParse(parseRecipeText(t)); break; }
     case 'sample': $('#pasteText').value=SAMPLE; break;
     case 'ocr': if(window.__TEST){ ocrProgress('Die Texterkennung funktioniert in dieser Vorschau nicht.', 0); break; } try{ if(!localStorage.getItem('ocrReady')){ ocrIntro(); break; } }catch(e){} getOCR().catch(()=>{}); $('#fileOcr').click(); break;
+    case 'showvia': { const f=$('#viaFld'); if(f){ f.classList.remove('hidden'); $('#f_via').focus(); } const l=$('#viaLink'); if(l) l.remove(); break; }
     case 'addgroup': { collectForm(); (v==='ig'?draft.ingGroups:draft.stepGroups).push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; const cards=document.querySelectorAll('.gcard.'+v); const last=cards[cards.length-1]; if(last){ last.scrollIntoView({block:'center'}); const t=last.querySelector('.gh'); if(t) t.focus(); } break; }
     case 'rmgroup': { collectForm(); const [k,i]=v.split(':'); const arr=k==='ig'?draft.ingGroups:draft.stepGroups; arr.splice(+i,1); if(!arr.length) arr.push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'viewscan': openViewer(draft.scans, +v); break;
