@@ -51,3 +51,4 @@ Rückblickend zusammengestellt. Die Versionsnummer ist die des Service Workers (
 - v46: Hilfeseite „So funktioniert die App“
 - v47: Eier und US-Mengen sinnvoll gerundet, Suche tolerant gegenüber Umlauten und Tippfehlern, Begrüßungen werden ignoriert
 - v48: ein Importweg für Foto, Screenshot, Datei und Text direkt im neuen Rezept, Auswahlmenü entfällt; Hinweise und Beschriftungen gekürzt, Hilfeseite gestrafft
+- v49: Import von Sicherungen und Sammlungen wieder unter „Teilen & sichern“ erreichbar, auch bei leerer Sammlung

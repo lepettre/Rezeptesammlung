@@ -1177,7 +1177,7 @@ function renderHelp(){
     ${S('Suchen', L(['Sucht in Titel, Zutaten, Schlagwörtern und Personen. Umlaute und kleine Tippfehler sind egal.']))}
     ${S('Teilen und sichern', L([
       'Erzeugt eine HTML-Datei, lesbar ohne App und importierbar.',
-      'Dieselbe Datei dient als Sicherung. Beim Wiederherstellen „Das bin ich“ wählen.']))}
+      'Dieselbe Datei dient als Sicherung. Wiederherstellen unter „Teilen &amp; sichern“, „Sicherung oder Sammlung importieren“, dann „Das bin ich“ wählen.']))}
     ${S('Drucken', L(['Hoch- oder Querformat im Druckdialog wählen. Auf dem iPhone als PDF über Teilen drucken.']))}
     ${S('Darstellung', L(['Sechs Stile und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
     ${S('Installation', L(['iPhone: in Safari Teilen, „Zum Home-Bildschirm“. Updates kommen beim nächsten Öffnen mit Internet.']))}
@@ -1233,7 +1233,7 @@ function renderResults(){
   const ul=$('#results'); if(!ul) return;
   if(!loaded){ ul.innerHTML=''; return; }
   if(!recipes.length){
-    ul.innerHTML = `<li class="empty"><h2>Noch leer.</h2><p>Tippe auf Hinzufügen.</p></li>`;
+    ul.innerHTML = `<li class="empty"><h2>Noch leer.</h2><p>Tippe auf Hinzufügen oder lies eine Sicherung ein.</p><button class="btn" data-act="sharelib">Sicherung importieren</button></li>`;
     $('#hits').textContent=''; return;
   }
   const list = filtered();
@@ -1771,26 +1771,24 @@ function shareLibrary(scope, withPhoto){
   const fn = (myName()?`rezepte-${slug(myName())}`:'rezepte') + (scope==='filter'?'-auswahl':'') + '.html';
   saveFile(fn, exportLibraryHTML(list, withPhoto), 'text/html');
 }
-function addSheet(){
-  sheet(`<div class="stack addopts">
-    <button class="btn" data-act="addphoto">${ICON.camera}<span><b>Foto oder Screenshot</b><small>Texterkennung, dauert ca. 10–40 Sek. Kopierter Text ist genauer.</small></span></button>
-    <button class="btn" data-act="addtext">${ICON.copy}<span><b>Text einfügen</b><small>z. B. von einer Website oder aus einer Nachricht kopiert</small></span></button>
-    <button class="btn" data-act="addblank">${ICON.edit}<span><b>Selbst schreiben</b><small>Leere Rezeptvorlage selbst ausfüllen</small></span></button>
-    <button class="btn" data-act="importfile">${ICON.folder}<span><b>Datei importieren</b><small>Geteiltes Rezept, Sammlung von Freunden oder dein Backup</small></span></button>
-    <button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
-}
 function fmtSize(b){ return b<1e6 ? Math.max(1,Math.round(b/1e3))+' KB' : (b/1e6).toFixed(1).replace('.',',')+' MB'; }
 function libSheet(){
-  if(!recipes.length){ toast('Noch keine Rezepte zum Teilen'); return; }
   const nf = filtered().length, n = recipes.length;
   const photoBytes = recipes.reduce((s,r)=>s+(r.photo?r.photo.length*2:0),0);
   const textBytes = 140000 + recipes.reduce((s,r)=>s+JSON.stringify({...r,photo:''}).length*2,0);
+  const imp=`<button class="btn" data-act="importfile">${ICON.folder}<span><b>Sicherung oder Sammlung importieren</b><small>Datei aus „Teilen & sichern“, auch von Freunden</small></span></button>`;
+  if(!recipes.length){
+    sheet(`<h2>Sichern & importieren</h2><p>Noch keine Rezepte vorhanden. Eine Sicherung oder die Sammlung eines Freundes lässt sich hier einlesen.</p>
+     <div class="stack addopts">${imp}<button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
+    return;
+  }
   sheet(`<h2>Teilen & sichern</h2><p>Erstellt eine Datei, die Freunde lesen, drucken oder komplett in ihre Rezeptesammlung übernehmen können. In deinem Cloud-Speicher oder auf dem Gerät abgelegt, ist sie zugleich dein Backup.${myName()?` Angezeigter Absender: <b>${esc(myName())}</b>.`:''}</p>
    <div class="stack">
      <button class="btn primary" data-act="libshare" data-v="all">${n===1?'Das eine Rezept speichern':`Alle ${n} Rezepte speichern`}</button>
      ${nf!==n?`<button class="btn" data-act="libshare" data-v="filter">Nur aktuelle Auswahl (${nf}) speichern</button>`:''}
      <label style="display:flex;gap:10px;align-items:center;font-weight:600;padding:6px 0"><input type="checkbox" id="libPhotos" checked style="width:20px;height:20px">Mit Fotos teilen <span class="muted" style="font-weight:400">${photoBytes?`(ca. ${fmtSize(textBytes+photoBytes)}, ohne Fotos ca. ${fmtSize(textBytes)})`:''}</span></label>
      <p class="muted" style="font-size:13px;margin:0">${statusText()}</p>
+     <div class="stack addopts">${imp}</div>
      <button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
 }
 const isTouchDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && /Macintosh/.test(navigator.userAgent));
@@ -2525,7 +2523,7 @@ document.addEventListener('click', async e=>{
     case 'look': lookSheet(); break;
     case 'setstyle': pref.style=v; savePref(); applyLook(); lookSheet(); render(); break;
     case 'setsym': pref.symbols=v; savePref(); lookSheet(); render(); break;
-    case 'sharelib': closeSheet(); withName(libSheet); break;
+    case 'sharelib': closeSheet(); if(recipes.length) withName(libSheet); else libSheet(); break;
     case 'libshare': { const ph=$('#libPhotos')?$('#libPhotos').checked:true; closeSheet(); shareLibrary(v, ph); break; }
     case 'closesheet': closeSheet(); break;
     case 'confirmyes': closeSheet(); if(confirmCb){ const cb=confirmCb; confirmCb=null; cb(); } break;
