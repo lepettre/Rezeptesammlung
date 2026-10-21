@@ -1,5 +1,5 @@
 /* Rezeptesammlung – Offline-Cache. Bei Änderungen an index.html VERSION erhöhen. */
-const VERSION = 'v49';
+const VERSION = 'v50';
 const SHELL = 'rk-shell-' + VERSION;
 const OCR = 'rk-ocr-v4';
 const SHELL_FILES = [

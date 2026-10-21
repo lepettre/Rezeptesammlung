@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 3.2 (technisch `sw.js` VERSION v48). Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 3.3 (technisch `sw.js` VERSION v50). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.

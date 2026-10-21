@@ -229,8 +229,10 @@ body.dropping .dropzone, .dropzone:hover{ border-color:var(--rot); }
 #rectList{ display:flex; flex-wrap:wrap; gap:6px; }
 #rectList .chip{ max-width:100%; white-space:nowrap; }
 .helplink{ text-align:center; margin:22px 0 110px; }
+.helplink span{ color:var(--ink2); }
 .helplink button{ border:0; background:none; color:var(--ink2); text-decoration:underline; font:inherit; font-size:14px; padding:8px; }
 .help{ padding-bottom:60px; max-width:720px; }
+.help a{ color:var(--rot); }
 .hsec{ border-top:1px solid var(--line); padding:14px 0 6px; }
 .hsec h2{ font:var(--disp-w) 20px/1.15 var(--f-disp); letter-spacing:var(--disp-ls); margin:0 0 8px; }
 .hsec p, .hsec li{ font-size:15px; line-height:1.5; color:var(--ink); }
@@ -1128,6 +1130,7 @@ function render(){
   if(route.v==='list') renderList();
   else if(route.v==='detail') renderDetail();
   else if(route.v==='help') renderHelp();
+  else if(route.v==='info') renderInfo();
   else renderEditor();
 }
 
@@ -1157,30 +1160,80 @@ function renderHelp(){
     <h1 class="dtitle" style="font-size:clamp(28px,7vw,44px)">So funktioniert die App</h1>
     ${S('Grundsätzliches', L([
       'Rezepte liegen nur auf diesem Gerät. Kein Konto, keine Übertragung, offline nutzbar.',
-      'Gelöschte App- oder Browserdaten löschen auch die Rezepte. Regelmäßig über „Teilen &amp; sichern“ sichern.']))}
+      'Werden App- oder Browserdaten gelöscht, sind auch die Rezepte weg. Darum regelmäßig sichern, siehe „Sichern und wiederherstellen“.']))}
     ${S('Hinzufügen', L([
       '„Hinzufügen“ öffnet ein neues Rezept. Oben Foto, Screenshot oder Datei antippen oder hineinziehen, oder Text einfügen und „Übernehmen“ tippen.',
-      'Fotos werden auf dem Gerät gelesen. Beim ersten Mal werden etwa 45 MB geladen.',
-      'Ohne Import einfach die Felder selbst ausfüllen.']))}
+      'Fotos werden auf dem Gerät gelesen. Beim ersten Mal werden etwa 45 MB geladen. Kopierter Text ist genauer als ein Foto.',
+      'Ohne Import die Felder einfach selbst ausfüllen.']))}
     ${S('Rahmen beim Fotoimport', L([
       'Optional. Ohne Rahmen wird das ganze Bild gelesen.',
       'Arten: Auto, Titel, Zutaten, Zubereitung, Notizen und Fließtext für Rezepte ohne Zutatenliste.',
-      'Nach dem Lesen Ergebnis prüfen. Das Originalbild bleibt unter „Vorlage“.']))}
+      'Nach dem Lesen das Ergebnis prüfen. Das Originalbild bleibt unter „Vorlage“.']))}
     ${S('Rezept ansehen', L([
-      'Portionen mit – und + ändern, Mengen werden auch im Text umgerechnet.',
-      'Original, Metrisch, US stellt die Einheiten um. Menge antippen wechselt eine einzelne Einheit.',
+      'Portionen mit – und + ändern. Mengen im Text werden mit umgerechnet.',
+      'Original, Metrisch, US stellt die Einheiten um. Eine Menge antippen wechselt nur ihre Einheit.',
       'Zutaten und Schritte antippen hakt sie ab. „Bildschirm an“ verhindert das Abschalten.']))}
     ${S('Bearbeiten', L([
       'Eine Zutat pro Zeile, Schritte durch Leerzeilen trennen.',
       'Weitere Zutatenlisten und Schrittfolgen für Teile wie Teig und Glasur.',
       'Vorhandene Schlagwörter werden vorgeschlagen.']))}
-    ${S('Suchen', L(['Sucht in Titel, Zutaten, Schlagwörtern und Personen. Umlaute und kleine Tippfehler sind egal.']))}
-    ${S('Teilen und sichern', L([
-      'Erzeugt eine HTML-Datei, lesbar ohne App und importierbar.',
-      'Dieselbe Datei dient als Sicherung. Wiederherstellen unter „Teilen &amp; sichern“, „Sicherung oder Sammlung importieren“, dann „Das bin ich“ wählen.']))}
+    ${S('Suchen', L(['Sucht in Titel, Zutaten, Schlagwörtern und Personen. Umlaute und kleine Tippfehler spielen keine Rolle.']))}
+    ${S('Sichern und wiederherstellen', L([
+      '„Teilen &amp; sichern“ oben in der Liste speichert alle Rezepte in einer HTML-Datei. Sie dient als Sicherung, ist ohne App lesbar und lässt sich Freunden schicken.',
+      'Die Datei in iCloud, Google Drive oder einem anderen Speicher ablegen.',
+      'Wiederherstellen oder Sammlung eines Freundes einlesen: „Teilen &amp; sichern“, dann „Sicherung oder Sammlung importieren“. Das geht auch bei leerer Sammlung.',
+      'Rezepte von Freunden erhalten den Vermerk „geteilt von“ und lassen sich danach filtern. Die eigene Sicherung wird als „meine eigenen Rezepte“ übernommen. Vorhandene Rezepte werden nicht doppelt angelegt.']))}
     ${S('Drucken', L(['Hoch- oder Querformat im Druckdialog wählen. Auf dem iPhone als PDF über Teilen drucken.']))}
     ${S('Darstellung', L(['Sechs Stile und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
-    ${S('Installation', L(['iPhone: in Safari Teilen, „Zum Home-Bildschirm“. Updates kommen beim nächsten Öffnen mit Internet.']))}
+    ${S('Als App installieren', L([
+      '<b>iPhone, iPad:</b> Seite in Safari öffnen, Teilen, „Zum Home-Bildschirm“.',
+      '<b>Android:</b> Seite in Chrome öffnen, Menü ⋮, „App installieren“ oder „Zum Startbildschirm hinzufügen“.',
+      '<b>Computer:</b> in Chrome oder Edge das Installieren-Symbol in der Adressleiste.',
+      'Als installierte App bleiben die Daten dauerhaft erhalten. Updates kommen beim nächsten Öffnen mit Internet.']))}
+  </div>`;
+}
+
+const APP_VERSION = '3.3';
+const LEGAL = { name:'', anschrift:'', mail:'info@jan-petter.de' };
+const HISTORY = [
+  ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
+  ['1.0','Sechs Stile, neue Texterkennung mit Wörterbuch, Kategorien'],
+  ['1.5','Bessere Erkennung: Rahmen, mehrteilige Rezepte, jeder Satz ein Schritt'],
+  ['2.0','Neues Symbol und Namen der Stile: Signal, Kohle, Moos, Rosé, Kontrast, Bauhaus'],
+  ['2.5','Mehrere Bilder, Korrektur lernt aus Eingaben, Beispielrezepte'],
+  ['3.0','Drucklayouts und PDF-Druck auf dem iPhone, Rahmen „Notizen“, alle europäischen Buchstaben'],
+  ['3.2','Rezepte aus Fließtext, Hilfeseite, tolerante Suche, ein gemeinsamer Importweg'],
+  ['3.3','Sicherungen wieder einlesbar, überarbeitete Hilfe, Seite „Version und Rechtliches“']
+];
+function renderInfo(){
+  const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
+  const L=a=>'<ul>'+a.map(x=>`<li>${x}</li>`).join('')+'</ul>';
+  const ext=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+  const REPO='https://github.com/lepettre/Rezeptesammlung';
+  const kontakt=[LEGAL.name, LEGAL.anschrift].filter(Boolean).map(x=>esc(x)).join('<br>');
+  app.innerHTML = `
+  <div class="bar"><div class="wrap">
+    <button class="iconbtn backbtn" data-act="back">${ICON.back}Rezepte</button><span class="grow"></span>
+  </div></div>
+  <div class="wrap help">
+    <h1 class="dtitle" style="font-size:clamp(28px,7vw,44px)">Version und Rechtliches</h1>
+    ${S('Version '+APP_VERSION, L(HISTORY.slice().reverse().map(([v,t])=>`<b>${v}</b> ${t}`)))}
+    ${S('Kontakt', `${kontakt?`<p>${kontakt}</p>`:''}<p>E-Mail: <a href="mailto:${esc(LEGAL.mail)}">${esc(LEGAL.mail)}</a><br>Quellcode: ${ext(REPO,'github.com/lepettre/Rezeptesammlung')}</p>`)}
+    ${S('Datenschutz', L([
+      'Rezepte, Fotos und Einstellungen bleiben auf diesem Gerät (IndexedDB und localStorage). Die App legt keine Konten an, setzt keine Cookies und nutzt keine Analyse- oder Werbedienste.',
+      'Fotos werden auf dem Gerät gelesen und nicht hochgeladen. Schriften, Texterkennung und PDF-Druck kommen vom selben Server wie die App.',
+      'Die Seite wird über GitHub Pages ausgeliefert. Dabei verarbeitet GitHub technisch bedingt Zugriffsdaten wie die IP-Adresse, siehe die Datenschutzerklärung von GitHub.']))}
+    ${S('Hinweise', L([
+      'Die App wird ohne Gewähr bereitgestellt. Die Texterkennung macht Fehler, Mengen und Angaben vor dem Kochen prüfen.',
+      'Die Rechte an eingelesenen oder importierten Rezepten liegen bei den jeweiligen Urhebern. Die App speichert sie nur für den privaten Gebrauch.']))}
+    ${S('Fremdbestandteile und Lizenzen', L([
+      'ONNX Runtime Web (Microsoft), MIT',
+      'PaddleOCR PP-OCRv6 (PaddlePaddle) über RapidOCR, Apache 2.0',
+      'Deutsche Wortliste: pyspellchecker (MIT), beruhend auf FrequencyWords von Hermit Dave (OpenSubtitles), CC BY-SA 4.0, ergänzt um Küchenvokabular',
+      'jsPDF, MIT',
+      'Tabler Icons, MIT',
+      'Schriften Archivo, Archivo Black, Space Mono, Geist, Inter, Fraunces, DM Serif Display, DM Sans, Space Grotesk, SIL Open Font License 1.1',
+      'Lizenztexte: '+ext(REPO+'/tree/main/lizenzen','Ordner „lizenzen“ im Quellcode')]))}
   </div>`;
 }
 
@@ -1202,7 +1255,7 @@ function renderList(){
       <span><select id="sort" aria-label="Sortierung"><option value="new">Neueste zuerst</option><option value="az">A–Z</option><option value="fast">Schnellste zuerst</option></select></span>
     </div>
     <ul class="results" id="results"></ul>
-    <p class="helplink"><button type="button" data-act="help">So funktioniert die App</button></p>
+    <p class="helplink"><button type="button" data-act="help">So funktioniert die App</button><span aria-hidden="true">·</span><button type="button" data-act="info">Version und Rechtliches</button></p>
   </div>
   <button class="fab" data-act="new">${ICON.plus}Hinzufügen</button>`;
   $('#sort').value = filt.sort;
@@ -1873,11 +1926,11 @@ async function importFile(file){
   const maybeMine = foreign && !myName();
   if(items.length===1 && !dupes && !maybeMine){ doImport(false); return; }
   sheet(`<h2>${foreign?`Sammlung von ${esc(from)}`:kind==='backup'?'Backup einspielen':'Rezepte importieren'}</h2>
-    <p>${items.length} ${items.length===1?'Rezept':'Rezepte'} in der Datei${dupes?`, davon ${dupes} schon in deiner Sammlung`:''}.${foreign?` Sie werden mit „geteilt von ${esc(from)}“ markiert und lassen sich danach filtern.`:''}</p>
+    <p>${items.length} ${items.length===1?'Rezept':'Rezepte'} in der Datei${dupes?`, davon ${dupes} schon in deiner Sammlung`:''}.${foreign?` Sie werden mit „geteilt von ${esc(from)}“ markiert und lassen sich danach filtern.${maybeMine?' Stammen sie von dir selbst, etwa aus einer eigenen Sicherung, kannst du sie als deine eigenen übernehmen.':''}`:''}</p>
     <div class="stack">
       ${fresh?`<button class="btn primary" id="impNew">${fresh} neue übernehmen</button>`:''}
       ${dupes?`<button class="btn" id="impUpd">Neue übernehmen, vorhandene durch neuere Fassung ersetzen</button>`:''}
-      ${maybeMine?`<button class="btn" id="impMine">Das bin ich: als mein eigenes Backup übernehmen</button>`:''}
+      ${maybeMine?`<button class="btn" id="impMine">Als meine eigenen Rezepte übernehmen</button>`:''}
       <button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
   if($('#impMine')) $('#impMine').onclick=()=>{ closeSheet(); doImport(true, true); };
   if($('#impNew')) $('#impNew').onclick=()=>{ closeSheet(); doImport(false); };
@@ -2572,6 +2625,7 @@ document.addEventListener('click', async e=>{
     case 'tagmore': tagShowAll=!tagShowAll; renderTagChips(); break;
     case 'printpdf': { closeSheet(); const r=getR(route.id); if(r) sharePDF(r); break; }
     case 'help': go({v:'help'}); break;
+    case 'info': go({v:'info'}); break;
     case 'addgroup': { collectForm(); (v==='ig'?draft.ingGroups:draft.stepGroups).push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; const cards=document.querySelectorAll('.gcard.'+v); const last=cards[cards.length-1]; if(last){ last.scrollIntoView({block:'center'}); const t=last.querySelector('.gh'); if(t) t.focus(); } break; }
     case 'rmgroup': { collectForm(); const [k,i]=v.split(':'); const arr=k==='ig'?draft.ingGroups:draft.stepGroups; arr.splice(+i,1); if(!arr.length) arr.push({t:'',text:''}); const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'viewscan': openViewer(draft.scans, +v); break;
