@@ -54,3 +54,4 @@ Rückblickend zusammengestellt. Die Versionsnummer ist die des Service Workers (
 - v49: Import von Sicherungen wieder unter „Teilen & sichern“ erreichbar, auch bei leerer Sammlung
 - v50 (3.3): Hilfe überarbeitet (Sichern und Wiederherstellen zusammengefasst, Installation unter Android), „Das bin ich“ ersetzt durch „Als meine eigenen Rezepte übernehmen“, neue Seite „Version und Rechtliches“ mit Kurzverlauf in 0.5-Schritten, Kontakt, Datenschutz und Lizenzen
 - v51: Kontaktangaben ergänzt
+- v52: Knopf „Als eigenes Rezept übernehmen“

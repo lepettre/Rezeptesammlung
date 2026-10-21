@@ -1182,7 +1182,7 @@ function renderHelp(){
       '„Teilen &amp; sichern“ oben in der Liste speichert alle Rezepte in einer HTML-Datei. Sie dient als Sicherung, ist ohne App lesbar und lässt sich Freunden schicken.',
       'Die Datei in iCloud, Google Drive oder einem anderen Speicher ablegen.',
       'Wiederherstellen oder Sammlung eines Freundes einlesen: „Teilen &amp; sichern“, dann „Sicherung oder Sammlung importieren“. Das geht auch bei leerer Sammlung.',
-      'Rezepte von Freunden erhalten den Vermerk „geteilt von“ und lassen sich danach filtern. Die eigene Sicherung wird als „meine eigenen Rezepte“ übernommen. Vorhandene Rezepte werden nicht doppelt angelegt.']))}
+      'Rezepte von Freunden erhalten den Vermerk „geteilt von“ und lassen sich danach filtern. Die eigene Sicherung wird mit „Als eigenes Rezept übernehmen“ ohne den Vermerk übernommen. Vorhandene Rezepte werden nicht doppelt angelegt.']))}
     ${S('Drucken', L(['Hoch- oder Querformat im Druckdialog wählen. Auf dem iPhone als PDF über Teilen drucken.']))}
     ${S('Darstellung', L(['Sechs Stile und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
     ${S('Als App installieren', L([
@@ -1930,7 +1930,7 @@ async function importFile(file){
     <div class="stack">
       ${fresh?`<button class="btn primary" id="impNew">${fresh} neue übernehmen</button>`:''}
       ${dupes?`<button class="btn" id="impUpd">Neue übernehmen, vorhandene durch neuere Fassung ersetzen</button>`:''}
-      ${maybeMine?`<button class="btn" id="impMine">Als meine eigenen Rezepte übernehmen</button>`:''}
+      ${maybeMine?`<button class="btn" id="impMine">Als eigenes Rezept übernehmen</button>`:''}
       <button class="btn ghost" data-act="closesheet">Abbrechen</button></div>`);
   if($('#impMine')) $('#impMine').onclick=()=>{ closeSheet(); doImport(true, true); };
   if($('#impNew')) $('#impNew').onclick=()=>{ closeSheet(); doImport(false); };
