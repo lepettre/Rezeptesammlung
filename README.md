@@ -41,7 +41,11 @@ Die App braucht nur eine HTTPS-Adresse, etwa GitHub Pages: Repository anlegen, I
 | `pdf/` | jsPDF und Schrift für den PDF-Druck |
 | `lizenzen/` | Lizenzen der Fremdbestandteile |
 
+## Lizenz
+
+Der eigene Code steht unter MIT-0 ([LICENSE](LICENSE)), also frei nutzbar ohne Namensnennung und ohne Gewähr. Fremdbestandteile behalten ihre Lizenzen, die Wortliste `ocr/woerter.txt` steht unter CC BY-SA 4.0. Alle Lizenztexte und Nennungen: [lizenzen/HINWEISE.md](lizenzen/HINWEISE.md).
+
 ## Weiteres
 
 - [Versionsverlauf](VERSIONEN.md)
-- [Fremdbestandteile und Lizenzen](lizenzen/HINWEISE.md): ONNX Runtime Web, PaddleOCR PP-OCRv6 über RapidOCR, pyspellchecker-Wortliste, Tabler Icons, jsPDF, zehn Schriften unter OFL
+- [Fremdbestandteile und Lizenzen](lizenzen/HINWEISE.md)

@@ -33,4 +33,4 @@ Aktuelle Version: 3.3 (technisch `sw.js` VERSION v50). Anzeige in der App: `APP_
 - Darstellung: `STYLES`, `applyLook` (Standard: Moos = `nordisch`).
 
 ## Veröffentlichen
-Änderungen committen und auf `main` pushen; GitHub Pages veröffentlicht automatisch. Danach `VERSIONEN.md` um das Update ergänzen (Zwischen-Update z. B. 3.3, neue Hauptversion nur bei grundlegendem Wechsel).
+Änderungen committen und auf `main` pushen; GitHub Pages veröffentlicht automatisch. Danach `VERSIONEN.md` um das Update ergänzen (Zwischen-Update z. B. 3.4, neue Hauptversion nur bei grundlegendem Wechsel).

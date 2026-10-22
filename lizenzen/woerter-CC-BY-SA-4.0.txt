@@ -1,0 +1,14 @@
+Wörterbuch ocr/woerter.txt
+
+Deutsche Wortliste aus pyspellchecker (MIT-Lizenz, siehe pyspellchecker-LICENSE.txt),
+die auf der Liste "FrequencyWords" von Hermit Dave beruht
+(https://github.com/hermitdave/FrequencyWords, Grundlage: OpenSubtitles).
+
+Lizenz der Wortliste: Creative Commons Namensnennung - Weitergabe unter gleichen
+Bedingungen 4.0 International (CC BY-SA 4.0)
+https://creativecommons.org/licenses/by-sa/4.0/legalcode.de
+
+Änderungen: Die Liste wurde um Küchenvokabular ergänzt.
+
+Die Datei ocr/woerter.txt wird unter denselben Bedingungen (CC BY-SA 4.0) weitergegeben.
+Für den übrigen Quellcode gilt diese Lizenz nicht.

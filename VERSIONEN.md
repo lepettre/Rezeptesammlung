@@ -55,3 +55,4 @@ Rückblickend zusammengestellt. Die Versionsnummer ist die des Service Workers (
 - v50 (3.3): Hilfe überarbeitet (Sichern und Wiederherstellen zusammengefasst, Installation unter Android), „Das bin ich“ ersetzt durch „Als meine eigenen Rezepte übernehmen“, neue Seite „Version und Rechtliches“ mit Kurzverlauf in 0.5-Schritten, Kontakt, Datenschutz und Lizenzen
 - v51: Kontaktangaben ergänzt
 - v52: Knopf „Als eigenes Rezept übernehmen“
+- v53: Lizenz MIT-0 und fehlende Lizenztexte der Fremdbestandteile ergänzt, Lizenzabschnitt in der App, Knopf „Importieren“ in der Liste

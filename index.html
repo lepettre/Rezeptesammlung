@@ -1209,7 +1209,7 @@ function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
   const L=a=>'<ul>'+a.map(x=>`<li>${x}</li>`).join('')+'</ul>';
   const ext=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
-  const REPO='https://github.com/lepettre/Rezeptesammlung';
+  const REPO='https://github.com/lepettre/Rezeptesammlung', LIC=REPO+'/blob/main/lizenzen';
   const kontakt=[LEGAL.name, LEGAL.anschrift].filter(Boolean).map(x=>esc(x)).join('<br>');
   app.innerHTML = `
   <div class="bar"><div class="wrap">
@@ -1226,14 +1226,17 @@ function renderInfo(){
     ${S('Hinweise', L([
       'Die App wird ohne Gewähr bereitgestellt. Die Texterkennung macht Fehler, Mengen und Angaben vor dem Kochen prüfen.',
       'Die Rechte an eingelesenen oder importierten Rezepten liegen bei den jeweiligen Urhebern. Die App speichert sie nur für den privaten Gebrauch.']))}
-    ${S('Fremdbestandteile und Lizenzen', L([
-      'ONNX Runtime Web (Microsoft), MIT',
-      'PaddleOCR PP-OCRv6 (PaddlePaddle) über RapidOCR, Apache 2.0',
-      'Deutsche Wortliste: pyspellchecker (MIT), beruhend auf FrequencyWords von Hermit Dave (OpenSubtitles), CC BY-SA 4.0, ergänzt um Küchenvokabular',
-      'jsPDF, MIT',
-      'Tabler Icons, MIT',
-      'Schriften Archivo, Archivo Black, Space Mono, Geist, Inter, Fraunces, DM Serif Display, DM Sans, Space Grotesk, SIL Open Font License 1.1',
-      'Lizenztexte: '+ext(REPO+'/tree/main/lizenzen','Ordner „lizenzen“ im Quellcode')]))}
+    ${S('Lizenz der App', L([
+      'Der Quellcode steht unter der MIT-No-Attribution-Lizenz (MIT-0): frei nutzbar, änderbar und weitergebbar, ohne Namensnennung, ohne Gewähr. '+ext(REPO+'/blob/main/LICENSE','Lizenztext')]))}
+    ${S('Fremdbestandteile', L([
+      'ONNX Runtime Web (Microsoft), MIT: Texterkennung im Browser. '+ext(LIC+'/onnxruntime-LICENSE.txt','Lizenztext'),
+      'PaddleOCR PP-OCRv6 small (PaddlePaddle), Apache 2.0: Erkennungsmodelle. '+ext(LIC+'/paddleocr-LICENSE.txt','Lizenztext'),
+      'RapidOCR, Apache 2.0: ONNX-Fassung der Modelle. '+ext(LIC+'/rapidocr-LICENSE.txt','Lizenztext'),
+      'Deutsche Wortliste, CC BY-SA 4.0: aus pyspellchecker, beruhend auf FrequencyWords von Hermit Dave (OpenSubtitles), ergänzt um Küchenvokabular. '+ext(LIC+'/woerter-CC-BY-SA-4.0.txt','Hinweis')+' · '+ext('https://creativecommons.org/licenses/by-sa/4.0/legalcode.de','Lizenztext'),
+      'pyspellchecker, MIT. '+ext(LIC+'/pyspellchecker-LICENSE.txt','Lizenztext'),
+      'jsPDF, MIT: PDF-Druck. '+ext(LIC+'/jspdf-LICENSE.txt','Lizenztext'),
+      'Tabler Icons, MIT: Symbole der Oberfläche. '+ext(LIC+'/tabler-icons-LICENSE.txt','Lizenztext'),
+      'Schriften Archivo, Archivo Black, Space Mono, Geist, Inter, Fraunces, DM Serif Display, DM Sans und Space Grotesk, SIL Open Font License 1.1. '+ext(LIC,'Lizenztexte im Quellcode')]))}
   </div>`;
 }
 
@@ -1244,6 +1247,7 @@ function renderList(){
     <div class="masthead"><h1>Rezepte</h1></div>
     <div class="quiet">
       <button data-act="sharelib">${ICON.share}Teilen & sichern</button>
+      <button data-act="importfile">${ICON.folder}Importieren</button>
       <button data-act="look">${ICON.palette}Darstellung</button>
       <button data-act="setname">${ICON.user}<span id="nameBtn">${esc(myName()||'Name')}</span></button>
       <span class="count" id="count"></span>
