@@ -56,3 +56,4 @@ Rückblickend zusammengestellt. Die Versionsnummer ist die des Service Workers (
 - v51: Kontaktangaben ergänzt
 - v52: Knopf „Als eigenes Rezept übernehmen“
 - v53: Lizenz MIT-0 und fehlende Lizenztexte der Fremdbestandteile ergänzt, Lizenzabschnitt in der App, Knopf „Importieren“ in der Liste
+- v54 (3.4): Ansicht „Kacheln“ (Schalter Liste/Kacheln, Standard bleibt die Liste; Kachelfarbe aus der Kategorie im gewählten Stil, Titel ohne Silbentrennung, fehlende Angaben entfallen). Kochmodus über „Kochen“ in der Rezeptansicht: ein Schritt pro Bildschirm, Wischen oder Pfeile, Fortschrittsleiste, Bildschirm bleibt an, Nachtmodus rot auf Schwarz, Zutatenliste mit Abhaken. Mengen nur umgerechnet, wo sie im Schritt selbst stehen. Baustein gemeinsam mit dem StandBy-Dashboard.

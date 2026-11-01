@@ -350,6 +350,36 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
   .cols .ingbox{ position:static; max-height:none; }
   .step,.ing{ break-inside:avoid; }
 }
+
+/* ===== BAUSTEIN Kacheln und Kochmodus 1.0 – gemeinsam mit dem StandBy-Dashboard; Änderungen in beiden Projekten gleich halten ===== */
+.results.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.rtile{position:relative;container-type:inline-size;min-height:170px;border-radius:22px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--tbg);color:var(--tfg);list-style:none}
+.rtile .tk{font-size:12px;font-weight:600;opacity:.8}
+.rtile .tt{font:var(--disp-w) 1em/1.06 var(--f-disp);letter-spacing:var(--disp-ls);hyphens:none;-webkit-hyphens:none;overflow-wrap:normal;word-break:normal;margin:auto 0 0}
+.rtile .tm{font-size:12.5px;opacity:.85;display:flex;flex-wrap:wrap;gap:2px 10px}
+.rtile .fav{position:absolute;top:12px;right:14px}
+.km{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);padding:calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 18px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 18px)}
+.km.night{--paper:#000;--ink:#ff3b30;--ink2:#a3281f;--line:#3a0b07;--rot:#ff3b30;--card:#120302}
+.km-top{display:flex;align-items:center;gap:10px}
+.km-top h2{flex:1;min-width:0;font:600 15px/1.2 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
+.km-top button{font:600 14px var(--f-body);padding:8px 12px;border-radius:999px;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.km-main{flex:1;min-height:0;display:flex;gap:18px;align-items:stretch;padding:14px 0 10px}
+.km-n{flex:none;display:flex;flex-direction:column;justify-content:center}
+.km-n b{font:var(--disp-w) clamp(64px,22vmin,200px)/.85 var(--f-disp);color:var(--rot)}
+.km-n small{font-size:13px;color:var(--ink2)}
+.km-txt{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.km-g{font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.km-t{font:500 1em/1.25 var(--f-body);hyphens:none;-webkit-hyphens:none}
+.km-t mark.sc{background:none;color:var(--rot);font-weight:700}
+.km-bar{display:flex;align-items:center;gap:10px}
+.km-bar>button{flex:none;width:52px;height:52px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:22px}
+.km-bar>button:disabled{opacity:.3}
+.km-seg{flex:1;display:flex;gap:4px}.km-seg i{flex:1;height:6px;border-radius:3px;background:var(--line)}.km-seg i.d{background:var(--ink2)}.km-seg i.on{background:var(--rot)}
+.km-ing{position:absolute;inset:auto 0 0 0;max-height:70%;overflow:auto;background:var(--card);border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 20px calc(env(safe-area-inset-bottom) + 18px);transform:translateY(100%);transition:transform .25s}
+.km-ing.on{transform:none}
+.km-ing h3{margin:0 0 8px;font:600 16px var(--f-body)}
+@media (orientation:portrait){.km-main{flex-direction:column;gap:6px}.km-n{flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}.km-n b{font-size:clamp(56px,16vmin,120px)}}
+/* ===== Ende BAUSTEIN ===== */
 </style>
 </head>
 <body>
@@ -1193,7 +1223,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '3.3';
+const APP_VERSION = '3.4';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1203,7 +1233,8 @@ const HISTORY = [
   ['2.5','Mehrere Bilder, Korrektur lernt aus Eingaben, Beispielrezepte'],
   ['3.0','Drucklayouts und PDF-Druck auf dem iPhone, Rahmen „Notizen“, alle europäischen Buchstaben'],
   ['3.2','Rezepte aus Fließtext, Hilfeseite, tolerante Suche, ein gemeinsamer Importweg'],
-  ['3.3','Sicherungen wieder einlesbar, überarbeitete Hilfe, Seite „Version und Rechtliches“']
+  ['3.3','Sicherungen wieder einlesbar, überarbeitete Hilfe, Seite „Version und Rechtliches“'],
+  ['3.4','Kachel-Ansicht und Kochmodus']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1256,7 +1287,7 @@ function renderList(){
   </div>
   <div class="wrap"><div class="filters" id="filters"></div>
     <div class="sortline"><span id="hits"></span>
-      <span><select id="sort" aria-label="Sortierung"><option value="new">Neueste zuerst</option><option value="az">A–Z</option><option value="fast">Schnellste zuerst</option></select></span>
+      <span id="viewSeg"></span><span><select id="sort" aria-label="Sortierung"><option value="new">Neueste zuerst</option><option value="az">A–Z</option><option value="fast">Schnellste zuerst</option></select></span>
     </div>
     <ul class="results" id="results"></ul>
     <p class="helplink"><button type="button" data-act="help">So funktioniert die App</button><span aria-hidden="true">·</span><button type="button" data-act="info">Version und Rechtliches</button></p>
@@ -1265,8 +1296,9 @@ function renderList(){
   $('#sort').value = filt.sort;
   $('#q').addEventListener('input', e=>{ filt.q=e.target.value; renderResults(); });
   $('#sort').addEventListener('change', e=>{ filt.sort=e.target.value; pref.sort=filt.sort; savePref(); renderResults(); });
-  renderFilters(); renderResults(); updateCount();
+  renderFilters(); renderResults(); updateCount(); renderViewSeg();
 }
+function renderViewSeg(){const v=$('#viewSeg');if(v)v.innerHTML=`<span class="seg small"><button class="${pref.view!=='tiles'?'on':''}" data-act="view" data-v="list">Liste</button><button class="${pref.view==='tiles'?'on':''}" data-act="view" data-v="tiles">Kacheln</button></span>`}
 function updateCount(){ const c=$('#count'); if(c) c.textContent = recipes.length + (recipes.length===1?' Rezept':' Rezepte'); }
 function allTags(){ const s=new Set(); recipes.forEach(r=>(r.tags||[]).forEach(t=>s.add(t))); return [...s].sort(new Intl.Collator('de').compare); }
 function usedCourses(){ const s=new Set(); recipes.forEach(r=>(r.courses||[]).forEach(t=>s.add(t))); const order=COURSES.map(c=>c[0]); return [...s].sort((a,b)=>((order.indexOf(a)+1)||99)-((order.indexOf(b)+1)||99)); }
@@ -1296,6 +1328,8 @@ function renderResults(){
   const list = filtered();
   $('#hits').textContent = list.length===recipes.length ? '' : `${list.length} von ${recipes.length}`;
   if(!list.length){ ul.innerHTML = `<li class="empty"><h2>Nichts gefunden.</h2><p>Kein Rezept passt zu allen Filtern.</p><button class="btn" data-act="clearfilters">Filter zurücksetzen</button></li>`; return; }
+  ul.classList.toggle('tiles', pref.view==='tiles');
+  if(pref.view==='tiles'){ ul.innerHTML = list.map(tileHTML).join(''); requestAnimationFrame(()=>tileFit(ul)); return; }
   ul.innerHTML = list.map(r=>{
     const a=activeMin(r), t=totalMin(r);
     const time = a!=null ? fmtDuration(a) + (t!=null && t>a ? ` <span class="muted">/ ${fmtDuration(t)}</span>`:'') : (t!=null?fmtDuration(t):'');
@@ -1306,6 +1340,12 @@ function renderResults(){
     </li>`;
   }).join('');
 }
+
+/* Kachel: Kategorie oben klein, Titel groß in der Überschriftschrift, unten Zeit und Portionen; Farbe aus der Kategorie im aktuellen Stil; fehlende Angaben entfallen */
+function tileHTML(r){const c=(r.courses||[])[0]||'',col=(COURSES.find(x=>x[0]===c)||[])[2]||'ink',bg=col==='ink'?'var(--ink)':col==='blau'?'color-mix(in srgb,var(--blau) 62%,var(--ink))':`var(--${col})`,fg=col==='ink'||col==='blau'?'var(--paper)':col==='gelb'?'var(--on-gelb)':'var(--card)';
+ const a=activeMin(r),t=totalMin(r),time=a!=null?fmtDuration(a):(t!=null?fmtDuration(t):''),sv=r.servings?`${fmtFrac(r.servings)} ${esc(r.servingsUnit||'Portionen')}`:'';
+ return `<li class="rtile" data-act="open" data-id="${r.id}" style="--tbg:${bg};--tfg:${fg}">${r.fav?'<span class="fav">★</span>':''}${c?`<span class="tk">${esc(c)}</span>`:''}<h3 class="tt">${esc(r.title||'Ohne Titel')}</h3>${time||sv?`<span class="tm">${time?`<span>${time}</span>`:''}${sv?`<span>${sv}</span>`:''}</span>`:''}</li>`}
+addEventListener('resize',()=>{if(pref.view==='tiles')tileFit()});
 
 /* ===================== Detail ===================== */
 let ds = null; // Detail-Zustand
@@ -1364,6 +1404,7 @@ function renderDetail(keep){
       <div class="ctlrow">
         <span class="seg small">${[['orig','Original'],['metric','Metrisch'],['us','US']].map(([k,l])=>`<button class="${ds.mode===k?'on':''}" data-act="mode" data-v="${k}">${l}</button>`).join('')}</span>
         <button class="wake ${wakeLock?'on':''}" data-act="wake"><span class="sw"></span>Bildschirm an</button>
+        ${si>=0?`<button class="btn cookbtn" data-act="cook">Kochen</button>`:''}
       </div>
     </div>
     ${partHTML}
@@ -1376,6 +1417,11 @@ function renderDetail(keep){
     </div>
   </div>`;
 }
+/* Kochmodus aus der Rezeptansicht starten: Schritte wie geschrieben, Mengen im Text auf die gewählten Portionen umgerechnet */
+function cookStart(){const r=getR(route.id);if(!r||!ds)return;const factor=ds.shown/(r.servings||1),G=getGroups(r),steps=[];
+ G.steps.forEach(g=>parseStepsText(g.text).forEach(st=>{if(st.h)return;steps.push({g:G.steps.length>1||g.t?g.t||'':'',html:factor!==1?scaleStepText(st.t,factor):esc(st.t)})}));if(!steps.length)return;
+ let k=-1;const ingHTML=G.ing.map(g=>((G.ing.length>1||g.t)&&g.t?`<h4 class="grphead">${esc(g.t)}</h4>`:'')+'<ul class="inglist">'+parseIngredientsText(g.text).map(it=>{if(it.h)return`<li class="grp">${esc(it.h)}</li>`;k++;const d=renderIng(it,factor,ds.mode,ds.over[k]);return`<li class="ing" data-act="kmIngChk" data-i="${k}"><span class="qty">${d.amount?`${d.approx?'ca. ':''}${esc(d.amount)}${d.unit?' '+esc(d.unit):''}`:''}</span> <span class="nm">${esc(d.name)}</span></li>`}).join('')+'</ul>').join('');
+ const unitName=r.servingsUnit||(r.servings?'Portionen':'');kmOpen({title:r.title||'Rezept',steps,ingHTML,servLabel:r.servings?`${fmtFrac(ds.shown)} ${unitName}`:''})}
 function stepServings(dir){
   const r=getR(route.id); if(!r) return;
   const base=r.servings||1;
@@ -1384,6 +1430,25 @@ function stepServings(dir){
   if(!r.servings && ds.shown<0.5) ds.shown=0.5;
   renderDetail(true);
 }
+
+
+/* ===== BAUSTEIN Kacheln und Kochmodus 1.0 – gemeinsam mit dem StandBy-Dashboard ===== */
+/* Text so groß wie möglich, ohne Silbentrennung und ohne Abschneiden (Binärsuche) */
+function kmFit(el,min,max){if(!el)return;const box=el.parentElement,ok=()=>el.scrollWidth<=box.clientWidth+1&&box.scrollHeight<=box.clientHeight+1;let lo=min,hi=max;el.style.fontSize=hi+'px';if(ok())return;for(let i=0;i<12;i++){const m=(lo+hi)/2;el.style.fontSize=m+'px';ok()?lo=m:hi=m}el.style.fontSize=lo+'px'}
+function tileFit(root){(root||document).querySelectorAll('.rtile .tt').forEach(t=>{const w=t.parentElement.clientWidth-32;let lo=16,hi=Math.min(44,w*.2);t.style.fontSize=hi+'px';const ok=()=>t.scrollWidth<=t.clientWidth+1&&t.getBoundingClientRect().height<=150;if(ok())return;for(let i=0;i<10;i++){const m=(lo+hi)/2;t.style.fontSize=m+'px';ok()?lo=m:hi=m}t.style.fontSize=lo+'px'})}
+/* Kochmodus: ein Schritt pro Bildschirm. Mengen werden nur umgerechnet, wo sie im Schritt selbst stehen (keine Zuordnung aus der Zutatenliste). */
+let km=null;
+function kmOpen(o){km={...o,i:0,night:false};const d=document.createElement('div');d.className='km';d.id='km';document.body.append(d);document.body.style.overflow='hidden';try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>km&&(km.wl=w)).catch(()=>{})}catch(e){}kmPaint();
+ let x0=null;d.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});d.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>50&&!e.target.closest('.km-ing'))kmStep(dx<0?1:-1)},{passive:true})}
+function kmPaint(){const d=document.getElementById('km');if(!d||!km)return;const s=km.steps[km.i],n=km.steps.length;d.classList.toggle('night',km.night);
+ d.innerHTML=`<div class="km-top"><h2>${esc(km.title)}</h2><button data-act="kmIng">Zutaten</button><button data-act="kmNight">${km.night?'Tag':'Nacht'}</button><button data-act="kmClose" aria-label="Kochmodus schließen">Fertig</button></div>
+ <div class="km-main"><div class="km-n"><b>${km.i+1}</b><small>von ${n}</small></div><div class="km-txt">${s.g?`<div class="km-g">${esc(s.g)}</div>`:''}<div class="km-t">${s.html}</div></div></div>
+ <div class="km-bar"><button data-act="kmPrev" ${km.i?'':'disabled'} aria-label="Vorheriger Schritt">‹</button><div class="km-seg">${km.steps.map((_,k)=>`<i class="${k<km.i?'d':k===km.i?'on':''}"></i>`).join('')}</div><button data-act="kmNext" ${km.i<n-1?'':'disabled'} aria-label="Nächster Schritt">›</button></div>
+ <div class="km-ing ${km.ingOn?'on':''}"><h3>Zutaten${km.servLabel?` · ${esc(km.servLabel)}`:''}</h3>${km.ingHTML}</div>`;
+ requestAnimationFrame(()=>kmFit(d.querySelector('.km-t'),17,Math.min(64,Math.max(innerWidth/9,innerHeight/10))))}
+function kmStep(dx){if(!km)return;km.i=Math.max(0,Math.min(km.steps.length-1,km.i+dx));kmPaint()}
+function kmClose(){const d=document.getElementById('km');if(d)d.remove();document.body.style.overflow='';try{km&&km.wl&&km.wl.release()}catch(e){}km=null}
+/* ===== Ende BAUSTEIN ===== */
 
 /* Display wach halten */
 let wakeLock = null;
@@ -2589,6 +2654,14 @@ document.addEventListener('click', async e=>{
     case 'unit': { e.stopPropagation(); const i=+el.dataset.i; const nx=cycleUnit(el.dataset.u); if(nx){ ds.over[i]=nx; renderDetail(true); } break; }
     case 'stepdone': { const i=+el.dataset.i; ds.done.has(i)?ds.done.delete(i):ds.done.add(i); el.classList.toggle('done'); break; }
     case 'less': stepServings(-1); break;
+    case 'kmPrev': kmStep(-1); break;
+    case 'kmNext': kmStep(1); break;
+    case 'kmClose': kmClose(); break;
+    case 'kmNight': km.night=!km.night; kmPaint(); break;
+    case 'kmIng': km.ingOn=!km.ingOn; kmPaint(); break;
+    case 'kmIngChk': { const li=el; li.classList.toggle('done'); km.chk=km.chk||new Set(); const k=li.dataset.i; km.chk.has(k)?km.chk.delete(k):km.chk.add(k); } break;
+    case 'cook': cookStart(); break;
+    case 'view': pref.view=v; savePref(); renderResults(); renderViewSeg(); break;
     case 'more': stepServings(1); break;
     case 'mode': ds.mode=v; ds.over={}; pref.unitMode=v; savePref(); renderDetail(true); break;
     case 'wake': toggleWake(); break;

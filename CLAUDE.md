@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 3.3 (technisch `sw.js` VERSION v50). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 3.4 (technisch `sw.js` VERSION v54). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -28,7 +28,8 @@ Aktuelle Version: 3.3 (technisch `sw.js` VERSION v50). Anzeige in der App: `APP_
 ## Wichtige Stellen in index.html
 - Parser: `parseIng`, `renderIng`, `parseRecipeText`, `parseStepsText`, `proseIngredients` (Fließtext), `decap` (Versalien), `NOISE`, `CHAT_RE`.
 - Import: `handleFiles` (Bilder → OCR, .html/.json → Import), `runOCR`, `pickRegions` (Rahmenarten: Auto, Titel, Zutaten, Zubereitung, Notizen, Fließtext), `orderJobs` (mehrere Bilder), `layoutText`, `fixLine`/`fixWord` (Korrektur).
-- Anzeige: `renderList`, `renderDetail`, `renderEditor`, `renderHelp`, `scaleStepText`.
+- Anzeige: `renderList`, `renderDetail`, `renderEditor`, `renderHelp`, `scaleStepText`, Kacheln `tileHTML`/`tileFit`.
+- Baustein „Kacheln und Kochmodus“ (`kmOpen`, `kmPaint`, `kmFit`, CSS `.rtile`, `.km-*`) zwischen den Markierungen „BAUSTEIN … Ende BAUSTEIN“: gemeinsam mit dem StandBy-Dashboard, Änderungen in beiden Projekten gleich halten.
 - Teilen/Druck: `exportHTML`, `exportLibraryHTML`, `printLayouts` (Hoch-/Querformat), `buildPDF`.
 - Darstellung: `STYLES`, `applyLook` (Standard: Moos = `nordisch`).
 
