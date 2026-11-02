@@ -26,7 +26,7 @@
 :root{
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-  --danger:#C1121C; --on-rot:#fff; --fab-shadow:none; --bar-bd:1px solid var(--line); --field-bd:1px solid transparent;
+  --danger:#C1121C; --on-rot:#fff; --fab-shadow:0 8px 22px rgba(0,0,0,.30), 0 2px 5px rgba(0,0,0,.20); --bar-bd:1px solid var(--line); --field-bd:1px solid transparent;
   --gl-fill:currentColor; --gl-stroke:none; --gl-sw:0; --disp-w:700; --disp-ls:-.03em;
 }
 /* Graphit mit Bauhausrot (Standard) */
@@ -158,7 +158,7 @@ img{ max-width:100%; display:block; }
 .empty h2{ font:var(--disp-w) 28px/1.05 var(--f-disp); margin:0 0 10px; }
 .empty p{ margin:0 0 18px; color:var(--ink2); }
 
-.fab{ position:fixed; right:max(18px, env(safe-area-inset-right,0px)); bottom:calc(18px + env(safe-area-inset-bottom,0px)); z-index:30; height:58px; padding:0 22px 0 18px; border:0; background:var(--rot); color:var(--on-rot); font:var(--disp-w) 17px/1 var(--f-disp); display:flex; align-items:center; gap:8px; box-shadow:var(--fab-shadow); outline:3px solid var(--paper); border-radius:var(--r); }
+.fab{ position:fixed; right:max(calc(8px + env(safe-area-inset-right,0px)), calc((100vw - 1120px) / 2 + 8px)); bottom:calc(18px + env(safe-area-inset-bottom,0px)); z-index:30; height:58px; padding:0 22px 0 18px; border:0; background:var(--rot); color:var(--on-rot); font:var(--disp-w) 17px/1 var(--f-disp); display:flex; align-items:center; gap:8px; box-shadow:var(--fab-shadow); border-radius:var(--r); }
 .fab svg{ width:24px; height:24px; }
 .fab:active{ transform:translate(1px,1px); }
 
