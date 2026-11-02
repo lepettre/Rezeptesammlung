@@ -380,6 +380,26 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .km-ing h3{margin:0 0 8px;font:600 16px var(--f-body)}
 @media (orientation:portrait){.km-main{flex-direction:column;gap:6px}.km-n{flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}.km-n b{font-size:clamp(56px,16vmin,120px)}}
 
+
+/* 3.6: Kacheln einheitlich groß wie im Dashboard, Radius aus dem Stil (wie Knöpfe), Fotos mit Unschärfe */
+.results.tiles{display:grid;columns:auto;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.results.tiles .rtile{margin:0;min-height:0;aspect-ratio:1;overflow:hidden;border-radius:calc(var(--rt) * 1.6);padding:14px 14px 12px}
+.rtile .tbox{flex:1;min-height:0;display:flex;align-items:flex-end;overflow:hidden}
+.rtile .tt{margin:0;min-width:0;max-width:100%}
+.rtile .tt.brk{overflow-wrap:anywhere}
+.rtile.ph{padding:0;background:var(--ink);color:#fff}
+.rtile.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rtile .tpan{position:absolute;left:6px;right:6px;bottom:6px;max-height:62%;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:calc(var(--rt) * 1.2);background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2)}
+.rtile.ph .fav{z-index:2;color:#fff}
+/* Darstellung kompakt */
+.looks2{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.look2{flex:none;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;color:var(--ink)}
+.look2 i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:16px;border:1px solid var(--line)}
+.look2.on i{outline:2px solid var(--rot);outline-offset:2px}
+.look2 small{font-size:11px}
+.lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-weight:600}
+/* Fenster: gleiche Radien an allen Ecken, frei schwebend */
+.sheet{border-radius:var(--rt);margin:0 8px calc(8px + env(safe-area-inset-bottom,0px));max-width:min(560px,calc(100% - 16px))}
 /* 3.5: kompakte Navigation – Kopfzeile mit Symbolknöpfen, Suche, eine Filterzeile */
 .masthead{align-items:center}
 .mbtns{display:flex;gap:8px}
@@ -387,9 +407,6 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .mb svg{width:20px;height:20px;color:var(--rot)}
 .sortline:has(#hits:empty){padding:4px 0 0}
 /* Kacheln als Spalten unterschiedlicher Höhe (nach Textlänge), breite Geräte mit mehr Spalten */
-.results.tiles{display:block;columns:170px;column-gap:12px}
-.results.tiles .rtile{break-inside:avoid;margin:0 0 12px;min-height:0}
-.rtile .tt{margin:10px 0 0}
 /* ===== Ende BAUSTEIN ===== */
 </style>
 </head>
@@ -1100,20 +1117,16 @@ function applyLook(){
   const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', STYLES.find(s=>s[0]===st)[2]);
 }
 function lookSheet(){
-  const cur = document.documentElement.dataset.style, sym = pref.symbols==='icons'?'icons':'shapes';
+  /* 3.6: kompakt – Stile als eine Reihe, jede Einstellung eine Zeile */
+  const cur = document.documentElement.dataset.style, sym = pref.symbols==='icons'?'icons':'shapes', tiles=pref.view==='tiles';
+  const row=(label,opts,act,val)=>`<div class="lrow"><span>${label}</span><span class="seg small">${opts.map(([k,l])=>`<button class="${val===k?'on':''}" data-act="${act}" data-v="${k}">${l}</button>`).join('')}</span></div>`;
   sheet(`<h2>Darstellung</h2>
-   <div class="looks">${STYLES.map(s=>`<button class="look ${s[0]===cur?'on':''}" data-act="setstyle" data-v="${s[0]}" style="background:${s[2]};color:${s[3]}">
-     <span style="font-family:'${s[5]}';font-size:19px;font-weight:${s[5]==='Archivo Black'||s[5]==='DM Serif Display'?400:700}">Rezepte</span>
-     <span class="dot" style="background:${s[4]}"></span><small style="color:${s[3]}">${s[1]}</small></button>`).join('')}</div>
-   <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Ansicht</p>
-   <span class="seg"><button class="${pref.view!=='tiles'?'on':''}" data-act="view" data-v="list">Liste</button><button class="${pref.view==='tiles'?'on':''}" data-act="view" data-v="tiles">Kacheln</button></span>
-   <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Sortierung</p>
-   <span class="seg">${[['new','Neueste'],['az','A–Z'],['fast','Schnellste']].map(([k,l])=>`<button class="${filt.sort===k?'on':''}" data-act="setsort" data-v="${k}">${l}</button>`).join('')}</span>
-   <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Zeitfilter bezieht sich auf</p>
-   <span class="seg"><button class="${filt.timeBase==='active'?'on':''}" data-act="fbase" data-v="active">Zubereitungszeit</button><button class="${filt.timeBase==='total'?'on':''}" data-act="fbase" data-v="total">Gesamt</button></span>
-   <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Symbole für Kategorien</p>
-   <span class="seg"><button class="${sym==='shapes'?'on':''}" data-act="setsym" data-v="shapes">Formen</button><button class="${sym==='icons'?'on':''}" data-act="setsym" data-v="icons">Zeichnungen</button></span>
-   <div class="stack" style="margin-top:16px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
+   <div class="looks2">${STYLES.map(s=>`<button class="look2 ${s[0]===cur?'on':''}" data-act="setstyle" data-v="${s[0]}" aria-label="${s[1]}"><i style="background:${s[2]};color:${s[4]};font-family:'${s[5]}'">Aa</i><small>${s[1]}</small></button>`).join('')}</div>
+   ${row('Ansicht',[['list','Liste'],['tiles','Kacheln']],'view',tiles?'tiles':'list')}
+   ${row('Sortierung',[['new','Neueste'],['az','A–Z'],['fast','Schnellste']],'setsort',filt.sort)}
+   ${row('Zeitfilter',[['active','Zubereitung'],['total','Gesamt']],'fbase',filt.timeBase)}
+   ${tiles?'':row('Symbole',[['shapes','Formen'],['icons','Zeichnungen']],'setsym',sym)}
+   <div class="stack" style="margin-top:14px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
 }
 
 const myName = () => (pref.name||'').trim();
@@ -1240,7 +1253,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '3.5';
+const APP_VERSION = '3.6';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1252,7 +1265,8 @@ const HISTORY = [
   ['3.2','Rezepte aus Fließtext, Hilfeseite, tolerante Suche, ein gemeinsamer Importweg'],
   ['3.3','Sicherungen wieder einlesbar, überarbeitete Hilfe, Seite „Version und Rechtliches“'],
   ['3.4','Kachel-Ansicht und Kochmodus'],
-  ['3.5','Kompakte Navigation: Kopfzeile mit Symbolen, eine Filterzeile; Kacheln in Spalten nach Textlänge']
+  ['3.5','Kompakte Navigation: Kopfzeile mit Symbolen, eine Filterzeile; Kacheln in Spalten nach Textlänge'],
+  ['3.6','Einheitliche quadratische Kacheln, Fotos mit Unschärfe-Feld wie im Dashboard, kürzere Darstellungs-Auswahl']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1353,7 +1367,9 @@ function renderResults(){
 /* Kachel: Kategorie oben klein, Titel groß in der Überschriftschrift, unten Zeit und Portionen; Farbe aus der Kategorie im aktuellen Stil; fehlende Angaben entfallen */
 function tileHTML(r){const c=(r.courses||[])[0]||'',col=(COURSES.find(x=>x[0]===c)||[])[2]||'ink',bg=col==='ink'?'var(--ink)':col==='blau'?'color-mix(in srgb,var(--blau) 62%,var(--ink))':`var(--${col})`,fg=col==='ink'||col==='blau'?'var(--paper)':col==='gelb'?'var(--on-gelb)':'var(--card)';
  const a=activeMin(r),t=totalMin(r),time=a!=null?fmtDuration(a):(t!=null?fmtDuration(t):''),sv=r.servings?`${fmtFrac(r.servings)} ${esc(r.servingsUnit||'Portionen')}`:'';
- return `<li class="rtile" data-act="open" data-id="${r.id}" style="--tbg:${bg};--tfg:${fg}">${r.fav?'<span class="fav">★</span>':''}${c?`<span class="tk">${esc(c)}</span>`:''}<h3 class="tt">${esc(r.title||'Ohne Titel')}</h3>${time||sv?`<span class="tm">${time?`<span>${time}</span>`:''}${sv?`<span>${sv}</span>`:''}</span>`:''}</li>`}
+ const inner=`${c?`<span class="tk">${esc(c)}</span>`:''}<div class="tbox"><h3 class="tt">${esc(r.title||'Ohne Titel')}</h3></div>${time||sv?`<span class="tm">${time?`<span>${time}</span>`:''}${sv?`<span>${sv}</span>`:''}</span>`:''}`;
+ /* mit Foto wie im Dashboard: Bild füllt die Kachel, Text auf Unschärfe */
+ return r.photo?`<li class="rtile ph" data-act="open" data-id="${r.id}"><img src="${r.photo}" alt="">${r.fav?'<span class="fav">★</span>':''}<div class="tpan">${inner}</div></li>`:`<li class="rtile" data-act="open" data-id="${r.id}" style="--tbg:${bg};--tfg:${fg}">${r.fav?'<span class="fav">★</span>':''}${inner}</li>`}
 addEventListener('resize',()=>{if(pref.view==='tiles')tileFit()});
 
 /* ===================== Detail ===================== */
@@ -1444,7 +1460,8 @@ function stepServings(dir){
 /* ===== BAUSTEIN Kacheln und Kochmodus 1.0 – gemeinsam mit dem StandBy-Dashboard ===== */
 /* Text so groß wie möglich, ohne Silbentrennung und ohne Abschneiden (Binärsuche) */
 function kmFit(el,min,max){if(!el)return;const box=el.parentElement,ok=()=>el.scrollWidth<=box.clientWidth+1&&box.scrollHeight<=box.clientHeight+1;let lo=min,hi=max;el.style.fontSize=hi+'px';if(ok())return;for(let i=0;i<12;i++){const m=(lo+hi)/2;el.style.fontSize=m+'px';ok()?lo=m:hi=m}el.style.fontSize=lo+'px'}
-function tileFit(root){(root||document).querySelectorAll('.rtile .tt').forEach(t=>{const w=t.parentElement.clientWidth-32;let lo=16,hi=Math.min(44,w*.2);t.style.fontSize=hi+'px';const ok=()=>t.scrollWidth<=t.clientWidth+1&&t.getBoundingClientRect().height<=150;if(ok())return;for(let i=0;i<10;i++){const m=(lo+hi)/2;t.style.fontSize=m+'px';ok()?lo=m:hi=m}t.style.fontSize=lo+'px'})}
+function tileFit(root){(root||document).querySelectorAll('.rtile .tt').forEach(t=>{const b=t.parentElement;t.classList.remove('brk');let lo=9,hi=Math.max(lo,Math.min(40,b.clientWidth*.22));const ok=()=>t.scrollWidth<=b.clientWidth+1&&t.scrollHeight<=b.clientHeight+1;t.style.fontSize=hi+'px';if(ok())return;for(let i=0;i<10;i++){const m=(lo+hi)/2;t.style.fontSize=m+'px';ok()?lo=m:hi=m}t.style.fontSize=lo+'px';if(!ok())t.classList.add('brk')})}
+if(document.fonts){const rf=()=>{if(pref.view==='tiles')tileFit()};document.fonts.ready.then(rf);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',rf)}
 /* Kochmodus: ein Schritt pro Bildschirm. Mengen werden nur umgerechnet, wo sie im Schritt selbst stehen (keine Zuordnung aus der Zutatenliste). */
 let km=null;
 function kmOpen(o){km={...o,i:0,night:false};const d=document.createElement('div');d.className='km';d.id='km';document.body.append(d);document.body.style.overflow='hidden';try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>km&&(km.wl=w)).catch(()=>{})}catch(e){}kmPaint();
@@ -2645,7 +2662,7 @@ document.addEventListener('click', async e=>{
     case 'fcourse': filt.courses.has(v)?filt.courses.delete(v):filt.courses.add(v); renderFilters(); renderResults(); break;
     case 'ftag': filt.tags.has(v)?filt.tags.delete(v):filt.tags.add(v); renderFilters(); renderResults(); break;
     case 'ftime': filt.time=v; renderFilters(); renderResults(); break;
-    case 'fbase': filt.timeBase=v; renderFilters(); renderResults(); if($('#sheet')&&document.querySelector('.looks'))lookSheet(); break;
+    case 'fbase': filt.timeBase=v; renderFilters(); renderResults(); if(document.querySelector('.looks2'))lookSheet(); break;
     case 'fperson': filt.people.has(v)?filt.people.delete(v):filt.people.add(v); renderFilters(); renderResults(); break;
     case 'ffav': filt.fav=!filt.fav; renderFilters(); renderResults(); break;
     case 'clearfilters': filt.courses.clear(); filt.tags.clear(); filt.people.clear(); filt.time='all'; filt.fav=false; filt.q=''; renderList(); break;
