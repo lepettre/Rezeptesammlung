@@ -38,3 +38,12 @@ Aktuelle Version: 3.5 (technisch `sw.js` VERSION v55). Anzeige in der App: `APP_
 
 ## Veröffentlichen
 Änderungen committen und auf `main` pushen; GitHub Pages veröffentlicht automatisch. Danach `VERSIONEN.md` um das Update ergänzen (Zwischen-Update z. B. 3.4, neue Hauptversion nur bei grundlegendem Wechsel).
+
+## Offen (Pause seit 02.11.2026, nur nach Freigabe angehen)
+- Korrigierte Rezeptdatei vom 11.10. einspielen? Entscheidung des Autors.
+- Große Favoriten-Kachel ja/nein. Entscheidung des Autors.
+- Portionsangaben für 9 Rezepte (Dinkelbrötchen, Sumach-Aubergine, Gurken-Feigen-Salat, Bärlauch-Maultaschen, drei Kimchis, Rösti, Lemon Cake Balls): nur Werte des Autors, nicht schätzen.
+- Mengen im Kochmodus: hier nur Mengen aus dem Schritttext; das StandBy-Dashboard nennt zusätzlich Mengen aus der Zutatenliste. Für den gemeinsamen Baustein eine Regel festlegen.
+- Vorschlag „Rezepte prüfen“ (auffällige Stellen mit Vorschlag, einzeln bestätigen) – erst Entwurf zeigen.
+- Synchronisation mit dem Dashboard oder zwischen Geräten: zurückgestellt; Austausch nur per Export-Datei.
+
