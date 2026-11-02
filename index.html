@@ -379,6 +379,17 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .km-ing.on{transform:none}
 .km-ing h3{margin:0 0 8px;font:600 16px var(--f-body)}
 @media (orientation:portrait){.km-main{flex-direction:column;gap:6px}.km-n{flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}.km-n b{font-size:clamp(56px,16vmin,120px)}}
+
+/* 3.5: kompakte Navigation – Kopfzeile mit Symbolknöpfen, Suche, eine Filterzeile */
+.masthead{align-items:center}
+.mbtns{display:flex;gap:8px}
+.mb{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;padding:0}
+.mb svg{width:20px;height:20px;color:var(--rot)}
+.sortline:has(#hits:empty){padding:4px 0 0}
+/* Kacheln als Spalten unterschiedlicher Höhe (nach Textlänge), breite Geräte mit mehr Spalten */
+.results.tiles{display:block;columns:170px;column-gap:12px}
+.results.tiles .rtile{break-inside:avoid;margin:0 0 12px;min-height:0}
+.rtile .tt{margin:10px 0 0}
 /* ===== Ende BAUSTEIN ===== */
 </style>
 </head>
@@ -1094,6 +1105,12 @@ function lookSheet(){
    <div class="looks">${STYLES.map(s=>`<button class="look ${s[0]===cur?'on':''}" data-act="setstyle" data-v="${s[0]}" style="background:${s[2]};color:${s[3]}">
      <span style="font-family:'${s[5]}';font-size:19px;font-weight:${s[5]==='Archivo Black'||s[5]==='DM Serif Display'?400:700}">Rezepte</span>
      <span class="dot" style="background:${s[4]}"></span><small style="color:${s[3]}">${s[1]}</small></button>`).join('')}</div>
+   <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Ansicht</p>
+   <span class="seg"><button class="${pref.view!=='tiles'?'on':''}" data-act="view" data-v="list">Liste</button><button class="${pref.view==='tiles'?'on':''}" data-act="view" data-v="tiles">Kacheln</button></span>
+   <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Sortierung</p>
+   <span class="seg">${[['new','Neueste'],['az','A–Z'],['fast','Schnellste']].map(([k,l])=>`<button class="${filt.sort===k?'on':''}" data-act="setsort" data-v="${k}">${l}</button>`).join('')}</span>
+   <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Zeitfilter bezieht sich auf</p>
+   <span class="seg"><button class="${filt.timeBase==='active'?'on':''}" data-act="fbase" data-v="active">Zubereitungszeit</button><button class="${filt.timeBase==='total'?'on':''}" data-act="fbase" data-v="total">Gesamt</button></span>
    <p style="margin:14px 0 6px;color:var(--ink);font-weight:600">Symbole für Kategorien</p>
    <span class="seg"><button class="${sym==='shapes'?'on':''}" data-act="setsym" data-v="shapes">Formen</button><button class="${sym==='icons'?'on':''}" data-act="setsym" data-v="icons">Zeichnungen</button></span>
    <div class="stack" style="margin-top:16px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
@@ -1223,7 +1240,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '3.4';
+const APP_VERSION = '3.5';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1234,7 +1251,8 @@ const HISTORY = [
   ['3.0','Drucklayouts und PDF-Druck auf dem iPhone, Rahmen „Notizen“, alle europäischen Buchstaben'],
   ['3.2','Rezepte aus Fließtext, Hilfeseite, tolerante Suche, ein gemeinsamer Importweg'],
   ['3.3','Sicherungen wieder einlesbar, überarbeitete Hilfe, Seite „Version und Rechtliches“'],
-  ['3.4','Kachel-Ansicht und Kochmodus']
+  ['3.4','Kachel-Ansicht und Kochmodus'],
+  ['3.5','Kompakte Navigation: Kopfzeile mit Symbolen, eine Filterzeile; Kacheln in Spalten nach Textlänge']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1275,30 +1293,22 @@ function renderInfo(){
 function renderList(){
   app.innerHTML = `
   <div class="wrap">
-    <div class="masthead"><h1>Rezepte</h1></div>
-    <div class="quiet">
-      <button data-act="sharelib">${ICON.share}Teilen & sichern</button>
-      <button data-act="importfile">${ICON.folder}Importieren</button>
-      <button data-act="look">${ICON.palette}Darstellung</button>
-      <button data-act="setname">${ICON.user}<span id="nameBtn">${esc(myName()||'Name')}</span></button>
-      <span class="count" id="count"></span>
-    </div>
+    <div class="masthead"><h1>Rezepte</h1><div class="mbtns">
+      <button class="mb" data-act="sharelib" aria-label="Teilen, sichern und importieren">${ICON.share}</button>
+      <button class="mb" data-act="look" aria-label="Darstellung">${ICON.palette}</button>
+      <button class="mb" data-act="setname" aria-label="Name"><span id="nameBtn" hidden></span>${ICON.user}</button></div></div>
     <div class="search">${ICON.search}<input id="q" type="search" placeholder="Suchen" value="${esc(filt.q)}" autocomplete="off" enterkeyhint="search"></div>
   </div>
   <div class="wrap"><div class="filters" id="filters"></div>
-    <div class="sortline"><span id="hits"></span>
-      <span id="viewSeg"></span><span><select id="sort" aria-label="Sortierung"><option value="new">Neueste zuerst</option><option value="az">A–Z</option><option value="fast">Schnellste zuerst</option></select></span>
-    </div>
+    <div class="sortline"><span id="hits"></span><span class="count" id="count"></span></div>
     <ul class="results" id="results"></ul>
     <p class="helplink"><button type="button" data-act="help">So funktioniert die App</button><span aria-hidden="true">·</span><button type="button" data-act="info">Version und Rechtliches</button></p>
   </div>
   <button class="fab" data-act="new">${ICON.plus}Hinzufügen</button>`;
-  $('#sort').value = filt.sort;
   $('#q').addEventListener('input', e=>{ filt.q=e.target.value; renderResults(); });
-  $('#sort').addEventListener('change', e=>{ filt.sort=e.target.value; pref.sort=filt.sort; savePref(); renderResults(); });
-  renderFilters(); renderResults(); updateCount(); renderViewSeg();
+  renderFilters(); renderResults(); updateCount();
 }
-function renderViewSeg(){const v=$('#viewSeg');if(v)v.innerHTML=`<span class="seg small"><button class="${pref.view!=='tiles'?'on':''}" data-act="view" data-v="list">Liste</button><button class="${pref.view==='tiles'?'on':''}" data-act="view" data-v="tiles">Kacheln</button></span>`}
+function renderViewSeg(){}
 function updateCount(){ const c=$('#count'); if(c) c.textContent = recipes.length + (recipes.length===1?' Rezept':' Rezepte'); }
 function allTags(){ const s=new Set(); recipes.forEach(r=>(r.tags||[]).forEach(t=>s.add(t))); return [...s].sort(new Intl.Collator('de').compare); }
 function usedCourses(){ const s=new Set(); recipes.forEach(r=>(r.courses||[]).forEach(t=>s.add(t))); const order=COURSES.map(c=>c[0]); return [...s].sort((a,b)=>((order.indexOf(a)+1)||99)-((order.indexOf(b)+1)||99)); }
@@ -1308,14 +1318,13 @@ function renderFilters(){
   const el=$('#filters'); if(!el) return;
   if(!recipes.length){ el.innerHTML=''; return; }
   const courses = usedCourses(), tags = allTags();
-  el.innerHTML = `
-   ${courses.length?`<div class="frow">${courses.map(c=>`<button class="chip ${filt.courses.has(c)?'on':''}" data-act="fcourse" data-v="${esc(c)}">${glyph(c)}${esc(c)}</button>`).join('')}</div>`:''}
-   ${tags.length?`<div class="frow">${tags.map(t=>`<button class="chip tag ${filt.tags.has(t)?'on':''}" data-act="ftag" data-v="${esc(t)}">${esc(t)}</button>`).join('')}</div>`:''}
-   ${people().length>1?`<div class="frow"><span class="rowlabel">Von</span>${people().map(p=>`<button class="chip ${filt.people.has(p)?'on':''}" data-act="fperson" data-v="${esc(p)}">${p==='–'?'ohne Namen':esc(p)}${p===myName()?' (du)':''}</button>`).join('')}</div>`:''}
-   <div class="frow">
-     <span class="seg">${TIME_BUCKETS.map(([k,l])=>`<button class="${filt.time===k?'on':''}" data-act="ftime" data-v="${k}">${l}</button>`).join('')}</span>
-     <span class="seg"><button class="${filt.timeBase==='active'?'on':''}" data-act="fbase" data-v="active">Zubereitungszeit</button><button class="${filt.timeBase==='total'?'on':''}" data-act="fbase" data-v="total">Gesamt</button></span>
-     <button class="chip ${filt.fav?'on':''}" data-act="ffav">★ Favoriten</button>
+  /* 3.5: alle Filter in einer Zeile, seitlich scrollbar; gleiche Elemente nie auf mehrere Zeilen verteilt */
+  el.innerHTML = `<div class="frow">
+   <button class="chip ${filt.fav?'on':''}" data-act="ffav">★ Favoriten</button>
+   ${courses.map(c=>`<button class="chip ${filt.courses.has(c)?'on':''}" data-act="fcourse" data-v="${esc(c)}">${glyph(c)}${esc(c)}</button>`).join('')}
+   ${TIME_BUCKETS.filter(([k])=>k!=='all').map(([k,l])=>`<button class="chip ${filt.time===k?'on':''}" data-act="ftime" data-v="${filt.time===k?'all':k}">${l}</button>`).join('')}
+   ${tags.map(t=>`<button class="chip tag ${filt.tags.has(t)?'on':''}" data-act="ftag" data-v="${esc(t)}">${esc(t)}</button>`).join('')}
+   ${people().length>1?people().map(p=>`<button class="chip ${filt.people.has(p)?'on':''}" data-act="fperson" data-v="${esc(p)}">${p==='–'?'ohne Namen':'von '+esc(p)}${p===myName()?' (du)':''}</button>`).join(''):''}
    </div>`;
 }
 function renderResults(){
@@ -2636,7 +2645,7 @@ document.addEventListener('click', async e=>{
     case 'fcourse': filt.courses.has(v)?filt.courses.delete(v):filt.courses.add(v); renderFilters(); renderResults(); break;
     case 'ftag': filt.tags.has(v)?filt.tags.delete(v):filt.tags.add(v); renderFilters(); renderResults(); break;
     case 'ftime': filt.time=v; renderFilters(); renderResults(); break;
-    case 'fbase': filt.timeBase=v; renderFilters(); renderResults(); break;
+    case 'fbase': filt.timeBase=v; renderFilters(); renderResults(); if($('#sheet')&&document.querySelector('.looks'))lookSheet(); break;
     case 'fperson': filt.people.has(v)?filt.people.delete(v):filt.people.add(v); renderFilters(); renderResults(); break;
     case 'ffav': filt.fav=!filt.fav; renderFilters(); renderResults(); break;
     case 'clearfilters': filt.courses.clear(); filt.tags.clear(); filt.people.clear(); filt.time='all'; filt.fav=false; filt.q=''; renderList(); break;
@@ -2661,7 +2670,8 @@ document.addEventListener('click', async e=>{
     case 'kmIng': km.ingOn=!km.ingOn; kmPaint(); break;
     case 'kmIngChk': { const li=el; li.classList.toggle('done'); km.chk=km.chk||new Set(); const k=li.dataset.i; km.chk.has(k)?km.chk.delete(k):km.chk.add(k); } break;
     case 'cook': cookStart(); break;
-    case 'view': pref.view=v; savePref(); renderResults(); renderViewSeg(); break;
+    case 'view': pref.view=v; savePref(); renderResults(); lookSheet(); break;
+    case 'setsort': filt.sort=v; pref.sort=v; savePref(); renderResults(); lookSheet(); break;
     case 'more': stepServings(1); break;
     case 'mode': ds.mode=v; ds.over={}; pref.unitMode=v; savePref(); renderDetail(true); break;
     case 'wake': toggleWake(); break;

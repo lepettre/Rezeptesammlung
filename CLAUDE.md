@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 3.4 (technisch `sw.js` VERSION v54). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 3.5 (technisch `sw.js` VERSION v55). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -24,6 +24,9 @@ Aktuelle Version: 3.4 (technisch `sw.js` VERSION v54). Anzeige in der App: `APP_
 - IndexedDB `rezeptkasten`, Store `recipes`. Einstellungen in localStorage (`pref`: Name, Stil, Symbolart; `ocrReady`; `rkFix` gelernte Korrekturen; `rkSeeded`).
 - Rezeptfelder u. a.: `title`, `ingGroups[{t,text}]`, `stepGroups[{t,text}]` (dazu flach `ingredientsText`, `stepsText`), `servings`, `servingsUnit`, `prep`, `cook`, `rest`, `difficulty`, `shelfLife`, `courses`, `tags`, `notes`, `intro`, `source{name,author,url}`, `by`, `via`, `photo`, `scans`, `fav`, `createdAt`, `updatedAt`.
 - Gespeicherte Texte nie still umschreiben. Verbesserungen wirken beim Anzeigen (Parser), Originale bleiben erhalten. Migrationen in `migrateRecipe()`.
+
+## Gestaltungsregeln
+- Navigation höchstens drei bis vier Zeilen; gleichartige Elemente (z. B. Filter-Chips) nie auf mehrere Zeilen verteilen, lieber eine seitlich scrollbare Zeile.
 
 ## Wichtige Stellen in index.html
 - Parser: `parseIng`, `renderIng`, `parseRecipeText`, `parseStepsText`, `proseIngredients` (Fließtext), `decap` (Versalien), `NOISE`, `CHAT_RE`.
