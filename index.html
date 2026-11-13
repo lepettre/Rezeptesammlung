@@ -1194,7 +1194,7 @@ function renderHelp(){
 }
 
 const APP_VERSION = '3.3';
-const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
+const LEGAL = { mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
   ['1.0','Sechs Stile, neue Texterkennung mit Wörterbuch, Kategorien'],
@@ -1210,7 +1210,6 @@ function renderInfo(){
   const L=a=>'<ul>'+a.map(x=>`<li>${x}</li>`).join('')+'</ul>';
   const ext=(u,t)=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
   const REPO='https://github.com/lepettre/Rezeptesammlung', LIC=REPO+'/blob/main/lizenzen';
-  const kontakt=[LEGAL.name, LEGAL.anschrift].filter(Boolean).map(x=>esc(x)).join('<br>');
   app.innerHTML = `
   <div class="bar"><div class="wrap">
     <button class="iconbtn backbtn" data-act="back">${ICON.back}Rezepte</button><span class="grow"></span>
@@ -1218,7 +1217,7 @@ function renderInfo(){
   <div class="wrap help">
     <h1 class="dtitle" style="font-size:clamp(28px,7vw,44px)">Version und Rechtliches</h1>
     ${S('Version '+APP_VERSION, L(HISTORY.slice().reverse().map(([v,t])=>`<b>${v}</b> ${t}`)))}
-    ${S('Kontakt', `${kontakt?`<p>${kontakt}</p>`:''}<p>E-Mail: <a href="mailto:${esc(LEGAL.mail)}">${esc(LEGAL.mail)}</a><br>Quellcode: ${ext(REPO,'github.com/lepettre/Rezeptesammlung')}</p>`)}
+    ${S('Kontakt', `<p>E-Mail: <a href="mailto:${esc(LEGAL.mail)}">${esc(LEGAL.mail)}</a><br>Quellcode: ${ext(REPO,'github.com/lepettre/Rezeptesammlung')}</p>`)}
     ${S('Datenschutz', L([
       'Rezepte, Fotos und Einstellungen bleiben auf diesem Gerät (IndexedDB und localStorage). Die App legt keine Konten an, setzt keine Cookies und nutzt keine Analyse- oder Werbedienste.',
       'Fotos werden auf dem Gerät gelesen und nicht hochgeladen. Schriften, Texterkennung und PDF-Druck kommen vom selben Server wie die App.',

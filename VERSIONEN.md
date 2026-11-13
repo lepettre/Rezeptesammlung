@@ -56,3 +56,4 @@ Rückblickend zusammengestellt. Die Versionsnummer ist die des Service Workers (
 - v51: Kontaktangaben ergänzt
 - v52: Knopf „Als eigenes Rezept übernehmen“
 - v53: Lizenz MIT-0 und fehlende Lizenztexte der Fremdbestandteile ergänzt, Lizenzabschnitt in der App, Knopf „Importieren“ in der Liste
+- v54: Name und Anschrift aus „Version und Rechtliches“ entfernt, Kontakt nur noch per E-Mail
