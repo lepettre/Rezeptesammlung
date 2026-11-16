@@ -123,6 +123,16 @@ img{ max-width:100%; display:block; }
 .dmeta{ margin:8px 0 4px; display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; font-weight:600; font-size:15px; }
 .dmeta .course{ display:inline-flex; align-items:center; gap:6px; }
 .dmeta .course svg{ width:16px; height:16px; flex:none; }
+.dcred{ margin:6px 0 0; font-size:11.5px; color:var(--ink2); } .dcred a{ color:inherit; }
+.ph-dr .row{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0; }
+.ph-dr .lbl{ display:block; margin-top:12px; font-size:12.5px; color:var(--ink2); }
+.ph-now{ display:flex; align-items:center; gap:12px; margin:4px 0 8px; } .ph-now img{ width:72px; height:72px; object-fit:cover; border-radius:var(--rt); }
+.un-f{ display:flex; gap:6px; margin:8px 0; }
+.un-f input{ flex:1; min-width:0; height:44px; padding:0 14px; background:var(--field); border:var(--field-bd); color:var(--ink); font-size:16px; border-radius:var(--r); }
+.un-g{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; } .un-g .hint{ grid-column:1/-1; color:var(--ink2); font-size:14px; }
+.un-i{ position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; padding:0; border:0; background:var(--paper2); }
+.un-i img{ width:100%; height:100%; object-fit:cover; display:block; }
+.un-i span{ position:absolute; left:5px; right:5px; bottom:4px; font-size:10px; font-weight:600; color:#fff; text-shadow:0 1px 3px #000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left; }
 .dsub{ margin:0 0 6px; color:var(--ink2); font-size:14px; line-height:1.4; }
 .ctl .cookbtn{ margin-left:auto; height:46px; padding:0 26px; background:var(--rot); color:var(--on-rot); }
 @media (min-width:760px){
@@ -358,6 +368,12 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .km-seg{flex:1;display:flex;gap:4px}.km-seg i{flex:1;height:6px;border-radius:3px;background:var(--line)}.km-seg i.d{background:var(--ink2)}.km-seg i.on{background:var(--rot)}
 .km-ing{position:absolute;inset:auto 0 0 0;max-height:70%;overflow:auto;background:var(--card);border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:18px 20px calc(env(safe-area-inset-bottom) + 18px);transform:translateY(100%);transition:transform .25s}
 .km-ing.on{transform:none}
+.km>.ck-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4;z-index:0;pointer-events:none}
+.km-top,.km-main,.km-bar{position:relative;z-index:1}
+.km-ing{z-index:2}
+.km-top button.sq{width:40px;padding:0;display:inline-flex;align-items:center;justify-content:center}.km-top button.sq svg{width:20px;height:20px}
+.km-cred{position:absolute;z-index:3;right:calc(env(safe-area-inset-right) + 18px);bottom:max(4px,calc(env(safe-area-inset-bottom) - 16px));max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 10px/1.2 var(--f-body);opacity:.55}.km-cred a{color:inherit;text-decoration:none}
+.km-ph{max-height:78%}
 .km-ing h3{margin:0 0 8px;font:600 16px var(--f-body)}
 @media (orientation:portrait){.km-main{flex-direction:column;gap:6px}.km-n{flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}.km-n b{font-size:clamp(56px,16vmin,120px)}}
 
@@ -378,16 +394,17 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 }
 .rtile .tbox{flex:1;min-height:0;display:flex;align-items:flex-end;overflow:hidden}
 .rtile .tt{margin:0;min-width:0;max-width:100%}
-.rtile.ph{padding:0;background:var(--ink);color:#fff}
+.rtile.ph{background:#000;color:#fff}
 .rtile.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.rtile .tpan{position:absolute;left:6px;right:6px;bottom:6px;max-height:62%;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:calc(var(--rt) * 1.2);background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(16px) saturate(1.2);backdrop-filter:blur(16px) saturate(1.2)}
-.rtile.ph .fav{z-index:2;color:#fff}
+.rtile .shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.1) 65%);z-index:1}
+.rtile.ph .tk,.rtile.ph .tbox,.rtile.ph .tm,.rtile.ph .fav{position:relative;z-index:3}
+.rtile.ph .fav{color:#fff;position:absolute}
 /* Darstellung kompakt */
 .looks2{display:flex;gap:8px;overflow-x:auto;padding:6px 6px 10px;margin:0 -6px;scrollbar-width:none}
 .look2{flex:none;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;color:var(--ink)}
 .look2 i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:16px;border:1px solid var(--line)}
 .look2.on i{outline:2px solid var(--ink);outline-offset:2px}
-.look2 small{font-size:11px}
+.look2 small{font-size:10.5px;max-width:62px;text-align:center;line-height:1.15;white-space:normal}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-weight:600}
 /* Fenster: gleiche Radien an allen Ecken, frei schwebend */
 .sheet{border-radius:var(--rt);margin:0 8px calc(8px + env(safe-area-inset-bottom,0px));max-width:min(560px,calc(100% - 16px))}
@@ -1178,15 +1195,25 @@ function scaleStepText(t,f){
 }
 /* ===== Darstellung 4.0: Modus × Farbwelt × Schrift × Ecken ===== */
 /* Farbwelten nach den Kombinationen des StandBy-Dashboards: a Fläche, b Schrift/Dunkel, c Zweitfarbe. Kachelpaare [Fläche, Schrift]. */
+/* Farbwelten: zwölf Paletten für Home Assistant (hell und dunkel, abgestimmt auf die dortigen Themes), dazu Atelier mit den mehrfarbigen Rezeptfarben des StandBy-Dashboards.
+   Reihenfolge der Werte je Fassung: Hauptfarbe, Schrift darauf, helle Hauptfarbe, Schrift darauf, dunkle Hauptfarbe, Akzent, Schrift darauf, Hintergrund, zweiter Hintergrund, Karte. */
 const FARBEN=[
  {id:'atelier',n:'Atelier',a:'#ffe600',b:'#000000',ink:'#111111',lp:'#FDFBF4',dp:'#000000',fg1:'#000000',sw:['#ffe600','#ff5a1f','#2b1bd6','#ff9ad5','#c7f23a'],
   pairs:[['#ff9500','#160b00'],['#c7f23a','#0b1400'],['#123524','#c7f23a'],['#ff5a1f','#140400'],['#ffe600','#000000'],['#e9e3d3','#111111'],['#1c1c1e','#ffe600'],['#ff9ad5','#24001a'],['#63e6e2','#0b2545'],['#2b1bd6','#ff9ad5'],['#1c1c1e','#ffffff'],['#1c1c1e','#ffffff']]},
- {id:'zitrone',n:'Zitrone',a:'#ffe600',b:'#000000',c:'#feee62',lp:'#FDFBF4',fg1:'#000000'},
- {id:'orchidee',n:'Orchidee',a:'#ff9ad5',b:'#2b1bd6',c:'#fec1e1',lp:'#FDFBF4',fg1:'#2b1bd6'},
- {id:'tanne',n:'Tannengrün',a:'#c7f23a',b:'#0f2e1d',c:'#ddf584',lp:'#FDFBF4',fg1:'#0f2e1d'},
- {id:'lagune',n:'Lagune',a:'#63e6e2',b:'#0b2545',c:'#a0eee9',lp:'#FDFBF4',fg1:'#0b2545'},
- {id:'moos',n:'Moos',a:'#4F7A60',b:'#23302B',c:'#DCE9DF',lp:'#F6F5F1',fg1:'#ffffff',f2:'#DCE9DF',t:'#4F7A60'},
- {id:'karmin',n:'Karmin',a:'#D52B1E',b:'#262624',c:'#F5D9D6',lp:'#F6F6F5',fg1:'#ffffff',f2:'#F5D9D6',t:'#D52B1E'}];
+ {id:'gelb-silber',n:'Gelb · Silber',ha:{l:['#7a6e00','#ffffff','#dcd9bb','#000000','#544c00','#a69600','#000000','#f6f4e6','#ebe9d9','#ffffff'],d:['#ffe600','#000000','#f0d800','#000000','#544b00','#ffe600','#000000','#17160c','#39372a','#27261c']}},
+ {id:'rosa-blau',n:'Rosa · Blau',ha:{l:['#2b1bd6','#ffffff','#d7d3f7','#000000','#3424d8','#cc7baa','#000000','#f6eff5','#ebe2ec','#ffffff'],d:['#ff9ad5','#000000','#ffc8e8','#000000','#663e56','#ff9ad5','#000000','#171217','#393239','#272227']}},
+ {id:'limette-tanne',n:'Limette · Tanne',ha:{l:['#0f2e1d','#ffffff','#d3d9d5','#000000','#375042','#819d26','#000000','#f2f5ea','#e6eade','#ffffff'],d:['#c7f23a','#000000','#bee737','#000000','#425113','#c7f23a','#000000','#14170f','#35382e','#25271f']}},
+ {id:'orange-creme',n:'Orange · Creme',ha:{l:['#ba4217','#ffffff','#eed2c7','#000000','#852f10','#ff5a1f','#000000','#f6eae8','#ebdcdb','#ffffff'],d:['#ff5a1f','#000000','#ffcdba','#000000','#852f10','#f2efe8','#000000','#170f0e','#392d2c','#271f1e']}},
+ {id:'mint-marine',n:'Mint · Marine',ha:{l:['#0b2545','#ffffff','#d3d8dd','#000000','#374c67','#45a19e','#000000','#ebf4f6','#dde9ed','#ffffff'],d:['#63e6e2','#000000','#79e9e6','#000000','#245251','#e3f6f5','#000000','#0f1618','#2e373a','#202628']}},
+ {id:'rot-rose',n:'Rot · Rosé',ha:{l:['#c92f26','#ffffff','#f3cfcd','#000000','#8f211b','#ff3b30','#000000','#f6e8e9','#ebd9dd','#ffffff'],d:['#ff3b30','#000000','#ffcac8','#000000','#8f211b','#ffd6e0','#000000','#170d0f','#392b2d','#271e1f']}},
+ {id:'lila-gelb',n:'Lila · Gelb',ha:{l:['#2a1440','#ffffff','#d9d5dd','#000000','#554467','#bf5af2','#000000','#f1eaf7','#e5dcee','#ffffff'],d:['#bf5af2','#000000','#ebcdfb','#000000','#693286','#ffe600','#000000','#140f18','#342d3b','#241f29']}},
+ {id:'pfirsich-bordeaux',n:'Pfirsich · Bordeaux',ha:{l:['#5a0f1f','#ffffff','#e1d4d6','#000000','#753744','#bf8668','#000000','#f6f0ef','#ebe4e5','#ffffff'],d:['#ffb38a','#000000','#ffcdb1','#000000','#624435','#ffb38a','#000000','#171313','#393434','#272423']}},
+ {id:'blau-eis',n:'Blau · Eis',ha:{l:['#086acc','#ffffff','#c2daf2','#000000','#064a8f','#0a84ff','#000000','#e5edf8','#d5e0f0','#ffffff'],d:['#0f86ff','#000000','#b7dbff','#000000','#084a8e','#0f86ff','#000000','#0b1119','#28303c','#1b2129']}},
+ {id:'gruen-pink',n:'Grün · Pink',ha:{l:['#0a2a12','#ffffff','#d3d8d4','#000000','#36513d','#27a947','#000000','#e7f2ec','#d8e7e0','#ffffff'],d:['#30d158','#000000','#9ae9ad','#000000','#145724','#ff9ad5','#000000','#0d1511','#2a3630','#1d2521']}},
+ {id:'silber-schwarz',n:'Silber · Schwarz',ha:{l:['#3a3a3c','#ffffff','#d7d7d7','#000000','#4a4a4c','#3a3a3c','#ffffff','#f2f2f4','#e6e6eb','#ffffff'],d:['#c7c7cc','#000000','#d7d7da','#000000','#4a4a4c','#c7c7cc','#000000','#141417','#353538','#252527']}},
+ {id:'marine-creme',n:'Marine · Creme',ha:{l:['#1c3557','#ffffff','#d3d7de','#000000','#364c6a','#1c3557','#ffffff','#e6e8ec','#d7d9e0','#ffffff'],d:['#77869a','#000000','#d3d8de','#000000','#434b57','#f2efe8','#000000','#0c0d11','#292b30','#1c1d21']}}];
+/* frühere Farbwelten → neue */
+const PAL_ALT={zitrone:'gelb-silber',orchidee:'rosa-blau',tanne:'limette-tanne',lagune:'mint-marine',moos:'limette-tanne',karmin:'rot-rose'};
 const SCHRIFTEN=[
  {id:'klar',n:'Klar',d:'"Geist","Helvetica Neue",Arial,sans-serif',b:'"Geist","Helvetica Neue",Arial,sans-serif',m:'"Geist","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.03em'},
  {id:'plakat',n:'Plakat',d:'"Archivo Black","Arial Black",Arial,sans-serif',b:'"Archivo","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:400,ls:'-.02em'},
@@ -1196,8 +1223,9 @@ const SCHRIFTEN=[
 const ECKEN=[['sharp','Eckig',0,0,0],['soft','Weich',10,12,18],['round','Rund',22,26,30]];
 const MODI=[['light','Hell'],['dark','Dunkel'],['auto','Automatisch']];
 /* Übernahme der früheren Stile: [Farbwelt, Schrift, Ecken, Modus] */
-const ALT_STILE={graphit:['karmin','klar','soft','light'],abend:['zitrone','klar','soft','dark'],bauhaus:['karmin','plakat','sharp','light'],nordisch:['moos','manuskript','soft','light'],altrosa:['orchidee','redaktion','soft','light'],kontrast:['lagune','raster','soft','light'],zitrone:['zitrone','plakat','round','dark'],bonbon:['orchidee','redaktion','round','light'],wald:['tanne','raster','sharp','dark'],meer:['lagune','klar','soft','light'],pop:['atelier','plakat','round','dark'],sorbet:['orchidee','redaktion','round','light'],neon:['tanne','raster','sharp','dark'],marine:['lagune','klar','soft','light']};
-(function migrateLook(){ if(pref.pal) return; const m=ALT_STILE[pref.style]||ALT_STILE.nordisch; pref.pal=m[0]; pref.font=m[1]; pref.corner=m[2]; pref.mode=pref.night?'dark':m[3]; delete pref.night; savePref(); })();
+const ALT_STILE={graphit:['rot-rose','klar','soft','light'],abend:['gelb-silber','klar','soft','dark'],bauhaus:['rot-rose','plakat','sharp','light'],nordisch:['limette-tanne','manuskript','soft','light'],altrosa:['rosa-blau','redaktion','soft','light'],kontrast:['mint-marine','raster','soft','light'],zitrone:['gelb-silber','plakat','round','dark'],bonbon:['rosa-blau','redaktion','round','light'],wald:['limette-tanne','raster','sharp','dark'],meer:['mint-marine','klar','soft','light'],pop:['atelier','plakat','round','dark'],sorbet:['rosa-blau','redaktion','round','light'],neon:['limette-tanne','raster','sharp','dark'],marine:['mint-marine','klar','soft','light']};
+(function migrateLook(){ if(PAL_ALT[pref.pal]){ pref.pal=PAL_ALT[pref.pal]; savePref(); }
+  if(pref.pal) return; const m=ALT_STILE[pref.style]||ALT_STILE.nordisch; pref.pal=m[0]; pref.font=m[1]; pref.corner=m[2]; pref.mode=pref.night?'dark':m[3]; delete pref.night; savePref(); })();
 const CAT_IDX=[2,0,1,2,0,1,2,1,0,1,2,1];
 let CUR_PAIRS=null;
 const mixc=(a,p,b)=>`color-mix(in srgb,${a} ${p}%,${b})`;
@@ -1205,27 +1233,38 @@ const modeNow=()=> pref.mode==='dark' ? 'dark' : pref.mode==='auto' ? (window.ma
 /* Farbpaar einer Kategorie in der aktuellen Farbwelt (Kacheln und Kochansicht) */
 function buntPair(course){ if(!CUR_PAIRS) return null; const i=COURSES.findIndex(x=>x[0]===course); return CUR_PAIRS[i<0?CUR_PAIRS.length-1:i]; }
 function applyLook(){
-  const F=FARBEN.find(x=>x.id===pref.pal)||FARBEN[5], Sc=SCHRIFTEN.find(x=>x.id===pref.font)||SCHRIFTEN[3], E=ECKEN.find(x=>x[0]===pref.corner)||ECKEN[1];
+  const F=FARBEN.find(x=>x.id===pref.pal)||FARBEN.find(x=>x.id==='limette-tanne'), Sc=SCHRIFTEN.find(x=>x.id===pref.font)||SCHRIFTEN[3], E=ECKEN.find(x=>x[0]===pref.corner)||ECKEN[1];
   const dark=modeNow()==='dark', h=document.documentElement;
-  const P=dark?(F.dp||(F.b==='#000000'?'#000000':mixc(F.b,32,'#000'))):F.lp, I=dark?'#F4F1E8':(F.ink||F.b);
-  const T=dark?mixc(F.a,82,'#fff'):(F.t||F.b);
-  const v={'--paper':P,'--paper2':mixc(I,8,P),'--card':dark?mixc(I,9,P):'#FFFFFF','--ink':I,'--ink2':mixc(I,62,P),'--line':mixc(I,16,P),
-   '--rot':F.a,'--on-rot':F.fg1,'--blau':T,'--gelb':mixc(F.a,dark?30:26,P),'--on-gelb':I,'--tint':mixc(I,dark?12:8,P),'--tint-ink':I,'--field':mixc(I,dark?12:7,P),
-   '--g-rot':T,'--g-blau':T,'--g-gelb':T,'--g-ink':T,'--gl-fill':'currentColor','--gl-stroke':'none','--gl-sw':'0',
+  let v, themeBg;
+  if(F.ha){
+    const [pri,onPri,lp,onLp,dp,acc,onAcc,bg,bg2,card]=F.ha[dark?'d':'l'], I=dark?'#f4f4f6':'#141a1c', I2=dark?'#a6a6ab':'#5a5f64';
+    v={'--paper':bg,'--paper2':bg2,'--card':card,'--ink':I,'--ink2':I2,'--line':mixc(I,14,bg),
+     '--rot':pri,'--on-rot':onPri,'--blau':pri,'--gelb':lp,'--on-gelb':onLp,'--tint':bg2,'--tint-ink':I,'--field':bg2,
+     '--g-rot':pri,'--g-blau':pri,'--g-gelb':pri,'--g-ink':pri};
+    /* Kacheln immer kräftig: Hauptfarbe und Akzent der dunklen Fassung, dazu eine dunkle Kachel */
+    const dd=F.ha.d, same=dd[5].toLowerCase()===dd[0].toLowerCase();
+    const t=[[dd[0],dd[1]],same?[dd[4],dd[2]]:[dd[5],dd[6]],dark?[bg2,pri]:[pri,onPri]];
+    CUR_PAIRS=CAT_IDX.map(k=>t[k]); themeBg=bg;
+  } else {
+    const P=dark?F.dp:F.lp, I=dark?'#F4F1E8':F.ink, T=dark?mixc(F.a,82,'#fff'):F.b;
+    v={'--paper':P,'--paper2':mixc(I,8,P),'--card':dark?mixc(I,9,P):'#FFFFFF','--ink':I,'--ink2':mixc(I,62,P),'--line':mixc(I,16,P),
+     '--rot':F.a,'--on-rot':F.fg1,'--blau':T,'--gelb':mixc(F.a,dark?30:26,P),'--on-gelb':I,'--tint':mixc(I,dark?12:8,P),'--tint-ink':I,'--field':mixc(I,dark?12:7,P),
+     '--g-rot':T,'--g-blau':T,'--g-gelb':T,'--g-ink':T};
+    CUR_PAIRS=F.pairs; themeBg=P;
+  }
+  Object.assign(v,{'--gl-fill':'currentColor','--gl-stroke':'none','--gl-sw':'0',
    '--r':E[2]+'px','--rt':E[3]+'px','--rtile':E[4]+'px','--danger':dark?'#FF7A6E':'#B3261E',
    '--fab-shadow':dark?'0 8px 22px rgba(0,0,0,.6), 0 2px 5px rgba(0,0,0,.4)':'0 8px 22px rgba(0,0,0,.30), 0 2px 5px rgba(0,0,0,.20)',
-   '--f-disp':Sc.d,'--f-body':Sc.b,'--f-mono':Sc.m,'--disp-w':Sc.w,'--disp-ls':Sc.ls,'color-scheme':dark?'dark':'light'};
+   '--f-disp':Sc.d,'--f-body':Sc.b,'--f-mono':Sc.m,'--disp-w':Sc.w,'--disp-ls':Sc.ls,'color-scheme':dark?'dark':'light'});
   for(const k in v) h.style.setProperty(k,v[k]);
   h.dataset.mode=dark?'dark':'light';
-  if(F.pairs) CUR_PAIRS=F.pairs;
-  else { const lift=dark?mixc(F.b,84,'#fff'):F.b; const t=[[F.a,F.fg1],[lift,F.f2||F.a],[F.c,F.b]]; CUR_PAIRS=CAT_IDX.map(k=>t[k]); }
-  const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', dark?(F.dp||'#000000'):F.lp);
+  const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', themeBg);
 }
 if(window.matchMedia){ try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(pref.mode==='auto'){ applyLook(); if(typeof render==='function') render(); } }); }catch(e){} }
 function lookSheet(){
   const sym = pref.symbols==='icons'?'icons':'shapes', tiles=pref.view==='tiles';
   const row=(label,opts,act,val)=>`<div class="lrow"><span>${label}</span><span class="seg small">${opts.map(([k,l])=>`<button class="${val===k?'on':''}" data-act="${act}" data-v="${k}">${l}</button>`).join('')}</span></div>`;
-  const stripe=F=>{ const c=F.sw||[F.a,F.b,F.c]; const w=100/c.length; return `linear-gradient(90deg,${c.map((x,i)=>`${x} ${i*w}% ${(i+1)*w}%`).join(',')})`; };
+  const stripe=F=>{ const c=F.sw||[F.ha.d[0],F.ha.l[0],F.ha.l[2]]; const w=100/c.length; return `linear-gradient(90deg,${c.map((x,i)=>`${x} ${i*w}% ${(i+1)*w}%`).join(',')})`; };
   sheet(`<h2>Darstellung</h2>
    ${row('Modus',MODI,'setmode',pref.mode||'light')}
    <div class="lrow lcap"><span>Farbwelt</span></div>
@@ -1364,7 +1403,7 @@ function renderHelp(){
       'Wiederherstellen oder Sammlung eines Freundes einlesen: „Teilen &amp; sichern“, dann „Sicherung oder Sammlung importieren“. Das geht auch bei leerer Sammlung.',
       'Rezepte von Freunden erhalten den Vermerk „geteilt von“ und lassen sich danach filtern. Die eigene Sicherung wird mit „Als eigenes Rezept übernehmen“ ohne den Vermerk übernommen. Vorhandene Rezepte werden nicht doppelt angelegt.']))}
     ${S('Drucken', L(['Hoch- oder Querformat im Druckdialog wählen. Auf dem iPhone als PDF über Teilen drucken.']))}
-    ${S('Darstellung', L(['Modus (Hell, Dunkel, Automatisch), sieben Farbwelten, fünf Schriften, drei Eckenformen und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
+    ${S('Darstellung', L(['Modus (Hell, Dunkel, Automatisch), dreizehn Farbwelten, fünf Schriften, drei Eckenformen und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
     ${S('Als App installieren', L([
       '<b>iPhone, iPad:</b> Seite in Safari öffnen, Teilen, „Zum Home-Bildschirm“.',
       '<b>Android:</b> Seite in Chrome öffnen, Menü ⋮, „App installieren“ oder „Zum Startbildschirm hinzufügen“.',
@@ -1373,7 +1412,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '4.1';
+const APP_VERSION = '4.2';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1392,8 +1431,9 @@ const HISTORY = [
   ['3.9','Zwölf bunte Stile aus dem StandBy-Dashboard unter Darstellung; Kacheln, Oberfläche und Kochansicht folgen einheitlich dem gewählten Stil'],
   ['3.10','Vier bunte Stile mit Kachelfarben nach Kategorie, eigener Schrift und Form; Kacheln unterschiedlich hoch (hochkant) oder breit (quer)'],
   ['3.11','Bunte Stile aus den dreifarbigen Kombinationen des StandBy-Dashboards, ruhigeres Farbmuster nach Kategorie, Wörter in Kacheln nie getrennt'],
-  ['4.0','Darstellung neu aufgebaut: Modus (Hell, Dunkel, Automatisch), sieben Farbwelten nach StandBy-Vorbild, fünf Schriften, Ecken und Symbole frei wählbar; Nachtmodus entfällt; Kopf der Rezeptansicht aufgeräumt'],
-  ['4.1','Kochmodus statt Kochen, Liste schließen im Kochmodus deutlich, Fertig als Hauptknopf, Unterlängen nicht mehr abgeschnitten, keine Portionen auf Kacheln']
+  ['4.0','Darstellung neu aufgebaut: Modus (Hell, Dunkel, Automatisch), dreizehn Farbwelten nach StandBy-Vorbild, fünf Schriften, Ecken und Symbole frei wählbar; Nachtmodus entfällt; Kopf der Rezeptansicht aufgeräumt'],
+  ['4.1','Kochmodus statt Kochen, Liste schließen im Kochmodus deutlich, Fertig als Hauptknopf, Unterlängen nicht mehr abgeschnitten, keine Portionen auf Kacheln'],
+  ['4.2','Zwölf Farbwelten passend zu Home Assistant, Fotokacheln wie im StandBy-Dashboard, Unsplash-Suche für Rezeptfotos']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1426,6 +1466,7 @@ function renderInfo(){
       'pyspellchecker, MIT. '+ext(LIC+'/pyspellchecker-LICENSE.txt','Lizenztext'),
       'jsPDF, MIT: PDF-Druck. '+ext(LIC+'/jspdf-LICENSE.txt','Lizenztext'),
       'Tabler Icons, MIT: Symbole der Oberfläche. '+ext(LIC+'/tabler-icons-LICENSE.txt','Lizenztext'),
+      'Unsplash: Fotosuche für Rezeptfotos. Bilder stammen von den genannten Fotografen und stehen unter der Unsplash-Lizenz, sie werden von Unsplash geladen. '+ext('https://unsplash.com/license','Lizenz')+' · '+ext('https://unsplash.com/?utm_source=rezeptesammlung&utm_medium=referral','Unsplash'),
       'Schriften Archivo, Archivo Black, Space Mono, Geist, Inter, Fraunces, DM Serif Display, DM Sans und Space Grotesk, SIL Open Font License 1.1. '+ext(LIC,'Lizenztexte im Quellcode')]))}
   </div>`;
 }
@@ -1507,8 +1548,8 @@ function tileHTML(r){const c=(r.courses||[])[0]||'',col=(COURSES.find(x=>x[0]===
  const tl=(r.title||'').length, sz=tl<=15?'s':tl<=27?'m':'l';
  const a=activeMin(r),t=totalMin(r),time=a!=null?fmtDuration(a):(t!=null?fmtDuration(t):'');
  const inner=`${c?`<span class="tk">${esc(c)}</span>`:''}<div class="tbox"><h3 class="tt">${esc(r.title||'Ohne Titel')}</h3></div>${time?`<span class="tm"><span>${time}</span></span>`:''}`;
- /* mit Foto wie im Dashboard: Bild füllt die Kachel, Text auf Unschärfe */
- return r.photo?`<li class="rtile ph" data-sz="${sz}" data-act="open" data-id="${r.id}"><img src="${r.photo}" alt="">${r.fav?'<span class="fav">★</span>':''}<div class="tpan">${inner}</div></li>`:`<li class="rtile" data-sz="${sz}" data-act="open" data-id="${r.id}" style="--tbg:${bg};--tfg:${fg}">${r.fav?'<span class="fav">★</span>':''}${inner}</li>`}
+ /* mit Foto wie im StandBy-Dashboard: Bild füllt die Kachel, dunkler Verlauf von unten, weiße Schrift */
+ return r.photo?`<li class="rtile ph" data-sz="${sz}" data-act="open" data-id="${r.id}"><img src="${r.photo}" alt=""><span class="shade"></span>${r.fav?'<span class="fav">★</span>':''}${inner}</li>`:`<li class="rtile" data-sz="${sz}" data-act="open" data-id="${r.id}" style="--tbg:${bg};--tfg:${fg}">${r.fav?'<span class="fav">★</span>':''}${inner}</li>`}
 addEventListener('resize',()=>{if(pref.view==='tiles')tileFit()});
 
 /* ===================== Detail ===================== */
@@ -1559,6 +1600,7 @@ function renderDetail(keep){
   </div></div>
   <div class="wrap">
     ${r.photo?`<div class="hero"><div class="cov">${cover(r,true)}</div></div>`:''}
+    ${r.photo&&r.photoCredit?`<p class="dcred">Foto <a href="${esc(r.photoCredit.link)}" target="_blank" rel="noopener">${esc(r.photoCredit.name)}</a> · <a href="https://unsplash.com/?utm_source=rezeptesammlung&amp;utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></p>`:''}
     <h1 class="dtitle">${esc(r.title||'Ohne Titel')}</h1>
     <p class="dmeta">${[(r.courses||[]).length?`<span class="course">${glyph(r.courses[0])}${esc(r.courses.join(' · '))}</span>`:'',totalTxt?`<span>${esc(totalTxt)}</span>`:'',r.servings?`<span>${esc(fmtFrac(r.servings)+' '+(r.servingsUnit||'Portionen'))}</span>`:'',diffHTML].filter(Boolean).join('')}</p>
     ${partTxt?`<p class="dsub">${esc(partTxt)}</p>`:''}
@@ -1578,6 +1620,7 @@ function renderDetail(keep){
     ${r.notes?`<div class="notes">${esc(r.notes)}</div>`:''}
     ${(srcLine||src.url)?`<div class="sourcebox">Quelle: ${srcLine}${src.url?`<br><a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url)}</a>`:''}</div>`:''}
     <div class="actions">
+      <button class="btn" data-act="photosheet">${ICON.camera} Foto</button>
       <button class="btn" data-act="copytext">${ICON.copy} Text kopieren</button>
       <button class="btn" data-act="print">${ICON.print} Drucken</button>
       <button class="btn danger" data-act="delete">${ICON.trash} Löschen</button>
@@ -1588,7 +1631,7 @@ function renderDetail(keep){
 function cookStart(){const r=getR(route.id);if(!r||!ds)return;const factor=ds.shown/(r.servings||1),G=getGroups(r),steps=[];
  G.steps.forEach(g=>parseStepsText(g.text).forEach(st=>{if(st.h)return;steps.push({g:G.steps.length>1||g.t?g.t||'':'',html:factor!==1?scaleStepText(st.t,factor):esc(st.t)})}));if(!steps.length)return;
  let k=-1;const ingHTML=G.ing.map(g=>((G.ing.length>1||g.t)&&g.t?`<h4 class="grphead">${esc(g.t)}</h4>`:'')+'<ul class="inglist">'+parseIngredientsText(g.text).map(it=>{if(it.h)return`<li class="grp">${esc(it.h)}</li>`;k++;const d=renderIng(it,factor,ds.mode,ds.over[k]);return`<li class="ing" data-act="kmIngChk" data-i="${k}"><span class="qty">${d.amount?`${d.approx?'ca. ':''}${esc(d.amount)}${d.unit?' '+esc(d.unit):''}`:''}</span> <span class="nm">${esc(d.name)}</span></li>`}).join('')+'</ul>').join('');
- const unitName=r.servingsUnit||(r.servings?'Portionen':'');kmOpen({pair:buntPair((r.courses||[])[0]||''),title:r.title||'Rezept',steps,ingHTML,servLabel:r.servings?`${fmtFrac(ds.shown)} ${unitName}`:''})}
+ const unitName=r.servingsUnit||(r.servings?'Portionen':'');kmOpen({pair:buntPair((r.courses||[])[0]||''),rid:r.id,photo:r.photo||'',credit:r.photoCredit||null,photoHTML:()=>photoDrawerHTML(r.id),title:r.title||'Rezept',steps,ingHTML,servLabel:r.servings?`${fmtFrac(ds.shown)} ${unitName}`:''})}
 function stepServings(dir){
   const r=getR(route.id); if(!r) return;
   const base=r.servings||1;
@@ -1610,7 +1653,7 @@ if(document.fonts){const rf=()=>{if(pref.view==='tiles')tileFit()};document.font
 /* Kochmodus: ein Schritt pro Bildschirm. Mengen werden nur umgerechnet, wo sie im Schritt selbst stehen (keine Zuordnung aus der Zutatenliste). */
 let km=null;
 function kmOpen(o){km={...o,i:0};const d=document.createElement('div');d.className='km';d.id='km';
- if(o.pair){const[P,I]=o.pair,m=(a,pc,b)=>`color-mix(in srgb,${a} ${pc}%,${b})`;for(const[k,v]of Object.entries({'--paper':P,'--ink':I,'--ink2':m(I,70,P),'--line':m(I,24,P),'--rot':I,'--card':m(P,92,I)}))d.style.setProperty(k,v)}document.body.append(d);document.body.style.overflow='hidden';try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>km&&(km.wl=w)).catch(()=>{})}catch(e){}kmPaint();
+ if(o.pair){const[P,I]=o.pair,m=(a,pc,b)=>`color-mix(in srgb,${a} ${pc}%,${b})`;for(const[k,v]of Object.entries({'--paper':P,'--ink':I,'--ink2':m(I,70,P),'--line':m(I,24,P),'--rot':I,'--on-rot':P,'--card':m(P,92,I),'--tint':m(I,14,P),'--tint-ink':I,'--field':m(I,12,P)}))d.style.setProperty(k,v)}document.body.append(d);document.body.style.overflow='hidden';try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>km&&(km.wl=w)).catch(()=>{})}catch(e){}kmPaint();
  let x0=null;d.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});d.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>50&&!e.target.closest('.km-ing'))kmStep(dx<0?1:-1)},{passive:true});
  /* Maus: ziehen, in die linke oder rechte Hälfte klicken, Scrollrad; Tastatur: Pfeile und Leertaste */
  let mx=null;d.addEventListener('pointerdown',e=>{mx=e.pointerType==='mouse'&&!e.target.closest('button,.km-ing')?e.clientX:null});
@@ -1618,10 +1661,13 @@ function kmOpen(o){km={...o,i:0};const d=document.createElement('div');d.classNa
  let wt=0;d.addEventListener('wheel',e=>{if(e.target.closest('.km-ing'))return;const v=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY,now=Date.now();if(Math.abs(v)<20||now-wt<350)return;wt=now;kmStep(v>0?1:-1)},{passive:true});
  km.key=e=>{if(!km)return;if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();kmStep(1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();kmStep(-1)}else if(e.key==='Escape')kmClose()};document.addEventListener('keydown',km.key)}
 function kmPaint(){const d=document.getElementById('km');if(!d||!km)return;const s=km.steps[km.i],n=km.steps.length;
- d.innerHTML=`<div class="km-top"><h2>${esc(km.title)}</h2><button data-act="kmIng" class="${km.ingOn?'on':''}">${km.ingOn?'Liste schließen':'Zutaten'}</button><button data-act="kmClose" aria-label="Kochmodus schließen">Fertig</button></div>
+ d.innerHTML=`${km.photo?`<img class="ck-bg" src="${esc(km.photo)}" alt="">`:''}<div class="km-top"><h2>${esc(km.title)}</h2><button data-act="kmIng" class="${km.ingOn?'on':''}">${km.ingOn?'Liste schließen':'Zutaten'}</button>${km.photoHTML?`<button data-act="kmPhoto" class="sq${km.un?' on':''}" aria-label="Foto">${ICON.camera}</button>`:''}<button data-act="kmClose" aria-label="Kochmodus schließen">Fertig</button></div>
  <div class="km-main"><div class="km-n"><b>${km.i+1}</b><small>von ${n}</small></div><div class="km-txt">${s.g?`<div class="km-g">${esc(s.g)}</div>`:''}<div class="km-t">${s.html}</div></div></div>
  <div class="km-bar"><button data-act="kmPrev" ${km.i?'':'disabled'} aria-label="Vorheriger Schritt">‹</button><div class="km-seg">${km.steps.map((_,k)=>`<i class="${k<km.i?'d':k===km.i?'on':''}"></i>`).join('')}</div><button data-act="kmNext" ${km.i<n-1?'':'disabled'} aria-label="Nächster Schritt">›</button></div>
- <div class="km-ing ${km.ingOn?'on':''}"><h3>Zutaten${km.servLabel?` · ${esc(km.servLabel)}`:''}</h3>${km.ingHTML}</div>`;
+ <div class="km-ing ${km.ingOn?'on':''}"><h3>Zutaten${km.servLabel?` · ${esc(km.servLabel)}`:''}</h3>${km.ingHTML}</div>
+ ${km.un&&km.photoHTML?`<div class="km-ing km-ph ph-dr on"><h3>Foto</h3>${km.photoHTML()}</div>`:''}
+ ${km.credit?`<small class="km-cred">Foto <a href="${esc(km.credit.link)}" target="_blank" rel="noopener">${esc(km.credit.name)}</a> · <a href="https://unsplash.com/?utm_source=rezeptesammlung&amp;utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></small>`:''}`;
+ if(km.un&&typeof unSearch==='function'&&!km.unDone){km.unDone=1;unSearch(km.unQ||km.title)}
  requestAnimationFrame(()=>kmFit(d.querySelector('.km-t'),17,Math.min(64,Math.max(innerWidth/9,innerHeight/10))))}
 function kmStep(dx){if(!km)return;km.i=Math.max(0,Math.min(km.steps.length-1,km.i+dx));kmPaint()}
 function kmClose(){const d=document.getElementById('km');if(d)d.remove();document.body.style.overflow='';try{km&&km.wl&&km.wl.release()}catch(e){}if(km&&km.key)document.removeEventListener('keydown',km.key);km=null}
@@ -1839,10 +1885,44 @@ async function shrinkDataURL(src, max){
     if(out.length<160000 || m<300) return out;
   }
 }
+
+/* ===== Foto und Unsplash – wie im StandBy-Dashboard ===== */
+/* Der Access Key ist eine öffentliche Kennung (kein Geheimnis). Bilder werden direkt von Unsplash geladen (Hotlink), Fotograf und Unsplash werden genannt, der Download wird gemeldet. */
+const UN_KEY='a0heQoFnUT3nrjdMCBlRe8uJ1ejb7yfahKnC2xK_bGc';
+let UNRES=[], phTarget=null;
+const netErr=e=>e instanceof TypeError||/load failed|failed to fetch|networkerror/i.test(e?.message||'');
+function photoDrawerHTML(id){
+  const r=getR(id); if(!r) return ''; phTarget=id;
+  return `${r.photo?`<div class="ph-now"><img src="${esc(r.photo)}" alt=""><button class="btn" data-act="phdel">${ICON.trash} Foto löschen</button></div>`:''}
+  <div class="row"><label class="btn primary">${ICON.camera} Foto wählen<input type="file" id="phFile" accept="image/*" hidden></label><button class="btn" data-act="phpaste">Aus Zwischenablage einfügen</button></div>
+  <span class="lbl">Bild-Adresse einfügen (z. B. von Unsplash: Bild lange drücken → „Bildadresse kopieren“)</span><div class="un-f"><input id="phUrl" type="url" placeholder="https://images.unsplash.com/…" autocomplete="off"><button class="btn primary" data-act="phurl">Übernehmen</button></div>
+  <span class="lbl">Bei Unsplash suchen</span><form class="un-f" data-form="un"><input name="q" value="${esc(unQ||r.title||'')}" enterkeyhint="search" autocomplete="off"><button class="btn primary">Suchen</button></form><div class="un-g" id="unRes"></div>`;
+}
+let unQ='';
+async function unSearch(q){const box=$('#unRes');if(!box)return;unQ=q;box.innerHTML='<div class="hint">Suche …</div>';
+ try{const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=18&content_filter=high&client_id=${encodeURIComponent(UN_KEY)}`);
+  if(!r.ok)throw Error(r.status===401?'Unsplash-Schlüssel ungültig.':r.status===403?'Unsplash-Limit erreicht, später erneut versuchen.':'Unsplash: HTTP '+r.status);
+  const j=await r.json();UNRES=j.results||[];box.innerHTML=UNRES.length?UNRES.map((p,i)=>`<button class="un-i" data-act="unpick" data-i="${i}"><img src="${esc(p.urls.thumb)}" alt="${esc(p.alt_description||'')}" loading="lazy"><span>${esc(p.user.name)}</span></button>`).join(''):'<div class="hint">Keine Treffer. Anderen Begriff versuchen.</div>'}
+ catch(e){box.innerHTML=`<div class="hint">${esc(netErr(e)?'Unsplash gerade nicht erreichbar.':e.message)}</div>`}}
+async function setRecipePhoto(id, url, credit){
+  const r=getR(id); if(!r) return;
+  r.photo=url||''; if(credit) r.photoCredit=credit; else delete r.photoCredit;
+  await persist(r);
+  closeSheet();
+  if(km&&km.rid===id){ km.photo=r.photo; km.credit=r.photoCredit||null; km.un=false; kmPaint(); }
+  if(route.v==='detail') renderDetail(true); else if(route.v==='list') renderResults();
+}
+function unPick(i){const p=UNRES[i];if(!p||!phTarget)return;
+ fetch(p.links.download_location+(p.links.download_location.includes('?')?'&':'?')+'client_id='+encodeURIComponent(UN_KEY)).catch(()=>{});
+ setRecipePhoto(phTarget,p.urls.regular,{name:p.user.name,link:p.user.links.html+'?utm_source=rezeptesammlung&utm_medium=referral'}).then(()=>toast('Foto übernommen'))}
+async function photoFromBlob(b){ const u=URL.createObjectURL(b); try{ const d=await shrinkDataURL(u,1100); await setRecipePhoto(phTarget,d,null); toast('Foto übernommen'); } finally{ URL.revokeObjectURL(u); } }
+function photoSheet(id){ sheet(`<h2>Foto</h2><div class="ph-dr">${photoDrawerHTML(id)}</div><div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`); unSearch(unQ||getR(id).title||''); }
+document.addEventListener('submit',e=>{ const f=e.target.closest('form[data-form="un"]'); if(!f) return; e.preventDefault(); const q=(f.q.value||'').trim(); if(q) unSearch(q); });
+document.addEventListener('change',e=>{ if(e.target.id==='phFile'){ const f=e.target.files[0]; e.target.value=''; if(f) photoFromBlob(f).catch(()=>toast('Bild nicht lesbar')); } });
 async function onPhotoPicked(file){
   if(!file) return;
   const url=URL.createObjectURL(file);
-  try{ collectForm(); draft.photo = await shrinkDataURL(url, 1100); const paste=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(paste!=null) $('#pasteText').value=paste; }
+  try{ collectForm(); draft.photo = await shrinkDataURL(url, 1100); delete draft.photoCredit; const paste=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(paste!=null) $('#pasteText').value=paste; }
   catch(e){ toast('Bild nicht lesbar'); }
   finally{ URL.revokeObjectURL(url); }
 }
@@ -2853,7 +2933,8 @@ document.addEventListener('click', async e=>{
     case 'kmPrev': kmStep(-1); break;
     case 'kmNext': kmStep(1); break;
     case 'kmClose': kmClose(); break;
-    case 'kmIng': km.ingOn=!km.ingOn; kmPaint(); break;
+    case 'kmIng': km.ingOn=!km.ingOn; km.un=false; kmPaint(); break;
+    case 'kmPhoto': km.un=!km.un; km.ingOn=false; km.unDone=0; kmPaint(); break;
     case 'kmIngChk': { const li=el; li.classList.toggle('done'); km.chk=km.chk||new Set(); const k=li.dataset.i; km.chk.has(k)?km.chk.delete(k):km.chk.add(k); } break;
     case 'cook': cookStart(); break;
     case 'view': pref.view=v; savePref(); renderResults(); lookSheet(); break;
@@ -2907,7 +2988,12 @@ document.addEventListener('click', async e=>{
     case 'rmscans': { collectForm(); draft.scans=[]; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'usecook': { collectForm(); draft.cook=draft.cookEstimate; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'photo': $('#filePhoto').click(); break;
-    case 'nophoto': { collectForm(); draft.photo=''; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
+    case 'photosheet': photoSheet(route.id); break;
+    case 'unpick': unPick(+el.dataset.i); break;
+    case 'phdel': if(confirm('Foto dieses Rezepts entfernen?')) setRecipePhoto(phTarget,'',null); break;
+    case 'phpaste': (async()=>{ try{ const it=await navigator.clipboard.read(); for(const x of it){ const ty=x.types.find(t=>t.startsWith('image/')); if(ty){ await photoFromBlob(await x.getType(ty)); return; } } toast('In der Zwischenablage ist kein Bild.'); }catch(err){ toast('Kein Zugriff auf die Zwischenablage. Bildadresse einfügen oder Foto wählen.'); } })(); break;
+    case 'phurl': (async()=>{ const u=($('#phUrl')?.value||'').trim(); if(!/^https:\/\//i.test(u)){ toast('Bitte eine Bildadresse mit https:// einfügen.'); return; } try{ const r=await fetch(u); if(!r.ok) throw 0; const b=await r.blob(); if(!b.type.startsWith('image/')) throw 0; await photoFromBlob(b); }catch(err){ toast('Das Bild ließ sich nicht laden. Bei Unsplash die Bildadresse (images.unsplash.com) kopieren.'); } })(); break;
+    case 'nophoto': { collectForm(); draft.photo=''; delete draft.photoCredit; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'tcourse': { const i=draft.courses.indexOf(v); i>=0?draft.courses.splice(i,1):draft.courses.push(v); renderCourseChips(); break; }
     case 'addtag': addTag(); break;
     case 'tagadd': addTag(v); break;
