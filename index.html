@@ -125,6 +125,9 @@ img{ max-width:100%; display:block; }
 .filters{ margin:12px -18px 0; }
 .frow{ display:flex; gap:8px; overflow-x:auto; padding:4px 18px 6px; scrollbar-width:none; }
 .frow::-webkit-scrollbar{ display:none; }
+.frow+.frow{ padding-top:0; }
+.chip.more{ border-style:dashed; }
+#hits .linkish{ border:0; background:none; padding:0 0 0 8px; font:inherit; color:inherit; text-decoration:underline; }
 .chip{ flex:none; display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 13px; border:1.5px solid var(--line); background:var(--card); font-size:14.5px; font-weight:500; white-space:nowrap; border-radius:18px; }
 .chip.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
 .chip.on svg{ color:var(--paper) !important; }
@@ -197,7 +200,8 @@ details.intro summary::after{ content:"+"; font:400 24px/1 var(--f-disp); }
 details.intro[open] summary::after{ content:"–"; }
 details.intro .txt{ padding:0 0 14px; max-width:68ch; color:var(--ink2); white-space:pre-wrap; }
 .ctl{ display:grid; gap:10px; padding:16px 0 6px; max-width:520px; }
-.ctlrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.ctlrow{ display:flex; align-items:center; justify-content:space-between; gap:10px 12px; flex-wrap:wrap; }
+.ctlrow .wake{ white-space:nowrap; }
 .ctl .stepper{ height:42px; }
 .ctl .stepper button{ width:42px; }
 .ctl .stepper .val{ min-width:104px; font-size:14px; }
@@ -299,6 +303,7 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .photo .cov img,.photo .cov svg{ width:100%; height:100%; object-fit:cover; }
 .importbox{ background:var(--gelb); color:var(--on-gelb); padding:16px; margin:16px -18px 0; }
 @media (min-width:760px){ .importbox{ margin:16px 0 0; } }
+.phints{margin:6px 0 0;padding:0 0 0 18px;font-size:13.5px;line-height:1.35}.phints:empty{display:none}
 .importbox h2{ font:var(--disp-w) 21px/1.1 var(--f-disp); margin:0 0 6px; }
 .importbox p{ margin:0 0 10px; font-size:14.5px; }
 .importbox .ta{ background:var(--card); color:var(--ink); }
@@ -354,7 +359,7 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 /* ===== BAUSTEIN Kacheln und Kochmodus 1.0 – gemeinsam mit dem StandBy-Dashboard; Änderungen in beiden Projekten gleich halten ===== */
 .results.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
 .rtile{position:relative;container-type:inline-size;min-height:170px;border-radius:22px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--tbg);color:var(--tfg);list-style:none}
-.rtile .tk{font-size:12px;font-weight:600;opacity:.8}
+.rtile .tk{font-size:12px;font-weight:600;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
 .rtile .tt{font:var(--disp-w) 1em/1.06 var(--f-disp);letter-spacing:var(--disp-ls);hyphens:none;-webkit-hyphens:none;overflow-wrap:normal;word-break:normal;margin:auto 0 0}
 .rtile .tm{font-size:12.5px;opacity:.85;display:flex;flex-wrap:wrap;gap:2px 10px}
 .rtile .fav{position:absolute;top:12px;right:14px}
@@ -592,12 +597,18 @@ function splitOutsideParens(s, seps){
 const GROUP_RE = /^(?:#+\s*|für\s+(?:den|die|das)\s+|for\s+the\s+|zum\s+|zur\s+|außerdem|dazu)/i;
 function parseIngredientsText(text){
   const items=[];
+  let gap=true;
   for(let line of String(text||'').split('\n')){
-    line=line.trim(); if(!line) continue;
-    if(/^#+\s*/.test(line)){ items.push({h:line.replace(/^#+\s*/,'').replace(/:$/,'')}); continue; }
-    if(/:$/.test(line) && line.length<50 && !ING_RE.test(line)){ items.push({h:line.replace(/:$/,'')}); continue; }
-    items.push(parseIng(line));
+    line=line.trim(); if(!line){ gap=true; continue; }
+    if(/^#+\s*/.test(line)){ items.push({h:line.replace(/^#+\s*/,'').replace(/:$/,'')}); gap=false; continue; }
+    if(/:$/.test(line) && line.length<50 && !ING_RE.test(line)){ items.push({h:line.replace(/:$/,'')}); gap=false; continue; }
+    const it=parseIng(line); if(gap) it._first=true; gap=false; items.push(it);
   }
+  /* Zwischenüberschrift ohne Kennzeichen: Zeile ohne Menge am Blockanfang, deren Wort die nächste Zutat mit Menge wiederholt
+     („Auberginen“ vor „2 mittelgroße Auberginen“). Nur Anzeige, der Text bleibt. */
+  for(let i=0;i<items.length-1;i++){ const a=items[i], n=items[i+1];
+    if(a._first && !a.h && a.q==null && !a.u && n && !n.h && n.q!=null && a.name && a.name.split(/\s+/).length<=2 && !/[,()]/.test(a.name)){
+      const w=a.name.toLowerCase(); if(w.length>=4 && new RegExp('(^|[^\\p{L}])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'($|[^\\p{L}])','u').test(String(n.name||'').toLowerCase())) items[i]={h:a.name}; } }
   return items;
 }
 /* zerlegt Fließtext-Zutaten ("2 Zwiebeln, 150 g Reis, Salz; für die Soße: …") in Zeilen */
@@ -703,12 +714,12 @@ function looksProse(l){ return l.length>70 || /[.!?]\s*$/.test(l); }
 
 /* ===== Rezepte als Fließtext: Zutaten aus den Sätzen ableiten ===== */
 const CHAT_RE=/^(hallo\b|hi\b|hey\b|moin\b|servus\b|liebe[rs]?\b|ihr lieben|hallöchen|guten (morgen|tag|abend)\b|ich hab[’']?s? (gefunden|rausgesucht)|ich wünsche|so,? (da)?s?s (müsste|wäre|war)|hier (ist|kommt) (das|dein|euer)|so,? (da)?s?s müsste|das müsste alles|ich wünsche|wünsche euch|guten appetit|viel spaß|lass(t)? es euch schmecken|liebe grüße|lg\b|bussi|weitergeleitet)/i;
-const PROSE_UNITS='Scheiben?|Tüten?|Stangen?|Stück|Stücke|Bund|Dosen?|Gläser|Glas|Prisen?|Zehen?|Knollen?|Köpfe|Kopf|Becher|Packungen?|Päckchen|Handvoll|Hand voll|Zweige?|Blätter|Blatt|Tassen?|Esslöffel|Teelöffel|EL|TL|g|kg|ml|l|Liter|Msp';
-const PROSE_QTY='\\d+(?:[.,]\\d+)?(?:\\s?[-–]\\s?\\d+)?|\\d\\/\\d|[½¼¾⅓]|[Ee]ine?n?|[Zz]wei|[Dd]rei|[Vv]ier|[Ff]ünf|[Ss]echs|[Ss]ieben|[Aa]cht|[Nn]eun|[Zz]ehn|[Zz]wölf|ein paar|einige|mehrere|etwas|reichlich|wenig';
+const PROSE_UNITS='Kilogramm|Kilo|Gramm|Pfund|Milliliter|Würfel|Schuss|Spritzer|Scheiben?|Tüten?|Stangen?|Stück|Stücke|Bund|Dosen?|Gläser|Glas|Prisen?|Zehen?|Knollen?|Köpfe|Kopf|Becher|Packungen?|Päckchen|Handvoll|Hand voll|Zweige?|Blätter|Blatt|Tassen?|Esslöffel|Teelöffel|EL|TL|g|kg|ml|l|Liter|Msp';
+const PROSE_QTY='\\d+(?:[.,]\\d+)?(?:\\s?[-–]\\s?\\d+)?|\\d\\/\\d|[½¼¾⅓]|[Ee]ine?n?|ne|nen|(?:ein(?:en)? )?halbe[rsn]?|ein bisschen|bisschen|[Zz]wei|[Dd]rei|[Vv]ier|[Ff]ünf|[Ss]echs|[Ss]ieben|[Aa]cht|[Nn]eun|[Zz]ehn|[Zz]wölf|ein paar|einige|mehrere|etwas|reichlich|wenig';
 const PROSE_NOFOOD=/^(Minuten?|Stunden?|Sekunden?|Seiten?|Grad|Mal|Male|Teil|Teile|Schluss|Essen|Topf|Töpfe|Pfanne|Schüssel|Deckel|Ofen|Herd|Hitze|Zeit|Weile|Löffel|Ende|Anfang|Rezept|Suppe|Sauce|Masse|Teig|Portionen?|Personen?|Leute|Stückchen|Ringen|Würfel|Würfeln|Streifen|Scheibchen|Tag|Tage|Nacht)$/;
-const SEASON_RE=/(?<![\wäöüßÄÖÜ])(Salz|Pfeffer|Zucker|Muskatnuss|Muskat|Paprikapulver|Chili|Kreuzkümmel|Zimt|Petersilie|Schnittlauch|Dill|Wasser|Olivenöl|Öl|Butter|Essig)(?![\wäöüß])/g;
+const SEASON_RE=/(?<![\wäöüßÄÖÜ])(Senf|Brühe|Curry|Salz|Pfeffer|Zucker|Muskatnuss|Muskat|Paprikapulver|Chili|Kreuzkümmel|Zimt|Petersilie|Schnittlauch|Dill|Wasser|Olivenöl|Öl|Butter|Essig)(?![\wäöüß])/g;
 function proseIngredients(text){
-  const t=text.replace(/([a-zäöüß])([A-ZÄÖÜ])/g,'$1 $2').replace(/,(?=\S)/g,', ');
+  const t=text.replace(/([a-zäöüß])([A-ZÄÖÜ])/g,'$1 $2').replace(/,(?=\S)/g,', ').replace(/(\d)(g|kg|ml|l|EL|TL)(?![\wäöüß])/g,'$1 $2');
   const re=new RegExp('(?:^|[\\s(])('+PROSE_QTY+')\\s+((?:[a-zäöüß][\\wäöüß-]*\\s+){0,3}?)(?:('+PROSE_UNITS+')\\s+)?(?:(?:von|vom|der|den|dem|des)\\s+)*((?:[a-zäöüß][\\wäöüß-]*\\s+){0,3}?)(?!(?:'+PROSE_UNITS+')(?![\\wäöüß]))([A-ZÄÖÜ][\\wäöüß-]{1,})','g');
   const out=[], seen=new Set();
   let m;
@@ -718,14 +729,29 @@ function proseIngredients(text){
     if(/^(ein|eine|einen)$/i.test(qty) && !unit && !adj1 && /^(Mal|Weile|Rest|Teil)$/.test(noun)) continue;
     const key=noun.toLowerCase(); if(seen.has(key)) continue; seen.add(key);
     let q=qty.toLowerCase(); const numw={'ein':'1','eine':'1','einen':'1','zwei':'2','drei':'3','vier':'4','fünf':'5','sechs':'6','sieben':'7','acht':'8','neun':'9','zehn':'10','zwölf':'12'};
-    q = numw[q] || qty.replace(/\s?[-–]\s?/,'–');
+    q = numw[q] || (/halbe/.test(q)?'½':/bisschen/.test(q)?'etwas':/^(ne|nen)$/.test(q)?'1':qty.replace(/\s?[-–]\s?/,'–'));
     const line=[q, adj1 && unit ? adj1 : '', unit, !unit && adj1 ? adj1 : '', adj2, noun].filter(Boolean).join(' ').replace(/\s+/g,' ');
     out.push(line);
   }
   // Gewürze und Grundzutaten ohne Menge („Salz und Pfeffer“, „reichlich Wasser“)
+  const nCap=out.length;
   let s; while((s=SEASON_RE.exec(t))){ const k=s[1].toLowerCase(); if(!seen.has(k)){ seen.add(k); out.push(s[1]); } }
+  /* klein getippte Nachrichten: Menge + Einheit + bis zu zwei Wörter („ne tasse rote linsen“, „dose kokosmilch“) */
+  const STOP=/^(dazu|dazugeben|und|oder|in|im|mit|zum|zur|dann|rein|drauf|drüber|hinzu|hinzufügen|geben|kochen|köcheln|anbraten|braten|verrühren|unterrühren|mischen|abschmecken|ca|etwa|für|bei|auf|aus|bis|die|der|das|den)$/i;
+  const lre=/(?:^|[\s,(])(?:(\d+(?:[.,]\d+)?|[½¼¾]|eine?n?|ne|nen|zwei|drei|vier|(?:ein(?:en)? )?halbe[rsn]?)\s+)?(tassen?|dosen?|liter|kilo|gramm|bund|prisen?|schuss|packung(?:en)?|päckchen|becher|gläser|glas|el|tl|g|kg|ml|l|zehen?|handvoll|stück)\s+([a-zäöüß][a-zäöüß-]+(?:\s+[a-zäöüß][a-zäöüß-]+)?)/g;
+  const lower=nCap===0;
+  let lm; if(lower) while((lm=lre.exec(t))){
+    if(!lm[1] && !/^(dose|bund|prise|schuss|packung|päckchen|handvoll)$/.test(lm[2])) continue;
+    const ws=lm[3].split(/\s+/); const keep=[]; for(const w of ws){ if(STOP.test(w)) break; keep.push(w); } if(!keep.length) continue;
+    const noun=keep[keep.length-1], k=noun.toLowerCase(); if(seen.has(k) || PROSE_NOFOOD.test(cap(noun))) continue; seen.add(k);
+    const ql=(lm[1]||'1').toLowerCase(), q=numw2(ql), u=lm[2].length<=2 ? (/^(el|tl)$/.test(lm[2])?lm[2].toUpperCase():lm[2]) : cap(lm[2]);
+    keep[keep.length-1]=cap(noun); out.push([q,u,...keep].join(' '));
+  }
+  let s2; const sre=/(?<![\wäöüß])(salz|pfeffer|zucker|curry|senf|zitrone|zitronensaft|knoblauch|zwiebeln?|öl|butter|essig|brühe|schnittlauch|petersilie)(?![\wäöüß])/g;
+  if(lower && out.length) while((s2=sre.exec(t))){ const k=s2[1]; if(!seen.has(k)){ seen.add(k); out.push(cap(k)); } }
   return out;
 }
+function numw2(q){ return NUMW_DE[q] || (/halbe/.test(q)?'½':q); }
 function cleanChat(text){
   const noEmoji=s=>s.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F3FB}-\u{1F3FF}]/gu,'').trim();
   const lines=text.split(/\n/).map(noEmoji).filter(l=>!(l && CHAT_RE.test(l) && l.split(/\s+/).length<=8));
@@ -735,7 +761,57 @@ function cleanChat(text){
   return sents.join(' ');
 }
 
+/* Vorreinigung für eingefügte Nachrichten und Captions: Chat-Stempel, Links, Hashtags, Emojis und Aufrufe („Folgt mir“, „Link in Bio“).
+   Wirkt nur beim Erkennen; der eingefügte Text bleibt im Feld unverändert. */
+const WA_RE=/^[\u200e\u200f\u202a-\u202e]*\[?\d{1,2}[./]\d{1,2}[./]\d{2,4},?\s+\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?\]?\s*(?:[-–]\s*)?([^:\n]{1,40}):\s*/;
+const PROMO_RE=/(folg(?:t|e)? (?:mir|uns)\b|follow (?:me|us|for)\b|link in (?:der |meiner |my )?bio|save (?:this |it )?for later|speicher\w* (?:dir|euch|es|das)\b|für später speichern|like[n]? (?:und|and|&)|kommentier|comment below|abonnier|subscribe|tag(?:ge)? (?:a friend|jemand)|(?:full|whole) recipe (?:on|in|at)\b|ganzes? rezept (?:auf|in|im)\b|mehr rezepte|more recipes)/i;
+const NUMW_DE={'ein':'1','eine':'1','einen':'1','einem':'1','ne':'1','nen':'1','zwei':'2','drei':'3','vier':'4','fünf':'5','sechs':'6','sieben':'7','acht':'8','neun':'9','zehn':'10','zwölf':'12'};
+function preClean(text){
+  let t=String(text||'').replace(/\r/g,'');
+  let url=''; t=t.replace(/https?:\/\/[^\s<>"]+/g,u=>{ if(!url) url=u.replace(/[.,;)]+$/,''); return ' '; });
+  let chat=0;
+  const out=[];
+  for(let l of t.split('\n')){
+    const wm=l.match(WA_RE); if(wm){ chat++; l=l.slice(wm[0].length); for(let k=out.length-1;k>=0;k--){ if(out[k].trim()){ if(!/[.!?:,;]$/.test(out[k].trim())) out[k]=out[k].trim()+'.'; break; } } }
+    if(/<(Medien|Media|Anhang|attached)[^>]*>|^\u200e?(Bild|Video|Sticker|GIF|Audio|Dokument) (weggelassen|ausgeschlossen)$/i.test(l.trim())) continue;
+    l=l.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{2775}\u{2794}-\u{27BF}\u{1F3FB}-\u{1F3FF}\u200d]/gu,' ');
+    const hadTag=/(^|\s)#[\p{L}\d_]+/u.test(l);
+    l=l.replace(/(^|\s)#[\p{L}\d_]+/gu,'$1');
+    if(/^\s*(werbung|anzeige|ad|sponsored)\s*[|·:–-]?\s*$/i.test(l)) continue;
+    if(PROMO_RE.test(l)) l=(l.match(/[^.!?]+[.!?]*\s*/g)||[l]).map(x=>{ const m=PROMO_RE.exec(x); return m? x.slice(0,m.index).replace(/[\s,;:–-]+$/,'') : x; }).filter(x=>x.trim().length>1).join(' ');
+    l=l.replace(/[ \t]+/g,' ').replace(/\s+([.,!?])/g,'$1');
+    if(hadTag && !l.trim()) continue;
+    if(l.trim() && l.trim().split(/\s+/).length<=4 && /^(guten appetit|lasst? es (euch|dir) schmecken|viel spaß|liebe grüße|lg|bis bald)\b/i.test(l.trim())) continue;
+    out.push(l.replace(/\s+$/,''));
+  }
+  /* „Zutaten: a, b, c. Dann …“ oder „Du brauchst a, b und c. Dann …“ in einer Zeile: Liste und Anleitung trennen */
+  const res=[];
+  for(const l of out){
+    const m=l.match(/^(.*?)\b(Zutaten|Ingredients|Du brauchst|Ihr braucht|Man braucht|You(?:'|’)ll need|You need)\b((?:\s*\([^)]{0,40}\))?\s*:\s*|\s+)(\S.*)$/i);
+    if(m && (m[3].includes(':') || /^(du|ihr|man|you)/i.test(m[2]))){
+      const rest=m[4]; let cut=rest.search(/[.!?]\s+(?=[A-ZÄÖÜ])/); const list=cut<0?rest:rest.slice(0,cut), after=cut<0?'':rest.slice(cut+1).trim();
+      const items=list.split(/,\s+(?![^(]*\))|\s+(?:und|and)\s+(?=(?:\d|[½¼¾]|eine?[nm]?\b|zwei\b|drei\b|etwas\b|a\b|some\b))/).map(x=>x.trim().replace(/[.!]$/,'')).filter(Boolean);
+      if(items.length>=3 && items.every(x=>x.split(/\s+/).length<=7)){
+        if(m[1].trim()) res.push(m[1].trim());
+        res.push('', 'Zutaten'+(/\(/.test(m[3])?m[3].replace(/:\s*$/,'').trimEnd():'')+':');
+        items.forEach(x=>res.push('• '+x.replace(/^(eine?[nm]?|zwei|drei|vier|fünf|sechs)\b/i,w=>NUMW_DE[w.toLowerCase()]||w)));
+        if(after) res.push('', 'Zubereitung:', after);
+        continue;
+      }
+    }
+    res.push(l);
+  }
+  /* „Linsensuppe: zwiebeln anbraten …“ – kurzer Name vor dem Doppelpunkt in der ersten Zeile wird Titel */
+  const fi=res.findIndex(x=>x.trim());
+  if(fi>=0){ const m=res[fi].match(/^([A-ZÄÖÜ][^:.!?]{2,40}):\s+(\S.{30,})$/);
+    if(m && m[1].split(/\s+/).length<=5 && !H_ING.test(m[1]+':') && !H_STEP.test(m[1]+':') && !/^(tipp|tip|hinweis|note|ps|p\.s)\b/i.test(m[1])) res.splice(fi,1,m[1],'',m[2]); }
+  if(chat){ for(let k=res.length-1;k>=0;k--){ if(res[k].trim()){ if(!/[.!?:]$/.test(res[k].trim())) res[k]=res[k].trim()+'.'; break; } } }
+  const body=res.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+  return {text:body, url, chat:chat>0, onlyLink:!!url && body.replace(/\s/g,'').length<12};
+}
+
 function parseRecipeText(text){
+  const PC=preClean(text); text=PC.text;
   const r = {title:'', intro:'', ingredientsText:'', stepsText:'', notes:'', servings:null, servingsUnit:'', prep:null, cook:null, rest:null, difficulty:'', shelfLife:'', tags:[], source:{}};
   let lines = String(text||'').replace(/\r/g,'').replace(/\u00a0/g,' ').split('\n').map(l=>l.replace(/\s+/g,' ').trim());
   lines = joinWrapped(lines);
@@ -763,7 +839,7 @@ function parseRecipeText(text){
     if(H_ING.test(lh0)){
       if(!r.title && lastPre && lastPre.length<70 && !/^\d/.test(lastPre) && /für|for/i.test(lh0)) { r.title=lastPre; r.titleStrong=true; const k=blocks.pre.lastIndexOf(lastPre); if(k>=0) blocks.pre.splice(k,1); }
       sec='ing';
-      const sm=l.match(SERV_RE); if(sm && r.servings==null){ r.servings=+sm[1]; r.servingsUnit=sm[3]||''; }
+      const sm=l.match(SERV_RE) || l.match(/\((?:für |for |ca\. )?()(\d+)()\s*(Portionen|Personen|Stück|servings|people|Gläser)\)/i); if(sm && r.servings==null){ if(sm[4]){ r.servings=+sm[2]; r.servingsUnit=sm[4]; } else { r.servings=+sm[1]; r.servingsUnit=sm[3]||''; } }
       const rest = l.replace(/^[^:]*:\s*/,''); if(rest!==l && rest) blocks.ing.push(rest);
       continue;
     }
@@ -857,7 +933,8 @@ function parseRecipeText(text){
     const prose=[r.title, r.intro, r.stepsText.replace(/^##.*$/gm,'')].filter(Boolean).join('\n');
     const words=prose.split(/\s+/).length;
     if(words>=25){
-      const body=cleanChat(prose);
+      const shortT=r.title && r.title.split(/\s+/).length<=5 && !/[.!?,]/.test(r.title);
+      const body=cleanChat(shortT ? [r.intro, r.stepsText.replace(/^##.*$/gm,'')].filter(Boolean).join('\n') : prose);
       const ings=proseIngredients(body);
       if(ings.length>=3){
         r.ingredientsText=ings.join('\n'); r.derivedIngredients=true;
@@ -879,6 +956,12 @@ function parseRecipeText(text){
     while((m=re2.exec(r.stepsText))){ if([...seen].some(i=>Math.abs(i-m.index)<60)) continue; est+=parseDuration(m[2]+' '+m[3])||0; }
     if(est>0){ r.cookEstimate=est; }
   }
+  if(PC.url) r.source.url=PC.url;
+  r.onlyLink=PC.onlyLink; r.fromChat=PC.chat;
+  if(!r.title){
+    const m=text.slice(0,260).match(/\bRezept (?:für|vom|von) (?:den |die |das |meine[nr]? |unsere[nr]? |mein |unser )?([A-ZÄÖÜ][\p{L}-]+(?: [A-ZÄÖÜ][\p{L}-]+)?)/u) || text.slice(0,260).match(/\b[Ff]ür (?:den|die|das|meine[nr]?|unsere[nr]?) ([A-ZÄÖÜ][\p{L}-]+)(?=\s+(?:nimmst|nimmt|nehme|nehmt|brauchst|braucht|brauche)\b|\s*[:,])/u);
+    if(m && !PROSE_NOFOOD.test(m[1])){ r.title=m[1]; r.titleGuessed=true; }
+  }
   return r;
 }
 function paragraphs(arr){
@@ -897,6 +980,8 @@ function parseStepsText(text){
       else out.push({t:t.replace(/^\d+[.)]\s+/,'').replace(/\n/g,' ')});
     }
   }
+  /* Schreibweise nur in der Anzeige: „Grad“ statt „°C“; der gespeicherte Text bleibt */
+  out.forEach(o=>{ if(o.t) o.t=o.t.replace(/(\d)\s?°\s?C(?![\wäöüß])/g,'$1 Grad'); });
   return out;
 }
 /* ===================== Grundlagen ===================== */
@@ -1253,7 +1338,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '3.6';
+const APP_VERSION = '3.7';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1266,7 +1351,8 @@ const HISTORY = [
   ['3.3','Sicherungen wieder einlesbar, überarbeitete Hilfe, Seite „Version und Rechtliches“'],
   ['3.4','Kachel-Ansicht und Kochmodus'],
   ['3.5','Kompakte Navigation: Kopfzeile mit Symbolen, eine Filterzeile; Kacheln in Spalten nach Textlänge'],
-  ['3.6','Einheitliche quadratische Kacheln, Fotos mit Unschärfe-Feld wie im Dashboard, kürzere Darstellungs-Auswahl']
+  ['3.6','Einheitliche quadratische Kacheln, Fotos mit Unschärfe-Feld wie im Dashboard, kürzere Darstellungs-Auswahl'],
+  ['3.7','Filter in zwei Zeilen, Import von Chat-Nachrichten und Captions verbessert, Hinweise auf unsichere Stellen, Anzeige bereinigt']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1331,15 +1417,23 @@ function people(){ const s=new Set(recipes.map(personKey)); return [...s].sort((
 function renderFilters(){
   const el=$('#filters'); if(!el) return;
   if(!recipes.length){ el.innerHTML=''; return; }
-  const courses = usedCourses(), tags = allTags();
-  /* 3.5: alle Filter in einer Zeile, seitlich scrollbar; gleiche Elemente nie auf mehrere Zeilen verteilt */
+  const courses = usedCourses();
+  /* 3.7: zwei Zeilen, je seitlich scrollbar. Oben Favoriten und Kategorien, unten Zeit, Schlagwörter (häufigste zuerst) und Personen. */
+  const tagN={}; recipes.forEach(r=>(r.tags||[]).forEach(t=>tagN[t]=(tagN[t]||0)+1));
+  const coll=new Intl.Collator('de').compare;
+  const tagsAll=allTags().sort((a,b)=>(filt.tags.has(b)-filt.tags.has(a)) || tagN[b]-tagN[a] || coll(a,b));
+  const tags=filt.allTags ? tagsAll : tagsAll.filter((t,i)=>i<8 || filt.tags.has(t));
+  const keep=[...el.querySelectorAll('.frow')].map(x=>x.scrollLeft);
   el.innerHTML = `<div class="frow">
    <button class="chip ${filt.fav?'on':''}" data-act="ffav">★ Favoriten</button>
    ${courses.map(c=>`<button class="chip ${filt.courses.has(c)?'on':''}" data-act="fcourse" data-v="${esc(c)}">${glyph(c)}${esc(c)}</button>`).join('')}
-   ${TIME_BUCKETS.filter(([k])=>k!=='all').map(([k,l])=>`<button class="chip ${filt.time===k?'on':''}" data-act="ftime" data-v="${filt.time===k?'all':k}">${l}</button>`).join('')}
+   </div><div class="frow">
+   ${TIME_BUCKETS.filter(([k])=>k!=='all').map(([k,l])=>`<button class="chip ${filt.time===k?'on':''}" data-act="ftime" data-v="${filt.time===k?'all':k}" aria-label="${l}">${l.replace(/^bis /,'')}</button>`).join('')}
    ${tags.map(t=>`<button class="chip tag ${filt.tags.has(t)?'on':''}" data-act="ftag" data-v="${esc(t)}">${esc(t)}</button>`).join('')}
+   ${tagsAll.length>8?`<button class="chip more" data-act="falltags">${filt.allTags?'Weniger':'Alle '+tagsAll.length}</button>`:''}
    ${people().length>1?people().map(p=>`<button class="chip ${filt.people.has(p)?'on':''}" data-act="fperson" data-v="${esc(p)}">${p==='–'?'ohne Namen':'von '+esc(p)}${p===myName()?' (du)':''}</button>`).join(''):''}
    </div>`;
+  el.querySelectorAll('.frow').forEach((x,k)=>{ if(keep[k]) x.scrollLeft=keep[k]; });
 }
 function renderResults(){
   const ul=$('#results'); if(!ul) return;
@@ -1349,7 +1443,8 @@ function renderResults(){
     $('#hits').textContent=''; return;
   }
   const list = filtered();
-  $('#hits').textContent = list.length===recipes.length ? '' : `${list.length} von ${recipes.length}`;
+  { const act=filt.fav||filt.courses.size||filt.tags.size||filt.people.size||filt.time!=='all'||filt.q;
+    $('#hits').innerHTML = act ? `${list.length} von ${recipes.length} <button class="linkish" data-act="clearfilters">Filter löschen</button>` : ''; }
   if(!list.length){ ul.innerHTML = `<li class="empty"><h2>Nichts gefunden.</h2><p>Kein Rezept passt zu allen Filtern.</p><button class="btn" data-act="clearfilters">Filter zurücksetzen</button></li>`; return; }
   ul.classList.toggle('tiles', pref.view==='tiles');
   if(pref.view==='tiles'){ ul.innerHTML = list.map(tileHTML).join(''); requestAnimationFrame(()=>tileFit(ul)); return; }
@@ -1460,7 +1555,10 @@ function stepServings(dir){
 /* ===== BAUSTEIN Kacheln und Kochmodus 1.0 – gemeinsam mit dem StandBy-Dashboard ===== */
 /* Text so groß wie möglich, ohne Silbentrennung und ohne Abschneiden (Binärsuche) */
 function kmFit(el,min,max){if(!el)return;const box=el.parentElement,ok=()=>el.scrollWidth<=box.clientWidth+1&&box.scrollHeight<=box.clientHeight+1;let lo=min,hi=max;el.style.fontSize=hi+'px';if(ok())return;for(let i=0;i<12;i++){const m=(lo+hi)/2;el.style.fontSize=m+'px';ok()?lo=m:hi=m}el.style.fontSize=lo+'px'}
-function tileFit(root){(root||document).querySelectorAll('.rtile .tt').forEach(t=>{const b=t.parentElement;t.classList.remove('brk');let lo=9,hi=Math.max(lo,Math.min(40,b.clientWidth*.22));const ok=()=>t.scrollWidth<=b.clientWidth+1&&t.scrollHeight<=b.clientHeight+1;t.style.fontSize=hi+'px';if(ok())return;for(let i=0;i<10;i++){const m=(lo+hi)/2;t.style.fontSize=m+'px';ok()?lo=m:hi=m}t.style.fontSize=lo+'px';if(!ok())t.classList.add('brk')})}
+function tileFit(root){(root||document).querySelectorAll('.rtile .tt').forEach(t=>{const b=t.parentElement;t.classList.remove('brk');const ok=()=>t.scrollWidth<=b.clientWidth+1&&t.scrollHeight<=b.clientHeight+1;
+ /* feste Stufen statt stufenloser Größe: ruhigeres Raster */
+ const top=Math.max(12,Math.min(40,b.clientWidth*.2));for(const f of [1,.82,.66,.54]){t.style.fontSize=(top*f).toFixed(1)+'px';if(ok())return}
+ let lo=9,hi=top*.54;for(let i=0;i<8;i++){const m=(lo+hi)/2;t.style.fontSize=m+'px';ok()?lo=m:hi=m}t.style.fontSize=lo+'px';if(!ok())t.classList.add('brk')})}
 if(document.fonts){const rf=()=>{if(pref.view==='tiles')tileFit()};document.fonts.ready.then(rf);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',rf)}
 /* Kochmodus: ein Schritt pro Bildschirm. Mengen werden nur umgerechnet, wo sie im Schritt selbst stehen (keine Zuordnung aus der Zutatenliste). */
 let km=null;
@@ -1508,7 +1606,7 @@ function renderEditor(keep){
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px">
         <button class="btn primary" data-act="parse">Übernehmen</button>
       </div>
-      <div id="parseMsg" style="margin-top:8px;font-size:14px;font-weight:600"></div>
+      <div id="parseMsg" style="margin-top:8px;font-size:14px;font-weight:600"></div><ul id="parseHints" class="phints"></ul>
     </div>`:''}
     ${(draft.scans&&draft.scans.length)?`<div class="fset"><h2>Vorlage</h2><p class="muted" style="font-size:13px;margin:-4px 0 10px">Zum Abgleichen antippen und vergrößern.</p><div class="scans">${draft.scans.map((s,i)=>`<button type="button" class="scan" data-act="viewscan" data-v="${i}"><img src="${s}" alt="Vorlage ${i+1}"></button>`).join('')}</div><button type="button" class="linkish" data-act="rmscans" style="border:0;background:none;padding:8px 0;text-decoration:underline;color:var(--ink2)">Vorlage entfernen</button></div>`:''}
     <div class="fset"><h2>Rezept</h2>
@@ -1642,10 +1740,25 @@ function fillFromParse(p){
   if(p.shelfLife) d.shelfLife=p.shelfLife;
   (p.tags||[]).forEach(t=>{ if(!d.tags.includes(t)) d.tags.push(t); });
   if(p.source && p.source.name && !d.source.name) d.source.name=p.source.name;
+  if(p.source && p.source.url && !srcLineEdit(d.source)) d.source=parseSrc(p.source.url, (d.source&&d.source.author)||'');
   const paste=$('#pasteText').value;
   renderEditor(true); $('#pasteText').value=paste;
   const n = d.ingGroups.reduce((s,x)=>s+parseIngredientsText(x.text).filter(y=>!y.h).length,0), s = d.stepGroups.reduce((s2,x)=>s2+parseStepsText(x.text).filter(y=>!y.h).length,0);
   $('#parseMsg').textContent = `${n} ${n===1?'Zutat':'Zutaten'}, ${s} ${s===1?'Schritt':'Schritte'} erkannt. Bitte prüfen.`;
+  /* Unsichere Stellen benennen, statt still zu raten */
+  const h=[];
+  if(p.onlyLink && !n && !s) $('#parseMsg').textContent='Kein Rezepttext gefunden.';
+  if(p.onlyLink) h.push('Nur ein Link: Der Inhalt hinter dem Link lässt sich nicht abrufen. Text der Beschreibung kopieren und einfügen oder einen Screenshot importieren. Der Link ist als Quelle eingetragen.');
+  else{
+    if(!d.title) h.push('Kein Titel erkannt.'); else if(p.titleGuessed) h.push('Titel aus dem Text abgeleitet.');
+    if(p.derivedIngredients) h.push('Zutaten aus dem Fließtext abgeleitet, Mengen und Vollständigkeit prüfen.');
+    const noQ=d.ingGroups.reduce((a,x)=>a+parseIngredientsText(x.text).filter(y=>!y.h && y.q==null).length,0);
+    if(n && noQ) h.push(`${noQ} ${noQ===1?'Zutat':'Zutaten'} ohne Menge.`);
+    if(n && p.servings==null) h.push('Portionen nicht genannt.');
+    if(p.prep==null && p.cook==null) h.push(p.cookEstimate?'Zeit aus den Schritten geschätzt.':'Keine Zeitangabe gefunden.');
+    if(!n && !s) h.push('Kein Rezept erkannt. Der Text steht unverändert im Feld oben.');
+  }
+  const hb=$('#parseHints'); if(hb) hb.innerHTML=h.map(x=>`<li>${esc(x)}</li>`).join('');
 }
 async function saveDraft(){
   const d = collectForm();
@@ -2664,6 +2777,7 @@ document.addEventListener('click', async e=>{
     case 'ftime': filt.time=v; renderFilters(); renderResults(); break;
     case 'fbase': filt.timeBase=v; renderFilters(); renderResults(); if(document.querySelector('.looks2'))lookSheet(); break;
     case 'fperson': filt.people.has(v)?filt.people.delete(v):filt.people.add(v); renderFilters(); renderResults(); break;
+    case 'falltags': filt.allTags=!filt.allTags; renderFilters(); break;
     case 'ffav': filt.fav=!filt.fav; renderFilters(); renderResults(); break;
     case 'clearfilters': filt.courses.clear(); filt.tags.clear(); filt.people.clear(); filt.time='all'; filt.fav=false; filt.q=''; renderList(); break;
     case 'importfile': closeSheet(); $('#fileImport').click(); break;

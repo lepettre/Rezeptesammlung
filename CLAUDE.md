@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 3.6 (technisch `sw.js` VERSION v59). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 3.7 (technisch `sw.js` VERSION v60). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -26,10 +26,12 @@ Aktuelle Version: 3.6 (technisch `sw.js` VERSION v59). Anzeige in der App: `APP_
 - Gespeicherte Texte nie still umschreiben. Verbesserungen wirken beim Anzeigen (Parser), Originale bleiben erhalten. Migrationen in `migrateRecipe()`.
 
 ## Gestaltungsregeln
+- Filter in genau zwei Zeilen (`renderFilters`). Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
+- Kein Server und kein Worker; Links (z. B. Instagram) werden nicht abgerufen, nur als Quelle gespeichert.
 - Navigation höchstens drei bis vier Zeilen; gleichartige Elemente (z. B. Filter-Chips) nie auf mehrere Zeilen verteilen, lieber eine seitlich scrollbare Zeile.
 
 ## Wichtige Stellen in index.html
-- Parser: `parseIng`, `renderIng`, `parseRecipeText`, `parseStepsText`, `proseIngredients` (Fließtext), `decap` (Versalien), `NOISE`, `CHAT_RE`.
+- Parser: `parseIng`, `renderIng`, `preClean` (Vorreinigung für Chat-Nachrichten und Captions), `parseRecipeText`, `parseStepsText`, `proseIngredients` (Fließtext), `decap` (Versalien), `NOISE`, `CHAT_RE`.
 - Import: `handleFiles` (Bilder → OCR, .html/.json → Import), `runOCR`, `pickRegions` (Rahmenarten: Auto, Titel, Zutaten, Zubereitung, Notizen, Fließtext), `orderJobs` (mehrere Bilder), `layoutText`, `fixLine`/`fixWord` (Korrektur).
 - Anzeige: `renderList`, `renderDetail`, `renderEditor`, `renderHelp`, `scaleStepText`, Kacheln `tileHTML`/`tileFit`.
 - Baustein „Kacheln und Kochmodus“ (`kmOpen`, `kmPaint`, `kmFit`, CSS `.rtile`, `.km-*`) zwischen den Markierungen „BAUSTEIN … Ende BAUSTEIN“: gemeinsam mit dem StandBy-Dashboard, Änderungen in beiden Projekten gleich halten.
@@ -44,6 +46,6 @@ Aktuelle Version: 3.6 (technisch `sw.js` VERSION v59). Anzeige in der App: `APP_
 - Große Favoriten-Kachel ja/nein. Entscheidung des Autors.
 - Portionsangaben für 9 Rezepte (Dinkelbrötchen, Sumach-Aubergine, Gurken-Feigen-Salat, Bärlauch-Maultaschen, drei Kimchis, Rösti, Lemon Cake Balls): nur Werte des Autors, nicht schätzen.
 - Mengen im Kochmodus: hier nur Mengen aus dem Schritttext; das StandBy-Dashboard nennt zusätzlich Mengen aus der Zutatenliste. Für den gemeinsamen Baustein eine Regel festlegen.
-- Vorschlag „Rezepte prüfen“ (auffällige Stellen mit Vorschlag, einzeln bestätigen) – erst Entwurf zeigen.
+- Vorschlag „Rezepte prüfen“ für bestehende Rezepte (auffällige Stellen mit Vorschlag, einzeln bestätigen) – erst Entwurf zeigen. Beim Import gibt es seit 3.7 eine Hinweisliste.
 - Synchronisation mit dem Dashboard oder zwischen Geräten: zurückgestellt; Austausch nur per Export-Datei.
 
