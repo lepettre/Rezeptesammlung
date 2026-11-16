@@ -29,87 +29,12 @@
   --danger:#C1121C; --on-rot:#fff; --fab-shadow:0 8px 22px rgba(0,0,0,.30), 0 2px 5px rgba(0,0,0,.20); --bar-bd:1px solid var(--line); --field-bd:1px solid transparent;
   --gl-fill:currentColor; --gl-stroke:none; --gl-sw:0; --disp-w:700; --disp-ls:-.03em;
 }
-/* Graphit mit Bauhausrot (Standard) */
-:root, :root[data-style="graphit"]{
-  --paper:#F6F6F5; --paper2:#E6E6E3; --card:#FFFFFF; --ink:#262624; --ink2:#6E6E69; --line:#DDDDD9;
-  --rot:#D52B1E; --blau:#262624; --gelb:#F5D9D6; --on-gelb:#5A1510; --tint:#E6E6E3; --tint-ink:#262624; --field:#ECECE9;
-  --g-rot:#3A3A37; --g-blau:#3A3A37; --g-gelb:#3A3A37; --g-ink:#3A3A37;
-  --r:10px; --rt:10px; --danger:#D52B1E;
-  --f-disp:"Geist","Helvetica Neue",Arial,sans-serif; --f-body:"Geist","Helvetica Neue",Arial,sans-serif; --f-mono:"Geist","Helvetica Neue",Arial,sans-serif;
-  color-scheme:light;
-}
-:root[data-style="abend"]{
-  --paper:#1E2328; --paper2:#2B3138; --card:#252B31; --ink:#ECE6DA; --ink2:#9AA1A9; --line:#343B43;
-  --rot:#F2B84B; --on-rot:#1E2328; --blau:#F2B84B; --gelb:#4A3E22; --on-gelb:#F8DFA8; --tint:#3A3326; --tint-ink:#F2B84B; --field:#2B3138;
-  --g-rot:#F2B84B; --g-blau:#F2B84B; --g-gelb:#F2B84B; --g-ink:#F2B84B; --gl-fill:none; --gl-stroke:currentColor; --gl-sw:9;
-  --r:10px; --rt:10px; --danger:#FF7A6E;
-  --f-disp:"Inter","Helvetica Neue",Arial,sans-serif; --f-body:"Inter","Helvetica Neue",Arial,sans-serif; --f-mono:"Inter","Helvetica Neue",Arial,sans-serif; --disp-w:600;
-  color-scheme:dark;
-}
-:root[data-style="bauhaus"]{
-  --paper:#F5F3EE; --paper2:#EBE8E0; --card:#FFFFFF; --ink:#1D1B18; --ink2:#615B51; --line:#D6D1C4;
-  --rot:#CC3A2B; --blau:#24479C; --gelb:#EFB728; --on-gelb:#1D1B18; --tint:#EBE8E0; --tint-ink:#1D1B18; --field:#FFFFFF; --field-bd:2px solid #1D1B18;
-  --g-rot:#CC3A2B; --g-blau:#24479C; --g-gelb:#EFB728; --g-ink:#1D1B18;
-  --r:0px; --rt:0px; --fab-shadow:4px 4px 0 #1D1B18; --bar-bd:2px solid #1D1B18;
-  --f-disp:"Archivo Black","Arial Black",Arial,sans-serif; --f-body:"Archivo","Helvetica Neue",Arial,sans-serif; --f-mono:"Space Mono",ui-monospace,Menlo,monospace; --disp-w:400; --disp-ls:-.02em;
-  color-scheme:light;
-}
-
-/* Bunte Stile: Farben aus den Kombinationen des StandBy-Dashboards, je eigene Schrift und Form */
-:root[data-style="zitrone"]{
-  --paper:#000000; --paper2:#141414; --card:#141414; --ink:#FFE600; --ink2:#A89E3C; --line:#2E2B10;
-  --rot:#FFE600; --on-rot:#000000; --blau:#FFE600; --gelb:#26262A; --on-gelb:#FFE600; --tint:#1E1E1E; --tint-ink:#FFE600; --field:#141414;
-  --g-rot:#FFE600; --g-blau:#FFE600; --g-gelb:#FFE600; --g-ink:#FFE600;
-  --r:22px; --rt:22px; --rtile:30px; --danger:#FF7A6E;
-  --f-disp:"Archivo Black","Arial Black",Arial,sans-serif; --f-body:"Geist","Helvetica Neue",Arial,sans-serif; --f-mono:"Geist","Helvetica Neue",Arial,sans-serif; --disp-w:400; --disp-ls:-.02em;
-  color-scheme:dark;
-}
-:root[data-style="bonbon"]{
-  --paper:#FDFBF4; --paper2:#FBE3F1; --card:#FFFFFF; --ink:#2B1BD6; --ink2:#6A5CD0; --line:#F3CFE5;
-  --rot:#2B1BD6; --on-rot:#FF9AD5; --blau:#2B1BD6; --gelb:#FEC1E1; --on-gelb:#2B1BD6; --tint:#FBE3F1; --tint-ink:#2B1BD6; --field:#FBEAF4;
-  --g-rot:#2B1BD6; --g-blau:#2B1BD6; --g-gelb:#2B1BD6; --g-ink:#2B1BD6; --gl-fill:none; --gl-stroke:currentColor; --gl-sw:9;
-  --r:26px; --rt:26px; --rtile:28px; --danger:#C1121C;
-  --f-disp:"DM Serif Display",Georgia,serif; --f-body:"DM Sans","Helvetica Neue",Arial,sans-serif; --f-mono:"DM Sans","Helvetica Neue",Arial,sans-serif; --disp-w:400; --disp-ls:-.01em;
-  color-scheme:light;
-}
-:root[data-style="wald"]{
-  --paper:#0B1F14; --paper2:#10281A; --card:#10281A; --ink:#C7F23A; --ink2:#8FB59C; --line:#1D4A31;
-  --rot:#C7F23A; --on-rot:#0F2E1D; --blau:#C7F23A; --gelb:#17402A; --on-gelb:#C7F23A; --tint:#17402A; --tint-ink:#C7F23A; --field:#10281A;
-  --g-rot:#C7F23A; --g-blau:#C7F23A; --g-gelb:#C7F23A; --g-ink:#C7F23A; --gl-fill:none; --gl-stroke:currentColor; --gl-sw:9;
-  --r:6px; --rt:6px; --rtile:6px; --danger:#FF8A70;
-  --f-disp:"Space Grotesk","Helvetica Neue",Arial,sans-serif; --f-body:"Space Grotesk","Helvetica Neue",Arial,sans-serif; --f-mono:"Space Mono",ui-monospace,Menlo,monospace; --disp-w:700; --disp-ls:-.03em;
-  color-scheme:dark;
-}
-:root[data-style="meer"]{
-  --paper:#F1FBFA; --paper2:#DFF4F2; --card:#FFFFFF; --ink:#0B2545; --ink2:#4B6A8A; --line:#C9E8E6;
-  --rot:#0B2545; --on-rot:#63E6E2; --blau:#0B2545; --gelb:#A0EEE9; --on-gelb:#0B2545; --tint:#DFF4F2; --tint-ink:#0B2545; --field:#E4F6F5;
-  --g-rot:#0B2545; --g-blau:#0B2545; --g-gelb:#0B2545; --g-ink:#0B2545;
-  --r:16px; --rt:16px; --rtile:18px; --danger:#C1121C;
-  --f-disp:"DM Sans","Helvetica Neue",Arial,sans-serif; --f-body:"DM Sans","Helvetica Neue",Arial,sans-serif; --f-mono:"DM Sans","Helvetica Neue",Arial,sans-serif; --disp-w:700; --disp-ls:-.03em;
-  color-scheme:light;
-}
-:root[data-style="nordisch"]{
+:root{
   --paper:#F6F5F1; --paper2:#E1E9E3; --card:#FFFFFF; --ink:#23302B; --ink2:#6F7C74; --line:#DCE2DC;
-  --rot:#4F7A60; --blau:#4F7A60; --gelb:#DCE9DF; --on-gelb:#23302B; --tint:#E1E9E3; --tint-ink:#3F5E48; --field:#EAEEE9;
-  --g-rot:#4F7A60; --g-blau:#4F7A60; --g-gelb:#4F7A60; --g-ink:#4F7A60; --gl-fill:none; --gl-stroke:currentColor; --gl-sw:9;
-  --r:8px; --rt:10px; --danger:#B3261E;
+  --rot:#4F7A60; --on-rot:#FFFFFF; --blau:#4F7A60; --gelb:#DCE9DF; --on-gelb:#23302B; --tint:#E1E9E3; --tint-ink:#3F5E48; --field:#EAEEE9;
+  --g-rot:#4F7A60; --g-blau:#4F7A60; --g-gelb:#4F7A60; --g-ink:#4F7A60; --gl-fill:currentColor; --gl-stroke:none; --gl-sw:0;
+  --r:10px; --rt:12px; --danger:#B3261E; --fab-shadow:0 8px 22px rgba(0,0,0,.30), 0 2px 5px rgba(0,0,0,.20); --bar-bd:1px solid var(--line); --field-bd:1px solid transparent;
   --f-disp:"Fraunces",Georgia,serif; --f-body:"Inter","Helvetica Neue",Arial,sans-serif; --f-mono:"Inter","Helvetica Neue",Arial,sans-serif; --disp-w:600; --disp-ls:-.01em;
-  color-scheme:light;
-}
-:root[data-style="altrosa"]{
-  --paper:#F3E6E3; --paper2:#FBF4F2; --card:#FFFBFA; --ink:#3A2F30; --ink2:#7E6E6E; --line:#E6D3CF;
-  --rot:#6F8496; --blau:#6F8496; --gelb:#E9CFCB; --on-gelb:#3A2F30; --tint:#DCE3EA; --tint-ink:#3D4E5E; --field:#FBF4F2;
-  --g-rot:#C98A84; --g-blau:#8FA3B5; --g-gelb:#D9B8A0; --g-ink:#7E6E6E;
-  --r:14px; --rt:14px; --danger:#A33A3A;
-  --f-disp:"DM Serif Display",Georgia,serif; --f-body:"DM Sans","Helvetica Neue",Arial,sans-serif; --f-mono:"DM Sans","Helvetica Neue",Arial,sans-serif; --disp-w:400; --disp-ls:-.01em;
-  color-scheme:light;
-}
-:root[data-style="kontrast"]{
-  --paper:#FFFFFF; --paper2:#F0F0F0; --card:#FFFFFF; --ink:#111111; --ink2:#6B6B6B; --line:#E2E2E2;
-  --rot:#0047FF; --blau:#0047FF; --gelb:#DCE6FF; --on-gelb:#0033CC; --tint:#E5ECFF; --tint-ink:#0033CC; --field:#F0F0F0;
-  --g-rot:#111; --g-blau:#111; --g-gelb:#111; --g-ink:#111;
-  --r:0px; --rt:0px; --danger:#D50000;
-  --f-disp:"Space Grotesk","Helvetica Neue",Arial,sans-serif; --f-body:"Space Grotesk","Helvetica Neue",Arial,sans-serif; --f-mono:"Space Grotesk","Helvetica Neue",Arial,sans-serif; --disp-w:700; --disp-ls:-.03em;
   color-scheme:light;
 }
 .gl *{ fill:var(--gl-fill); stroke:var(--gl-stroke); stroke-width:var(--gl-sw); }
@@ -162,6 +87,7 @@ img{ max-width:100%; display:block; }
 .frow+.frow{ padding-top:0; }
 .chip.more{ border-style:dashed; }
 .lcap{ padding:0; margin:0 0 -4px; font-size:13px; color:var(--ink2); }
+.look2 i.sw{ border:1px solid var(--line); }
 .chip .car{ font-size:11px; opacity:.6; margin-left:-2px; }
 .optlist{ display:grid; gap:6px; margin:4px 0 12px; }
 .optlist button{ text-align:left; height:46px; padding:0 14px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); font-size:16px; font-weight:500; border-radius:var(--r); }
@@ -169,13 +95,9 @@ img{ max-width:100%; display:block; }
 /* Zutaten mit mehreren Listen: nebeneinander, wenn der Platz reicht */
 .inggrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:0 36px; align-items:start; }
 .cols.multi{ display:block; } .cols.multi .ingbox{ position:static; max-height:none; overflow:visible; margin-bottom:10px; }
-/* Nachtmodus: ein Modus über jedem Stil, Rot auf Schwarz */
-html[data-night="1"][data-style]{ --paper:#000; --card:#120302; --ink:#ff3b30; --ink2:#a3281f; --line:#3a0b07; --rot:#ff3b30; --on-rot:#000; --gelb:#3a0b07; --on-gelb:#ff3b30; --blau:#6b150e; --danger:#ff3b30; --paper2:#120302; --tint:#2a0805; --tint-ink:#ff3b30; --field:#120302; --field-bd:1px solid #3a0b07; --g-rot:#ff3b30; --g-blau:#ff3b30; --g-gelb:#ff3b30; --g-ink:#ff3b30; color-scheme:dark; }
 .inggrid .grphead:empty{ display:none; }
-html[data-night="1"] img{ filter:grayscale(1) brightness(.55); }
-html[data-night="1"] .rtile.ph{ color:#ff3b30; }
 #hits .linkish{ border:0; background:none; padding:0 0 0 8px; font:inherit; color:inherit; text-decoration:underline; }
-.chip{ flex:none; display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 13px; border:1.5px solid var(--line); background:var(--card); font-size:14.5px; font-weight:500; white-space:nowrap; border-radius:18px; }
+.chip{ flex:none; display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 13px; border:1.5px solid var(--line); background:var(--card); font-size:14.5px; font-weight:500; white-space:nowrap; border-radius:min(var(--r),18px); }
 .chip.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
 .chip.on svg{ color:var(--paper) !important; }
 .chip .g{ width:14px; height:14px; flex:none; }
@@ -198,6 +120,11 @@ html[data-night="1"] .rtile.ph{ color:#ff3b30; }
 .rcard .fav{ color:var(--rot); }
 .rcard .who{ color:var(--blau); font-weight:600; }
 .byline{ margin:-4px 0 12px; font-weight:600; color:var(--blau); }
+.dmeta{ margin:8px 0 4px; display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; font-weight:600; font-size:15px; }
+.dmeta .course{ display:inline-flex; align-items:center; gap:6px; }
+.dmeta .course svg{ width:16px; height:16px; flex:none; }
+.dsub{ margin:0 0 6px; color:var(--ink2); font-size:14px; line-height:1.4; }
+.ctl .cookbtn{ margin-left:auto; height:46px; padding:0 26px; background:var(--rot); color:var(--on-rot); }
 @media (min-width:760px){
   .results{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:26px 22px; margin-top:14px; }
   .rcard{ display:block; padding:0; border:0; }
@@ -1246,45 +1173,65 @@ function scaleStepText(t,f){
   }
   return out+esc(t.slice(last));
 }
-const STYLES=[
- ['graphit','Signal','#F6F6F5','#262624','#D52B1E','Geist'],
- ['abend','Kohle','#1E2328','#ECE6DA','#F2B84B','Inter'],
- ['bauhaus','Bauhaus','#F5F3EE','#1D1B18','#CC3A2B','Archivo Black'],
- ['nordisch','Moos','#F6F5F1','#23302B','#4F7A60','Fraunces'],
- ['altrosa','Rosé','#F3E6E3','#3A2F30','#6F8496','DM Serif Display'],
- ['kontrast','Kontrast','#FFFFFF','#111111','#0047FF','Space Grotesk'],
- ['zitrone','Zitrone','#000000','#FFE600','#FFE600','Archivo Black',1],
- ['bonbon','Bonbon','#FDFBF4','#2B1BD6','#2B1BD6','DM Serif Display',1],
- ['wald','Wald','#0B1F14','#C7F23A','#C7F23A','Space Grotesk',1],
- ['meer','Meer','#F1FBFA','#0B2545','#0B2545','DM Sans',1]];
-/* Bunte Stile = die dreifarbigen Kombinationen aus dem StandBy-Dashboard (Fläche, Schrift, Zweitfarbe = Fläche zu 60 % mit Creme gemischt).
-   Aus diesen drei Farben entstehen drei Kachelpaare [Fläche, Schrift]; die Kategorie legt das Paar fest (BUNT_IDX, Reihenfolge wie COURSES, zuletzt ohne Kategorie).
-   Jede Kategorie behält immer dasselbe Paar, so bleibt das Muster ruhig und abgestimmt. */
-const BUNT_PAIRS={
- zitrone:[['#ffe600','#000000'],['#26262a','#ffe600'],['#feee62','#000000']],
- bonbon:[['#ff9ad5','#2b1bd6'],['#2b1bd6','#ff9ad5'],['#fec1e1','#2b1bd6']],
- wald:[['#c7f23a','#0f2e1d'],['#17402a','#c7f23a'],['#ddf584','#0f2e1d']],
- meer:[['#63e6e2','#0b2545'],['#0b2545','#63e6e2'],['#a0eee9','#0b2545']]};
-const BUNT_IDX=[2,0,1,2,0,1,2,1,0,1,2,1];
-/* Farbpaar einer Kategorie im aktuellen bunten Stil; sonst null (dann gelten die Farbrollen des Stils). Nachtmodus: immer null. */
-function buntPair(course){ const t=BUNT_PAIRS[pref.style]; if(!t||pref.night) return null; const i=COURSES.findIndex(x=>x[0]===course); return t[BUNT_IDX[i<0?BUNT_IDX.length-1:i]]; }
+/* ===== Darstellung 4.0: Modus × Farbwelt × Schrift × Ecken ===== */
+/* Farbwelten nach den Kombinationen des StandBy-Dashboards: a Fläche, b Schrift/Dunkel, c Zweitfarbe. Kachelpaare [Fläche, Schrift]. */
+const FARBEN=[
+ {id:'atelier',n:'Atelier',a:'#ffe600',b:'#000000',ink:'#111111',lp:'#FDFBF4',dp:'#000000',fg1:'#000000',sw:['#ffe600','#ff5a1f','#2b1bd6','#ff9ad5','#c7f23a'],
+  pairs:[['#ff9500','#160b00'],['#c7f23a','#0b1400'],['#123524','#c7f23a'],['#ff5a1f','#140400'],['#ffe600','#000000'],['#e9e3d3','#111111'],['#1c1c1e','#ffe600'],['#ff9ad5','#24001a'],['#63e6e2','#0b2545'],['#2b1bd6','#ff9ad5'],['#1c1c1e','#ffffff'],['#1c1c1e','#ffffff']]},
+ {id:'zitrone',n:'Zitrone',a:'#ffe600',b:'#000000',c:'#feee62',lp:'#FDFBF4',fg1:'#000000'},
+ {id:'orchidee',n:'Orchidee',a:'#ff9ad5',b:'#2b1bd6',c:'#fec1e1',lp:'#FDFBF4',fg1:'#2b1bd6'},
+ {id:'tanne',n:'Tannengrün',a:'#c7f23a',b:'#0f2e1d',c:'#ddf584',lp:'#FDFBF4',fg1:'#0f2e1d'},
+ {id:'lagune',n:'Lagune',a:'#63e6e2',b:'#0b2545',c:'#a0eee9',lp:'#FDFBF4',fg1:'#0b2545'},
+ {id:'moos',n:'Moos',a:'#4F7A60',b:'#23302B',c:'#DCE9DF',lp:'#F6F5F1',fg1:'#ffffff',f2:'#DCE9DF',t:'#4F7A60'},
+ {id:'karmin',n:'Karmin',a:'#D52B1E',b:'#262624',c:'#F5D9D6',lp:'#F6F6F5',fg1:'#ffffff',f2:'#F5D9D6',t:'#D52B1E'}];
+const SCHRIFTEN=[
+ {id:'klar',n:'Klar',d:'"Geist","Helvetica Neue",Arial,sans-serif',b:'"Geist","Helvetica Neue",Arial,sans-serif',m:'"Geist","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.03em'},
+ {id:'plakat',n:'Plakat',d:'"Archivo Black","Arial Black",Arial,sans-serif',b:'"Archivo","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:400,ls:'-.02em'},
+ {id:'redaktion',n:'Redaktion',d:'"DM Serif Display",Georgia,serif',b:'"DM Sans","Helvetica Neue",Arial,sans-serif',m:'"DM Sans","Helvetica Neue",Arial,sans-serif',w:400,ls:'-.01em'},
+ {id:'manuskript',n:'Manuskript',d:'"Fraunces",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:600,ls:'-.01em'},
+ {id:'raster',n:'Raster',d:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',b:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.03em'}];
+const ECKEN=[['sharp','Eckig',0,0,0],['soft','Weich',10,12,18],['round','Rund',22,26,30]];
+const MODI=[['light','Hell'],['dark','Dunkel'],['auto','Automatisch']];
+/* Übernahme der früheren Stile: [Farbwelt, Schrift, Ecken, Modus] */
+const ALT_STILE={graphit:['karmin','klar','soft','light'],abend:['zitrone','klar','soft','dark'],bauhaus:['karmin','plakat','sharp','light'],nordisch:['moos','manuskript','soft','light'],altrosa:['orchidee','redaktion','soft','light'],kontrast:['lagune','raster','soft','light'],zitrone:['zitrone','plakat','round','dark'],bonbon:['orchidee','redaktion','round','light'],wald:['tanne','raster','sharp','dark'],meer:['lagune','klar','soft','light'],pop:['atelier','plakat','round','dark'],sorbet:['orchidee','redaktion','round','light'],neon:['tanne','raster','sharp','dark'],marine:['lagune','klar','soft','light']};
+(function migrateLook(){ if(pref.pal) return; const m=ALT_STILE[pref.style]||ALT_STILE.nordisch; pref.pal=m[0]; pref.font=m[1]; pref.corner=m[2]; pref.mode=pref.night?'dark':m[3]; delete pref.night; savePref(); })();
+const CAT_IDX=[2,0,1,2,0,1,2,1,0,1,2,1];
+let CUR_PAIRS=null;
+const mixc=(a,p,b)=>`color-mix(in srgb,${a} ${p}%,${b})`;
+const modeNow=()=> pref.mode==='dark' ? 'dark' : pref.mode==='auto' ? (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light') : 'light';
+/* Farbpaar einer Kategorie in der aktuellen Farbwelt (Kacheln und Kochansicht) */
+function buntPair(course){ if(!CUR_PAIRS) return null; const i=COURSES.findIndex(x=>x[0]===course); return CUR_PAIRS[i<0?CUR_PAIRS.length-1:i]; }
 function applyLook(){
-  const st = STYLES.some(s=>s[0]===pref.style) ? pref.style : 'nordisch';
-  document.documentElement.dataset.style = st;
-  if(pref.night) document.documentElement.dataset.night='1'; else delete document.documentElement.dataset.night;
-  const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', pref.night?'#000000':STYLES.find(s=>s[0]===st)[2]);
+  const F=FARBEN.find(x=>x.id===pref.pal)||FARBEN[5], Sc=SCHRIFTEN.find(x=>x.id===pref.font)||SCHRIFTEN[3], E=ECKEN.find(x=>x[0]===pref.corner)||ECKEN[1];
+  const dark=modeNow()==='dark', h=document.documentElement;
+  const P=dark?(F.dp||(F.b==='#000000'?'#000000':mixc(F.b,32,'#000'))):F.lp, I=dark?'#F4F1E8':(F.ink||F.b);
+  const T=dark?mixc(F.a,82,'#fff'):(F.t||F.b);
+  const v={'--paper':P,'--paper2':mixc(I,8,P),'--card':dark?mixc(I,9,P):'#FFFFFF','--ink':I,'--ink2':mixc(I,62,P),'--line':mixc(I,16,P),
+   '--rot':F.a,'--on-rot':F.fg1,'--blau':T,'--gelb':mixc(F.a,dark?30:26,P),'--on-gelb':I,'--tint':mixc(I,dark?12:8,P),'--tint-ink':I,'--field':mixc(I,dark?12:7,P),
+   '--g-rot':T,'--g-blau':T,'--g-gelb':T,'--g-ink':T,'--gl-fill':'currentColor','--gl-stroke':'none','--gl-sw':'0',
+   '--r':E[2]+'px','--rt':E[3]+'px','--rtile':E[4]+'px','--danger':dark?'#FF7A6E':'#B3261E',
+   '--fab-shadow':dark?'0 8px 22px rgba(0,0,0,.6), 0 2px 5px rgba(0,0,0,.4)':'0 8px 22px rgba(0,0,0,.30), 0 2px 5px rgba(0,0,0,.20)',
+   '--f-disp':Sc.d,'--f-body':Sc.b,'--f-mono':Sc.m,'--disp-w':Sc.w,'--disp-ls':Sc.ls,'color-scheme':dark?'dark':'light'};
+  for(const k in v) h.style.setProperty(k,v[k]);
+  h.dataset.mode=dark?'dark':'light';
+  if(F.pairs) CUR_PAIRS=F.pairs;
+  else { const lift=dark?mixc(F.b,84,'#fff'):F.b; const t=[[F.a,F.fg1],[lift,F.f2||F.a],[F.c,F.b]]; CUR_PAIRS=CAT_IDX.map(k=>t[k]); }
+  const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', dark?(F.dp||'#000000'):F.lp);
 }
+if(window.matchMedia){ try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(pref.mode==='auto'){ applyLook(); if(typeof render==='function') render(); } }); }catch(e){} }
 function lookSheet(){
-  /* 3.6: kompakt – Stile als eine Reihe, jede Einstellung eine Zeile */
-  const cur = document.documentElement.dataset.style, sym = pref.symbols==='icons'?'icons':'shapes', tiles=pref.view==='tiles';
+  const sym = pref.symbols==='icons'?'icons':'shapes', tiles=pref.view==='tiles';
   const row=(label,opts,act,val)=>`<div class="lrow"><span>${label}</span><span class="seg small">${opts.map(([k,l])=>`<button class="${val===k?'on':''}" data-act="${act}" data-v="${k}">${l}</button>`).join('')}</span></div>`;
+  const stripe=F=>{ const c=F.sw||[F.a,F.b,F.c]; const w=100/c.length; return `linear-gradient(90deg,${c.map((x,i)=>`${x} ${i*w}% ${(i+1)*w}%`).join(',')})`; };
   sheet(`<h2>Darstellung</h2>
-   <div class="looks2">${STYLES.filter(s=>!s[6]).map(s=>`<button class="look2 ${s[0]===cur?'on':''}" data-act="setstyle" data-v="${s[0]}" aria-label="${s[1]}"><i style="background:${s[2]};color:${s[4]};font-family:'${s[5]}'">Aa</i><small>${s[1]}</small></button>`).join('')}</div>
-   <div class="lrow lcap"><span>Bunt: Kacheln nach Kategorie</span></div>
-   <div class="looks2">${STYLES.filter(s=>s[6]).map(s=>`<button class="look2 ${s[0]===cur?'on':''}" data-act="setstyle" data-v="${s[0]}" aria-label="${s[1]}"><i style="background:${s[2]};color:${s[4]};font-family:'${s[5]}'">Aa</i><small>${s[1]}</small></button>`).join('')}</div>
+   ${row('Modus',MODI,'setmode',pref.mode||'light')}
+   <div class="lrow lcap"><span>Farbwelt</span></div>
+   <div class="looks2">${FARBEN.map(F=>`<button class="look2 ${F.id===pref.pal?'on':''}" data-act="setpal" data-v="${F.id}" aria-label="${F.n}"><i class="sw" style="background:${stripe(F)}"></i><small>${F.n}</small></button>`).join('')}</div>
+   <div class="lrow lcap"><span>Schrift</span></div>
+   <div class="looks2">${SCHRIFTEN.map(S=>`<button class="look2 ${S.id===pref.font?'on':''}" data-act="setfont" data-v="${S.id}" aria-label="${S.n}"><i style="background:var(--card);color:var(--ink);font-family:${S.d.replace(/"/g,"'")};font-weight:${S.w}">Aa</i><small>${S.n}</small></button>`).join('')}</div>
+   ${row('Ecken',ECKEN.map(e=>[e[0],e[1]]),'setcorner',pref.corner||'soft')}
    ${row('Ansicht',[['list','Liste'],['tiles','Kacheln']],'view',tiles?'tiles':'list')}
    ${tiles?'':row('Symbole',[['shapes','Formen'],['icons','Zeichnungen']],'setsym',sym)}
-   ${row('Nachtmodus',[['off','Aus'],['on','An']],'setnight',pref.night?'on':'off')}
    <div class="stack" style="margin-top:14px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
 }
 /* Zeit und Sortierung: Knopf in der Filterzeile, genaue Auswahl im Fenster */
@@ -1414,7 +1361,7 @@ function renderHelp(){
       'Wiederherstellen oder Sammlung eines Freundes einlesen: „Teilen &amp; sichern“, dann „Sicherung oder Sammlung importieren“. Das geht auch bei leerer Sammlung.',
       'Rezepte von Freunden erhalten den Vermerk „geteilt von“ und lassen sich danach filtern. Die eigene Sicherung wird mit „Als eigenes Rezept übernehmen“ ohne den Vermerk übernommen. Vorhandene Rezepte werden nicht doppelt angelegt.']))}
     ${S('Drucken', L(['Hoch- oder Querformat im Druckdialog wählen. Auf dem iPhone als PDF über Teilen drucken.']))}
-    ${S('Darstellung', L(['Sechs Stile und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
+    ${S('Darstellung', L(['Modus (Hell, Dunkel, Automatisch), sieben Farbwelten, fünf Schriften, drei Eckenformen und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
     ${S('Als App installieren', L([
       '<b>iPhone, iPad:</b> Seite in Safari öffnen, Teilen, „Zum Home-Bildschirm“.',
       '<b>Android:</b> Seite in Chrome öffnen, Menü ⋮, „App installieren“ oder „Zum Startbildschirm hinzufügen“.',
@@ -1423,7 +1370,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '3.11';
+const APP_VERSION = '4.0';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1441,7 +1388,8 @@ const HISTORY = [
   ['3.8','Zeit und Sortierung als Knöpfe mit Auswahlfenster in der Filterzeile, Nachtmodus für die ganze App, Kochansicht in bunten Farbkombinationen und mit Maus bedienbar, mehrere Zutatenlisten nebeneinander'],
   ['3.9','Zwölf bunte Stile aus dem StandBy-Dashboard unter Darstellung; Kacheln, Oberfläche und Kochansicht folgen einheitlich dem gewählten Stil'],
   ['3.10','Vier bunte Stile mit Kachelfarben nach Kategorie, eigener Schrift und Form; Kacheln unterschiedlich hoch (hochkant) oder breit (quer)'],
-  ['3.11','Bunte Stile aus den dreifarbigen Kombinationen des StandBy-Dashboards, ruhigeres Farbmuster nach Kategorie, Wörter in Kacheln nie getrennt']
+  ['3.11','Bunte Stile aus den dreifarbigen Kombinationen des StandBy-Dashboards, ruhigeres Farbmuster nach Kategorie, Wörter in Kacheln nie getrennt'],
+  ['4.0','Darstellung neu aufgebaut: Modus (Hell, Dunkel, Automatisch), sieben Farbwelten nach StandBy-Vorbild, fünf Schriften, Ecken und Symbole frei wählbar; Nachtmodus entfällt; Kopf der Rezeptansicht aufgeräumt']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1578,6 +1526,9 @@ function renderDetail(keep){
   const diffHTML = r.difficulty ? `<span class="diffb"><span class="diff">${[1,2,3].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join('')}</span>${esc(r.difficulty)}</span>` : '';
   if(r.shelfLife) facts.push(['Haltbarkeit', r.shelfLife]);
   const unitName = r.servingsUnit || (r.servings?'Portionen':'');
+  /* Kopf 4.0: eine Kennzeilen statt Kästchenraster; Einzelzeiten klein darunter */
+  const totF=facts.find(f=>f[0]==='Gesamt'||f[0]==='Zubereitungszeit'), totalTxt=totF?totF[1]:(facts.length===1&&facts[0][0]!=='Haltbarkeit'?facts[0][1]:'');
+  const partTxt=facts.filter(f=>f!==totF&&!(facts.length===1&&!totF&&f[0]!=='Haltbarkeit')).map(f=>`${f[0]} ${f[1]}`).join(' · ');
   let ingIdx=-1, si=-1;
   const gh=(arr,g)=> (arr.length>1||g.t) ? `<h4 class="grphead">${esc(g.t||'')}</h4>` : '';
   const multiIng=G.ing.length>1;
@@ -1603,21 +1554,20 @@ function renderDetail(keep){
     <button class="iconbtn" data-act="share" aria-label="Teilen">${ICON.share}</button>
   </div></div>
   <div class="wrap">
-    <div class="hero ${r.photo?'':'nophoto'}"><div class="cov">${cover(r,true)}</div></div>
+    ${r.photo?`<div class="hero"><div class="cov">${cover(r,true)}</div></div>`:''}
     <h1 class="dtitle">${esc(r.title||'Ohne Titel')}</h1>
-    ${personLine(r)?`<p class="byline">${esc(personLine(r))}${r.via&&r.importedAt?` <span class="muted">am ${fmtDate(r.importedAt)}</span>`:''}</p>`:''}
-    <div class="marks">${(r.courses||[]).map(c=>`<span class="course">${glyph(c)}${esc(c)}</span>`).join('')}${(r.tags||[]).map(t=>`<span class="tagtxt">#${esc(t)}</span>`).join('')}</div>
-    ${facts.length?`<dl class="facts">${facts.map(f=>`<div><dt>${f[0]}</dt><dd>${f[2]?f[1]:esc(f[1])}</dd></div>`).join('')}</dl>`:''}
+    <p class="dmeta">${[(r.courses||[]).length?`<span class="course">${glyph(r.courses[0])}${esc(r.courses.join(' · '))}</span>`:'',totalTxt?`<span>${esc(totalTxt)}</span>`:'',r.servings?`<span>${esc(fmtFrac(r.servings)+' '+(r.servingsUnit||'Portionen'))}</span>`:'',diffHTML].filter(Boolean).join('')}</p>
+    ${partTxt?`<p class="dsub">${esc(partTxt)}</p>`:''}
+    ${(r.tags||[]).length||personLine(r)?`<p class="dsub">${(r.tags||[]).map(t=>`#${esc(t)}`).join('  ')}${(r.tags||[]).length&&personLine(r)?' · ':''}${personLine(r)?esc(personLine(r))+(r.via&&r.importedAt?' am '+esc(fmtDate(r.importedAt)):''):''}</p>`:''}
     ${r.intro?`<details class="intro"><summary>Einleitung</summary><div class="txt">${esc(r.intro)}</div></details>`:''}
     <div class="ctl">
       <div class="ctlrow">
         <div class="stepper"><button data-act="less" aria-label="Weniger">−</button><span class="val ${factor!==1?'scaled':''}">${r.servings?`${fmtFrac(ds.shown)} ${esc(unitName)}`:`${fmtFrac(ds.shown)}× Rezept`}</span><button data-act="more" aria-label="Mehr">+</button></div>
-        ${diffHTML}
+        ${si>=0?`<button class="btn primary cookbtn" data-act="cook">Kochen</button>`:''}
       </div>
       <div class="ctlrow">
         <span class="seg small">${[['orig','Original'],['metric','Metrisch'],['us','US']].map(([k,l])=>`<button class="${ds.mode===k?'on':''}" data-act="mode" data-v="${k}">${l}</button>`).join('')}</span>
         <button class="wake ${wakeLock?'on':''}" data-act="wake"><span class="sw"></span>Bildschirm an</button>
-        ${si>=0?`<button class="btn cookbtn" data-act="cook">Kochen</button>`:''}
       </div>
     </div>
     ${partHTML}
@@ -2882,7 +2832,10 @@ document.addEventListener('click', async e=>{
     case 'importfile': closeSheet(); $('#fileImport').click(); break;
     case 'setname': closeSheet(); askName(); break;
     case 'look': lookSheet(); break;
-    case 'setstyle': pref.style=v; savePref(); applyLook(); lookSheet(); render(); break;
+    case 'setpal': pref.pal=v; savePref(); applyLook(); lookSheet(); render(); break;
+    case 'setfont': pref.font=v; savePref(); applyLook(); lookSheet(); render(); break;
+    case 'setcorner': pref.corner=v; savePref(); applyLook(); lookSheet(); render(); break;
+    case 'setmode': pref.mode=v; savePref(); applyLook(); lookSheet(); render(); break;
     case 'setsym': pref.symbols=v; savePref(); lookSheet(); render(); break;
     case 'sharelib': closeSheet(); if(recipes.length) withName(libSheet); else libSheet(); break;
     case 'libshare': { const ph=$('#libPhotos')?$('#libPhotos').checked:true; closeSheet(); shareLibrary(v, ph); break; }
@@ -2901,7 +2854,6 @@ document.addEventListener('click', async e=>{
     case 'cook': cookStart(); break;
     case 'view': pref.view=v; savePref(); renderResults(); lookSheet(); break;
     case 'setsort': filt.sort=v; pref.sort=v; savePref(); closeSheet(); renderFilters(); renderResults(); break;
-    case 'setnight': pref.night=v==='on'; savePref(); applyLook(); renderResults(); lookSheet(); break;
     case 'timesheet': timeSheet(); break;
     case 'sortsheet': sortSheet(); break;
     case 'more': stepServings(1); break;

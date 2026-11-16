@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 3.11 (technisch `sw.js` VERSION v64). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 4.0 (technisch `sw.js` VERSION v65). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -27,7 +27,7 @@ Aktuelle Version: 3.11 (technisch `sw.js` VERSION v64). Anzeige in der App: `APP
 
 ## Gestaltungsregeln
 - Filter in genau zwei Zeilen (`renderFilters`): oben Favoriten, Zeit und Sortierung (Knöpfe mit Auswahlfenster `timeSheet`/`sortSheet`) und Kategorien, unten Schlagwörter und Personen.
-- Nachtmodus (`pref.night`, `html[data-night]`) ist ein Modus über jedem Stil, kein Stil. Vier bunte Stile (`zitrone`, `bonbon`, `wald`, `meer`; Flag in `STYLES`) aus den dreifarbigen StandBy-Kombinationen: drei Kachelpaare in `BUNT_PAIRS`, Kategorie → Paar über `BUNT_IDX`, Funktion `buntPair`; eigene Schrift und Form. Wörter in Kacheln nie trennen (Titel wird kleiner). die Kochansicht übernimmt das Farbpaar der Kategorie. Kacheln: hochkant gleich breit und unterschiedlich hoch, quer gleich hoch und unterschiedlich breit (`data-sz` nach Titellänge). Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
+- Darstellung (`lookSheet`, `applyLook`): getrennt wählbar Modus (`pref.mode`: light, dark, auto), Farbwelt (`pref.pal`, `FARBEN`), Schrift (`pref.font`, `SCHRIFTEN`), Ecken (`pref.corner`, `ECKEN`) und Symbole (`pref.symbols`). Kein Nachtmodus. Farbwelten nach den dreifarbigen StandBy-Kombinationen, Kachelpaare je Kategorie (`CUR_PAIRS`, `buntPair`), Atelier mit mehrfarbigen Rezeptfarben. Alte `pref.style` werden in `migrateLook` übernommen. Wörter in Kacheln nie trennen (Titel wird kleiner). Kochansicht übernimmt das Farbpaar der Kategorie. Kacheln: hochkant gleich breit und unterschiedlich hoch, quer gleich hoch und unterschiedlich breit (`data-sz` nach Titellänge). Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
 - Kein Server und kein Worker; Links (z. B. Instagram) werden nicht abgerufen, nur als Quelle gespeichert.
 - Navigation höchstens drei bis vier Zeilen; gleichartige Elemente (z. B. Filter-Chips) nie auf mehrere Zeilen verteilen, lieber eine seitlich scrollbare Zeile.
 
@@ -37,7 +37,7 @@ Aktuelle Version: 3.11 (technisch `sw.js` VERSION v64). Anzeige in der App: `APP
 - Anzeige: `renderList`, `renderDetail`, `renderEditor`, `renderHelp`, `scaleStepText`, Kacheln `tileHTML`/`tileFit`.
 - Baustein „Kacheln und Kochmodus“ (`kmOpen`, `kmPaint`, `kmFit`, CSS `.rtile`, `.km-*`) zwischen den Markierungen „BAUSTEIN … Ende BAUSTEIN“: gemeinsam mit dem StandBy-Dashboard, Änderungen in beiden Projekten gleich halten.
 - Teilen/Druck: `exportHTML`, `exportLibraryHTML`, `printLayouts` (Hoch-/Querformat), `buildPDF`.
-- Darstellung: `STYLES`, `applyLook` (Standard: Moos = `nordisch`).
+- Darstellung: `FARBEN`, `SCHRIFTEN`, `applyLook` (Standard: Moos, Manuskript, Weich, Hell).
 
 ## Veröffentlichen
 Änderungen committen und auf `main` pushen; GitHub Pages veröffentlicht automatisch. Danach `VERSIONEN.md` um das Update ergänzen (Zwischen-Update z. B. 3.4, neue Hauptversion nur bei grundlegendem Wechsel).
