@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 3.10 (technisch `sw.js` VERSION v63). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 3.11 (technisch `sw.js` VERSION v64). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -27,7 +27,7 @@ Aktuelle Version: 3.10 (technisch `sw.js` VERSION v63). Anzeige in der App: `APP
 
 ## Gestaltungsregeln
 - Filter in genau zwei Zeilen (`renderFilters`): oben Favoriten, Zeit und Sortierung (Knöpfe mit Auswahlfenster `timeSheet`/`sortSheet`) und Kategorien, unten Schlagwörter und Personen.
-- Nachtmodus (`pref.night`, `html[data-night]`) ist ein Modus über jedem Stil, kein Stil. Vier bunte Stile (`pop`, `sorbet`, `neon`, `marine`; Flag in `STYLES`, Kachelfarben je Kategorie in `BUNT_PAIRS`, Funktion `buntPair`) mit eigener Schrift und Form; die Kochansicht übernimmt das Farbpaar der Kategorie. Kacheln: hochkant gleich breit und unterschiedlich hoch, quer gleich hoch und unterschiedlich breit (`data-sz` nach Titellänge). Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
+- Nachtmodus (`pref.night`, `html[data-night]`) ist ein Modus über jedem Stil, kein Stil. Vier bunte Stile (`zitrone`, `bonbon`, `wald`, `meer`; Flag in `STYLES`) aus den dreifarbigen StandBy-Kombinationen: drei Kachelpaare in `BUNT_PAIRS`, Kategorie → Paar über `BUNT_IDX`, Funktion `buntPair`; eigene Schrift und Form. Wörter in Kacheln nie trennen (Titel wird kleiner). die Kochansicht übernimmt das Farbpaar der Kategorie. Kacheln: hochkant gleich breit und unterschiedlich hoch, quer gleich hoch und unterschiedlich breit (`data-sz` nach Titellänge). Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
 - Kein Server und kein Worker; Links (z. B. Instagram) werden nicht abgerufen, nur als Quelle gespeichert.
 - Navigation höchstens drei bis vier Zeilen; gleichartige Elemente (z. B. Filter-Chips) nie auf mehrere Zeilen verteilen, lieber eine seitlich scrollbare Zeile.
 
