@@ -69,7 +69,7 @@ img{ max-width:100%; display:block; }
 
 /* Liste */
 .masthead{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:22px 0 14px; }
-.masthead h1{ font:var(--disp-w) clamp(40px,11vw,76px)/.9 var(--f-disp); letter-spacing:var(--disp-ls); margin:0; }
+.masthead h1{ font:var(--disp-w) clamp(40px,11vw,76px)/1.12 var(--f-disp); letter-spacing:var(--disp-ls); margin:0; padding-bottom:.06em; }
 .masthead .count{ font-family:var(--f-mono); font-size:13px; color:var(--ink2); padding-bottom:6px; white-space:nowrap; }
 .masthead{ padding-bottom:4px !important; }
 .quiet{ display:flex; align-items:center; gap:4px 18px; flex-wrap:wrap; margin:0 0 12px; }
@@ -114,7 +114,7 @@ img{ max-width:100%; display:block; }
 .rcard{ display:grid; grid-template-columns:84px 1fr; gap:14px; align-items:center; padding:12px 0; border-bottom:1px solid var(--line); cursor:pointer; }
 .rcard .cov{ width:84px; height:84px; overflow:hidden; background:var(--paper2); border-radius:var(--rt); }
 .rcard .cov img,.rcard .cov svg{ width:100%; height:100%; object-fit:cover; display:block; }
-.rcard h3{ font:var(--disp-w) 18px/1.15 var(--f-disp); letter-spacing:var(--disp-ls); margin:0 0 5px; hyphens:auto; -webkit-hyphens:auto; }
+.rcard h3{ font:var(--disp-w) 18px/1.22 var(--f-disp); letter-spacing:var(--disp-ls); margin:0 0 5px; hyphens:auto; -webkit-hyphens:auto; }
 .rcard .meta{ font-size:13.5px; color:var(--ink2); display:flex; flex-wrap:wrap; gap:4px 12px; }
 .rcard .meta .mono{ font-size:12.5px; color:var(--ink); }
 .rcard .fav{ color:var(--rot); }
@@ -154,7 +154,7 @@ img{ max-width:100%; display:block; }
 .hero.nophoto .cov{ aspect-ratio:auto; height:132px; }
 @media (min-width:760px){ .hero.nophoto .cov{ height:180px; } }
 @media (min-width:760px){ .hero{ margin:22px 0 0; } .hero:not(.nophoto) .cov{ aspect-ratio:21/9; } }
-.dtitle{ font:var(--disp-w) clamp(32px,8.6vw,62px)/1 var(--f-disp); letter-spacing:var(--disp-ls); margin:20px 0 12px; hyphens:auto; -webkit-hyphens:auto; }
+.dtitle{ font:var(--disp-w) clamp(32px,8.6vw,62px)/1.12 var(--f-disp); padding-bottom:.04em; letter-spacing:var(--disp-ls); margin:20px 0 12px; hyphens:auto; -webkit-hyphens:auto; }
 .marks{ display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; font-size:14.5px; }
 .marks .course{ display:inline-flex; align-items:center; gap:6px; font-weight:600; }
 .marks .course svg{ width:16px; height:16px; }
@@ -307,6 +307,7 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .sheet p{ margin:0 0 14px; color:var(--ink2); }
 .sheet .stack{ display:grid; gap:10px; }
 .sheet .stack .btn{ justify-content:flex-start; }
+.sheet .stack .btn.fin{ justify-content:center; font-size:16px; }
 .addopts .btn{ height:auto; min-height:58px; padding:10px 14px; text-align:left; }
 .addopts .btn svg{ width:22px; height:22px; flex:none; color:var(--rot); }
 .addopts .btn span{ display:flex; flex-direction:column; gap:1px; }
@@ -333,13 +334,15 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 /* ===== BAUSTEIN Kacheln und Kochmodus 1.0 – gemeinsam mit dem StandBy-Dashboard; Änderungen in beiden Projekten gleich halten ===== */
 .rtile{position:relative;container-type:inline-size;min-height:170px;border-radius:22px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;background:var(--tbg);color:var(--tfg);list-style:none}
 .rtile .tk{font-size:12px;font-weight:600;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
-.rtile .tt{font:var(--disp-w) 1em/1.06 var(--f-disp);letter-spacing:var(--disp-ls);hyphens:none;-webkit-hyphens:none;overflow-wrap:normal;word-break:normal;margin:auto 0 0}
+.rtile .tt{font:var(--disp-w) 1em/1.16 var(--f-disp);letter-spacing:var(--disp-ls);hyphens:none;-webkit-hyphens:none;overflow-wrap:normal;word-break:normal;margin:auto 0 0}
 .rtile .tm{font-size:12.5px;opacity:.85;display:flex;flex-wrap:wrap;gap:2px 10px}
 .rtile .fav{position:absolute;top:12px;right:14px}
 .km{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);padding:calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 18px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 18px)}
 @media (hover:hover){.km-main{cursor:pointer}}
 .km-top{display:flex;align-items:center;gap:10px}
 .km-top h2{flex:1;min-width:0;font:600 15px/1.2 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
+.km-top button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.km-top button[data-act="kmClose"]{border:2px solid var(--ink);font-weight:700}
 .km-top button{font:600 14px var(--f-body);padding:8px 12px;border-radius:999px;background:var(--card);color:var(--ink);border:1px solid var(--line)}
 .km-main{flex:1;min-height:0;display:flex;gap:18px;align-items:stretch;padding:14px 0 10px}
 .km-n{flex:none;display:flex;flex-direction:column;justify-content:center}
@@ -383,7 +386,7 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .looks2{display:flex;gap:8px;overflow-x:auto;padding:6px 6px 10px;margin:0 -6px;scrollbar-width:none}
 .look2{flex:none;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;color:var(--ink)}
 .look2 i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:16px;border:1px solid var(--line)}
-.look2.on i{outline:2px solid var(--rot);outline-offset:2px}
+.look2.on i{outline:2px solid var(--ink);outline-offset:2px}
 .look2 small{font-size:11px}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-weight:600}
 /* Fenster: gleiche Radien an allen Ecken, frei schwebend */
@@ -1232,18 +1235,18 @@ function lookSheet(){
    ${row('Ecken',ECKEN.map(e=>[e[0],e[1]]),'setcorner',pref.corner||'soft')}
    ${row('Ansicht',[['list','Liste'],['tiles','Kacheln']],'view',tiles?'tiles':'list')}
    ${tiles?'':row('Symbole',[['shapes','Formen'],['icons','Zeichnungen']],'setsym',sym)}
-   <div class="stack" style="margin-top:14px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
+   <div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`);
 }
 /* Zeit und Sortierung: Knopf in der Filterzeile, genaue Auswahl im Fenster */
 const SORTS=[['new','Neueste'],['az','A–Z'],['fast','Schnellste']];
 function timeSheet(){
   sheet(`<h2>Zeit</h2><div class="optlist tsheet">${TIME_BUCKETS.map(([k,l])=>`<button class="${filt.time===k?'on':''}" data-act="ftime" data-v="${k}">${k==='all'?'Alle':l}</button>`).join('')}</div>
    <div class="lrow"><span>Gezählt wird</span><span class="seg small">${[['active','Zubereitung'],['total','Gesamt']].map(([k,l])=>`<button class="${filt.timeBase===k?'on':''}" data-act="fbase" data-v="${k}">${l}</button>`).join('')}</span></div>
-   <div class="stack" style="margin-top:14px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
+   <div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`);
 }
 function sortSheet(){
   sheet(`<h2>Sortierung</h2><div class="optlist">${SORTS.map(([k,l])=>`<button class="${filt.sort===k?'on':''}" data-act="setsort" data-v="${k}">${l}</button>`).join('')}</div>
-   <div class="stack" style="margin-top:14px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
+   <div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`);
 }
 
 const myName = () => (pref.name||'').trim();
@@ -1370,7 +1373,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '4.0';
+const APP_VERSION = '4.1';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1389,7 +1392,8 @@ const HISTORY = [
   ['3.9','Zwölf bunte Stile aus dem StandBy-Dashboard unter Darstellung; Kacheln, Oberfläche und Kochansicht folgen einheitlich dem gewählten Stil'],
   ['3.10','Vier bunte Stile mit Kachelfarben nach Kategorie, eigener Schrift und Form; Kacheln unterschiedlich hoch (hochkant) oder breit (quer)'],
   ['3.11','Bunte Stile aus den dreifarbigen Kombinationen des StandBy-Dashboards, ruhigeres Farbmuster nach Kategorie, Wörter in Kacheln nie getrennt'],
-  ['4.0','Darstellung neu aufgebaut: Modus (Hell, Dunkel, Automatisch), sieben Farbwelten nach StandBy-Vorbild, fünf Schriften, Ecken und Symbole frei wählbar; Nachtmodus entfällt; Kopf der Rezeptansicht aufgeräumt']
+  ['4.0','Darstellung neu aufgebaut: Modus (Hell, Dunkel, Automatisch), sieben Farbwelten nach StandBy-Vorbild, fünf Schriften, Ecken und Symbole frei wählbar; Nachtmodus entfällt; Kopf der Rezeptansicht aufgeräumt'],
+  ['4.1','Kochmodus statt Kochen, Liste schließen im Kochmodus deutlich, Fertig als Hauptknopf, Unterlängen nicht mehr abgeschnitten, keine Portionen auf Kacheln']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1468,7 +1472,7 @@ function renderFilters(){
    ${courses.map(c=>`<button class="chip ${filt.courses.has(c)?'on':''}" data-act="fcourse" data-v="${esc(c)}">${glyph(c)}${esc(c)}</button>`).join('')}
    </div><div class="frow">
    ${tags.map(t=>`<button class="chip tag ${filt.tags.has(t)?'on':''}" data-act="ftag" data-v="${esc(t)}">${esc(t)}</button>`).join('')}
-   ${tagsAll.length>8?`<button class="chip more" data-act="falltags">${filt.allTags?'Weniger':'Alle '+tagsAll.length}</button>`:''}
+   ${tagsAll.length>8?`<button class="chip more" data-act="falltags">${filt.allTags?'Weniger Schlagwörter':'Alle '+tagsAll.length+' Schlagwörter'}</button>`:''}
    ${people().length>1?people().map(p=>`<button class="chip ${filt.people.has(p)?'on':''}" data-act="fperson" data-v="${esc(p)}">${p==='–'?'ohne Namen':'von '+esc(p)}${p===myName()?' (du)':''}</button>`).join(''):''}
    </div>`;
   el.querySelectorAll('.frow').forEach((x,k)=>{ if(keep[k]) x.scrollLeft=keep[k]; });
@@ -1501,8 +1505,8 @@ function renderResults(){
 function tileHTML(r){const c=(r.courses||[])[0]||'',col=(COURSES.find(x=>x[0]===c)||[])[2]||'ink';let bg=col==='ink'?'var(--ink)':col==='blau'?'color-mix(in srgb,var(--blau) 62%,var(--ink))':`var(--${col})`,fg=col==='ink'||col==='blau'?'var(--paper)':col==='gelb'?'var(--on-gelb)':'var(--card)';
  const bp=buntPair(c); if(bp){bg=bp[0];fg=bp[1]}
  const tl=(r.title||'').length, sz=tl<=15?'s':tl<=27?'m':'l';
- const a=activeMin(r),t=totalMin(r),time=a!=null?fmtDuration(a):(t!=null?fmtDuration(t):''),sv=r.servings?`${fmtFrac(r.servings)} ${esc(r.servingsUnit||'Portionen')}`:'';
- const inner=`${c?`<span class="tk">${esc(c)}</span>`:''}<div class="tbox"><h3 class="tt">${esc(r.title||'Ohne Titel')}</h3></div>${time||sv?`<span class="tm">${time?`<span>${time}</span>`:''}${sv?`<span>${sv}</span>`:''}</span>`:''}`;
+ const a=activeMin(r),t=totalMin(r),time=a!=null?fmtDuration(a):(t!=null?fmtDuration(t):'');
+ const inner=`${c?`<span class="tk">${esc(c)}</span>`:''}<div class="tbox"><h3 class="tt">${esc(r.title||'Ohne Titel')}</h3></div>${time?`<span class="tm"><span>${time}</span></span>`:''}`;
  /* mit Foto wie im Dashboard: Bild füllt die Kachel, Text auf Unschärfe */
  return r.photo?`<li class="rtile ph" data-sz="${sz}" data-act="open" data-id="${r.id}"><img src="${r.photo}" alt="">${r.fav?'<span class="fav">★</span>':''}<div class="tpan">${inner}</div></li>`:`<li class="rtile" data-sz="${sz}" data-act="open" data-id="${r.id}" style="--tbg:${bg};--tfg:${fg}">${r.fav?'<span class="fav">★</span>':''}${inner}</li>`}
 addEventListener('resize',()=>{if(pref.view==='tiles')tileFit()});
@@ -1563,7 +1567,7 @@ function renderDetail(keep){
     <div class="ctl">
       <div class="ctlrow">
         <div class="stepper"><button data-act="less" aria-label="Weniger">−</button><span class="val ${factor!==1?'scaled':''}">${r.servings?`${fmtFrac(ds.shown)} ${esc(unitName)}`:`${fmtFrac(ds.shown)}× Rezept`}</span><button data-act="more" aria-label="Mehr">+</button></div>
-        ${si>=0?`<button class="btn primary cookbtn" data-act="cook">Kochen</button>`:''}
+        ${si>=0?`<button class="btn primary cookbtn" data-act="cook">Kochmodus</button>`:''}
       </div>
       <div class="ctlrow">
         <span class="seg small">${[['orig','Original'],['metric','Metrisch'],['us','US']].map(([k,l])=>`<button class="${ds.mode===k?'on':''}" data-act="mode" data-v="${k}">${l}</button>`).join('')}</span>
@@ -1614,7 +1618,7 @@ function kmOpen(o){km={...o,i:0};const d=document.createElement('div');d.classNa
  let wt=0;d.addEventListener('wheel',e=>{if(e.target.closest('.km-ing'))return;const v=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY,now=Date.now();if(Math.abs(v)<20||now-wt<350)return;wt=now;kmStep(v>0?1:-1)},{passive:true});
  km.key=e=>{if(!km)return;if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();kmStep(1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();kmStep(-1)}else if(e.key==='Escape')kmClose()};document.addEventListener('keydown',km.key)}
 function kmPaint(){const d=document.getElementById('km');if(!d||!km)return;const s=km.steps[km.i],n=km.steps.length;
- d.innerHTML=`<div class="km-top"><h2>${esc(km.title)}</h2><button data-act="kmIng">Zutaten</button><button data-act="kmClose" aria-label="Kochmodus schließen">Fertig</button></div>
+ d.innerHTML=`<div class="km-top"><h2>${esc(km.title)}</h2><button data-act="kmIng" class="${km.ingOn?'on':''}">${km.ingOn?'Liste schließen':'Zutaten'}</button><button data-act="kmClose" aria-label="Kochmodus schließen">Fertig</button></div>
  <div class="km-main"><div class="km-n"><b>${km.i+1}</b><small>von ${n}</small></div><div class="km-txt">${s.g?`<div class="km-g">${esc(s.g)}</div>`:''}<div class="km-t">${s.html}</div></div></div>
  <div class="km-bar"><button data-act="kmPrev" ${km.i?'':'disabled'} aria-label="Vorheriger Schritt">‹</button><div class="km-seg">${km.steps.map((_,k)=>`<i class="${k<km.i?'d':k===km.i?'on':''}"></i>`).join('')}</div><button data-act="kmNext" ${km.i<n-1?'':'disabled'} aria-label="Nächster Schritt">›</button></div>
  <div class="km-ing ${km.ingOn?'on':''}"><h3>Zutaten${km.servLabel?` · ${esc(km.servLabel)}`:''}</h3>${km.ingHTML}</div>`;
@@ -1877,7 +1881,7 @@ function exportText(r){
 const EXPORT_CSS = `
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--f-body);-webkit-text-size-adjust:100%}
 main{max-width:860px;margin:0 auto;padding:28px 20px 48px}
-h1{font:var(--disp-w) clamp(30px,7vw,52px)/1 var(--f-disp);margin:0 0 12px;hyphens:auto;-webkit-hyphens:auto}
+h1{font:var(--disp-w) clamp(30px,7vw,52px)/1.12 var(--f-disp);margin:0 0 12px;hyphens:auto;-webkit-hyphens:auto}
 .photo{width:100%;max-height:420px;object-fit:cover;display:block;margin:0 0 22px}
 .by{margin:0 0 10px;font-weight:600;font-size:15px}
 .marks{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font-size:14px;line-height:20px;font-weight:600}
@@ -2130,7 +2134,7 @@ async function copyText(t){
   const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,t.length);
   let ok=false; try{ ok=document.execCommand('copy'); }catch(e){} ta.remove();
   if(ok) toast('Text kopiert');
-  else sheet(`<h2>Text zum Kopieren</h2><textarea class="ta tall" readonly style="font-size:14px">${esc(t)}</textarea><div class="stack" style="margin-top:10px"><button class="btn" data-act="closesheet">Fertig</button></div>`);
+  else sheet(`<h2>Text zum Kopieren</h2><textarea class="ta tall" readonly style="font-size:14px">${esc(t)}</textarea><div class="stack" style="margin-top:10px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`);
 }
 
 /* ===================== Import & Backup ===================== */
