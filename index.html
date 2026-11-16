@@ -123,6 +123,16 @@ img{ max-width:100%; display:block; }
 .dmeta{ margin:8px 0 4px; display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; font-weight:600; font-size:15px; }
 .dmeta .course{ display:inline-flex; align-items:center; gap:6px; }
 .dmeta .course svg{ width:16px; height:16px; flex:none; }
+.phtop{ display:flex; gap:14px; align-items:center; margin:16px 0 4px; }
+.phtop .cov{ width:84px; height:84px; flex:none; overflow:hidden; background:var(--paper2); border-radius:var(--rt); }
+.phtop .cov img,.phtop .cov svg{ width:100%; height:100%; object-fit:cover; display:block; }
+.phcol{ display:grid; gap:6px; min-width:0; } .phcol b{ font:var(--disp-w) 18px/1.15 var(--f-disp); letter-spacing:var(--disp-ls); }
+.phbtns{ display:flex; flex-wrap:wrap; gap:8px; } .phbtns .btn{ height:40px; padding:0 14px; }
+/* Scrollbalken in Fenstern mit runden Ecken: schmal, mit Abstand zu den Ecken */
+.sheet::-webkit-scrollbar,.km-ing::-webkit-scrollbar{ width:12px; }
+.sheet::-webkit-scrollbar-track,.km-ing::-webkit-scrollbar-track{ background:transparent; margin:calc(var(--rt) + 8px) 0; }
+.sheet::-webkit-scrollbar-thumb,.km-ing::-webkit-scrollbar-thumb{ background:color-mix(in srgb,var(--ink) 30%,transparent); border-radius:8px; border:3px solid transparent; background-clip:padding-box; }
+@supports not selector(::-webkit-scrollbar){ .sheet,.km-ing{ scrollbar-width:thin; scrollbar-color:color-mix(in srgb,var(--ink) 30%,transparent) transparent; } }
 .dcred{ margin:6px 0 0; font-size:11.5px; color:var(--ink2); } .dcred a{ color:inherit; }
 .ph-dr .row{ display:flex; gap:8px; flex-wrap:wrap; margin:6px 0; }
 .ph-dr .lbl{ display:block; margin-top:12px; font-size:12.5px; color:var(--ink2); }
@@ -371,9 +381,8 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .km>.ck-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4;z-index:0;pointer-events:none}
 .km-top,.km-main,.km-bar{position:relative;z-index:1}
 .km-ing{z-index:2}
-.km-top button.sq{width:40px;padding:0;display:inline-flex;align-items:center;justify-content:center}.km-top button.sq svg{width:20px;height:20px}
 .km-cred{position:absolute;z-index:3;right:calc(env(safe-area-inset-right) + 18px);bottom:max(4px,calc(env(safe-area-inset-bottom) - 16px));max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 10px/1.2 var(--f-body);opacity:.55}.km-cred a{color:inherit;text-decoration:none}
-.km-ph{max-height:78%}
+
 .km-ing h3{margin:0 0 8px;font:600 16px var(--f-body)}
 @media (orientation:portrait){.km-main{flex-direction:column;gap:6px}.km-n{flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}.km-n b{font-size:clamp(56px,16vmin,120px)}}
 
@@ -1219,6 +1228,9 @@ const SCHRIFTEN=[
  {id:'plakat',n:'Plakat',d:'"Archivo Black","Arial Black",Arial,sans-serif',b:'"Archivo","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:400,ls:'-.02em'},
  {id:'redaktion',n:'Redaktion',d:'"DM Serif Display",Georgia,serif',b:'"DM Sans","Helvetica Neue",Arial,sans-serif',m:'"DM Sans","Helvetica Neue",Arial,sans-serif',w:400,ls:'-.01em'},
  {id:'manuskript',n:'Manuskript',d:'"Fraunces",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:600,ls:'-.01em'},
+ {id:'gerundet',n:'Gerundet',d:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',b:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',m:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,sans-serif',w:800,ls:'-.02em'},
+ {id:'zeitung',n:'Zeitung',d:'ui-serif,"New York",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.015em'},
+ {id:'maschine',n:'Maschine',d:'"Space Mono",ui-monospace,Menlo,monospace',b:'"Space Mono",ui-monospace,Menlo,monospace',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.04em'},
  {id:'raster',n:'Raster',d:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',b:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.03em'}];
 const ECKEN=[['sharp','Eckig',0,0,0],['soft','Weich',10,12,18],['round','Rund',22,26,30]];
 const MODI=[['light','Hell'],['dark','Dunkel'],['auto','Automatisch']];
@@ -1403,7 +1415,7 @@ function renderHelp(){
       'Wiederherstellen oder Sammlung eines Freundes einlesen: „Teilen &amp; sichern“, dann „Sicherung oder Sammlung importieren“. Das geht auch bei leerer Sammlung.',
       'Rezepte von Freunden erhalten den Vermerk „geteilt von“ und lassen sich danach filtern. Die eigene Sicherung wird mit „Als eigenes Rezept übernehmen“ ohne den Vermerk übernommen. Vorhandene Rezepte werden nicht doppelt angelegt.']))}
     ${S('Drucken', L(['Hoch- oder Querformat im Druckdialog wählen. Auf dem iPhone als PDF über Teilen drucken.']))}
-    ${S('Darstellung', L(['Modus (Hell, Dunkel, Automatisch), dreizehn Farbwelten, fünf Schriften, drei Eckenformen und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
+    ${S('Darstellung', L(['Modus (Hell, Dunkel, Automatisch), dreizehn Farbwelten, acht Schriften, drei Eckenformen und zwei Symbolarten. Gilt nur auf diesem Gerät.']))}
     ${S('Als App installieren', L([
       '<b>iPhone, iPad:</b> Seite in Safari öffnen, Teilen, „Zum Home-Bildschirm“.',
       '<b>Android:</b> Seite in Chrome öffnen, Menü ⋮, „App installieren“ oder „Zum Startbildschirm hinzufügen“.',
@@ -1412,7 +1424,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '4.2';
+const APP_VERSION = '4.3';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1433,7 +1445,8 @@ const HISTORY = [
   ['3.11','Bunte Stile aus den dreifarbigen Kombinationen des StandBy-Dashboards, ruhigeres Farbmuster nach Kategorie, Wörter in Kacheln nie getrennt'],
   ['4.0','Darstellung neu aufgebaut: Modus (Hell, Dunkel, Automatisch), dreizehn Farbwelten nach StandBy-Vorbild, fünf Schriften, Ecken und Symbole frei wählbar; Nachtmodus entfällt; Kopf der Rezeptansicht aufgeräumt'],
   ['4.1','Kochmodus statt Kochen, Liste schließen im Kochmodus deutlich, Fertig als Hauptknopf, Unterlängen nicht mehr abgeschnitten, keine Portionen auf Kacheln'],
-  ['4.2','Zwölf Farbwelten passend zu Home Assistant, Fotokacheln wie im StandBy-Dashboard, Unsplash-Suche für Rezeptfotos']
+  ['4.2','Zwölf Farbwelten passend zu Home Assistant, Fotokacheln wie im StandBy-Dashboard, Unsplash-Suche für Rezeptfotos'],
+  ['4.3','Foto beim Bearbeiten und Anlegen oben im Rezeptformular, Schriften des StandBy-Dashboards, Scrollbalken mit Abstand zu runden Ecken']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1631,7 +1644,7 @@ function renderDetail(keep){
 function cookStart(){const r=getR(route.id);if(!r||!ds)return;const factor=ds.shown/(r.servings||1),G=getGroups(r),steps=[];
  G.steps.forEach(g=>parseStepsText(g.text).forEach(st=>{if(st.h)return;steps.push({g:G.steps.length>1||g.t?g.t||'':'',html:factor!==1?scaleStepText(st.t,factor):esc(st.t)})}));if(!steps.length)return;
  let k=-1;const ingHTML=G.ing.map(g=>((G.ing.length>1||g.t)&&g.t?`<h4 class="grphead">${esc(g.t)}</h4>`:'')+'<ul class="inglist">'+parseIngredientsText(g.text).map(it=>{if(it.h)return`<li class="grp">${esc(it.h)}</li>`;k++;const d=renderIng(it,factor,ds.mode,ds.over[k]);return`<li class="ing" data-act="kmIngChk" data-i="${k}"><span class="qty">${d.amount?`${d.approx?'ca. ':''}${esc(d.amount)}${d.unit?' '+esc(d.unit):''}`:''}</span> <span class="nm">${esc(d.name)}</span></li>`}).join('')+'</ul>').join('');
- const unitName=r.servingsUnit||(r.servings?'Portionen':'');kmOpen({pair:buntPair((r.courses||[])[0]||''),rid:r.id,photo:r.photo||'',credit:r.photoCredit||null,photoHTML:()=>photoDrawerHTML(r.id),title:r.title||'Rezept',steps,ingHTML,servLabel:r.servings?`${fmtFrac(ds.shown)} ${unitName}`:''})}
+ const unitName=r.servingsUnit||(r.servings?'Portionen':'');kmOpen({pair:buntPair((r.courses||[])[0]||''),rid:r.id,photo:r.photo||'',credit:r.photoCredit||null,title:r.title||'Rezept',steps,ingHTML,servLabel:r.servings?`${fmtFrac(ds.shown)} ${unitName}`:''})}
 function stepServings(dir){
   const r=getR(route.id); if(!r) return;
   const base=r.servings||1;
@@ -1661,13 +1674,11 @@ function kmOpen(o){km={...o,i:0};const d=document.createElement('div');d.classNa
  let wt=0;d.addEventListener('wheel',e=>{if(e.target.closest('.km-ing'))return;const v=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY,now=Date.now();if(Math.abs(v)<20||now-wt<350)return;wt=now;kmStep(v>0?1:-1)},{passive:true});
  km.key=e=>{if(!km)return;if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();kmStep(1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();kmStep(-1)}else if(e.key==='Escape')kmClose()};document.addEventListener('keydown',km.key)}
 function kmPaint(){const d=document.getElementById('km');if(!d||!km)return;const s=km.steps[km.i],n=km.steps.length;
- d.innerHTML=`${km.photo?`<img class="ck-bg" src="${esc(km.photo)}" alt="">`:''}<div class="km-top"><h2>${esc(km.title)}</h2><button data-act="kmIng" class="${km.ingOn?'on':''}">${km.ingOn?'Liste schließen':'Zutaten'}</button>${km.photoHTML?`<button data-act="kmPhoto" class="sq${km.un?' on':''}" aria-label="Foto">${ICON.camera}</button>`:''}<button data-act="kmClose" aria-label="Kochmodus schließen">Fertig</button></div>
+ d.innerHTML=`${km.photo?`<img class="ck-bg" src="${esc(km.photo)}" alt="">`:''}<div class="km-top"><h2>${esc(km.title)}</h2><button data-act="kmIng" class="${km.ingOn?'on':''}">${km.ingOn?'Liste schließen':'Zutaten'}</button><button data-act="kmClose" aria-label="Kochmodus schließen">Fertig</button></div>
  <div class="km-main"><div class="km-n"><b>${km.i+1}</b><small>von ${n}</small></div><div class="km-txt">${s.g?`<div class="km-g">${esc(s.g)}</div>`:''}<div class="km-t">${s.html}</div></div></div>
  <div class="km-bar"><button data-act="kmPrev" ${km.i?'':'disabled'} aria-label="Vorheriger Schritt">‹</button><div class="km-seg">${km.steps.map((_,k)=>`<i class="${k<km.i?'d':k===km.i?'on':''}"></i>`).join('')}</div><button data-act="kmNext" ${km.i<n-1?'':'disabled'} aria-label="Nächster Schritt">›</button></div>
  <div class="km-ing ${km.ingOn?'on':''}"><h3>Zutaten${km.servLabel?` · ${esc(km.servLabel)}`:''}</h3>${km.ingHTML}</div>
- ${km.un&&km.photoHTML?`<div class="km-ing km-ph ph-dr on"><h3>Foto</h3>${km.photoHTML()}</div>`:''}
  ${km.credit?`<small class="km-cred">Foto <a href="${esc(km.credit.link)}" target="_blank" rel="noopener">${esc(km.credit.name)}</a> · <a href="https://unsplash.com/?utm_source=rezeptesammlung&amp;utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></small>`:''}`;
- if(km.un&&typeof unSearch==='function'&&!km.unDone){km.unDone=1;unSearch(km.unQ||km.title)}
  requestAnimationFrame(()=>kmFit(d.querySelector('.km-t'),17,Math.min(64,Math.max(innerWidth/9,innerHeight/10))))}
 function kmStep(dx){if(!km)return;km.i=Math.max(0,Math.min(km.steps.length-1,km.i+dx));kmPaint()}
 function kmClose(){const d=document.getElementById('km');if(d)d.remove();document.body.style.overflow='';try{km&&km.wl&&km.wl.release()}catch(e){}if(km&&km.key)document.removeEventListener('keydown',km.key);km=null}
@@ -1692,12 +1703,14 @@ function renderEditor(keep){
   draft.source = draft.source||{};
   if(!draft.ingGroups || !draft.stepGroups){ const G=getGroups(draft); draft.ingGroups=G.ing.map(x=>({...x})); draft.stepGroups=G.steps.map(x=>({...x})); }
   const durVal = m => m==null ? '' : (m%60===0 && m>=60 ? (m/60)+' h' : (m>60 ? Math.floor(m/60)+':'+String(m%60).padStart(2,'0') : String(m)));
+  const phBlock = `<div class="phtop"><div class="cov" id="photoPrev">${cover(draft)}</div><div class="phcol"><b>Foto</b><div class="phbtns"><button class="btn" data-act="photoedit">${ICON.camera} ${draft.photo?'Ändern':'Hinzufügen'}</button>${draft.photo?'<button class="btn ghost" data-act="nophoto">Entfernen</button>':''}</div>${draft.photo&&draft.photoCredit?`<small class="dcred">Foto ${esc(draft.photoCredit.name)} · Unsplash</small>`:''}</div></div>`;
   app.innerHTML = `
   <div class="bar"><div class="wrap">
     <button class="iconbtn backbtn" data-act="cancel">Abbrechen</button><span class="grow"></span>
     <button class="btn primary" data-act="save" style="height:40px">Speichern</button>
   </div></div>
   <div class="wrap"><div class="form">
+    ${isNew?'':phBlock}
     ${isNew?`<div class="importbox">
       <button type="button" class="dropzone" data-act="ocr">${ICON.camera||''}<b>Foto, Screenshot oder Datei</b><span>tippen oder hierher ziehen</span></button>
       <div id="ocrState" class="hidden"><div id="ocrMsg" style="font-size:14px;font-weight:600"></div><div class="ocrbar"><i id="ocrBar"></i></div></div>
@@ -1706,12 +1719,10 @@ function renderEditor(keep){
         <button class="btn primary" data-act="parse">Übernehmen</button>
       </div>
       <div id="parseMsg" style="margin-top:8px;font-size:14px;font-weight:600"></div><ul id="parseHints" class="phints"></ul>
-    </div>`:''}
+    </div>${phBlock}`:''}
     ${(draft.scans&&draft.scans.length)?`<div class="fset"><h2>Vorlage</h2><p class="muted" style="font-size:13px;margin:-4px 0 10px">Zum Abgleichen antippen und vergrößern.</p><div class="scans">${draft.scans.map((s,i)=>`<button type="button" class="scan" data-act="viewscan" data-v="${i}"><img src="${s}" alt="Vorlage ${i+1}"></button>`).join('')}</div><button type="button" class="linkish" data-act="rmscans" style="border:0;background:none;padding:8px 0;text-decoration:underline;color:var(--ink2)">Vorlage entfernen</button></div>`:''}
     <div class="fset"><h2>Rezept</h2>
       <label class="fld"><span>Titel</span><input class="in" id="f_title" value="${esc(draft.title)}" autocomplete="off"></label>
-      <div class="fld"><span>Foto (optional)</span><div class="photo"><div class="cov" id="photoPrev">${cover(draft)}</div>
-        <div style="display:grid;gap:8px"><button class="btn" data-act="photo">Foto wählen</button>${draft.photo?'<button class="btn ghost" data-act="nophoto">Foto entfernen</button>':''}</div></div></div>
       <div class="fld"><span>Art des Gerichts</span><div class="chips" id="courseChips"></div></div>
       <div class="fld"><span>Küche und Stichworte</span><div class="chips" id="tagChips"></div>
         <div class="addtag"><input class="in" id="f_tag" placeholder="z. B. Ottolenghi, Koreanisch" autocomplete="off" enterkeyhint="done"><button class="btn" data-act="addtag">Hinzufügen</button></div>
@@ -1892,7 +1903,7 @@ const UN_KEY='a0heQoFnUT3nrjdMCBlRe8uJ1ejb7yfahKnC2xK_bGc';
 let UNRES=[], phTarget=null;
 const netErr=e=>e instanceof TypeError||/load failed|failed to fetch|networkerror/i.test(e?.message||'');
 function photoDrawerHTML(id){
-  const r=getR(id); if(!r) return ''; phTarget=id;
+  const r=id==='draft'?draft:getR(id); if(!r) return ''; phTarget=id;
   return `${r.photo?`<div class="ph-now"><img src="${esc(r.photo)}" alt=""><button class="btn" data-act="phdel">${ICON.trash} Foto löschen</button></div>`:''}
   <div class="row"><label class="btn primary">${ICON.camera} Foto wählen<input type="file" id="phFile" accept="image/*" hidden></label><button class="btn" data-act="phpaste">Aus Zwischenablage einfügen</button></div>
   <span class="lbl">Bild-Adresse einfügen (z. B. von Unsplash: Bild lange drücken → „Bildadresse kopieren“)</span><div class="un-f"><input id="phUrl" type="url" placeholder="https://images.unsplash.com/…" autocomplete="off"><button class="btn primary" data-act="phurl">Übernehmen</button></div>
@@ -1905,18 +1916,18 @@ async function unSearch(q){const box=$('#unRes');if(!box)return;unQ=q;box.innerH
   const j=await r.json();UNRES=j.results||[];box.innerHTML=UNRES.length?UNRES.map((p,i)=>`<button class="un-i" data-act="unpick" data-i="${i}"><img src="${esc(p.urls.thumb)}" alt="${esc(p.alt_description||'')}" loading="lazy"><span>${esc(p.user.name)}</span></button>`).join(''):'<div class="hint">Keine Treffer. Anderen Begriff versuchen.</div>'}
  catch(e){box.innerHTML=`<div class="hint">${esc(netErr(e)?'Unsplash gerade nicht erreichbar.':e.message)}</div>`}}
 async function setRecipePhoto(id, url, credit){
+  if(id==='draft'){ const paste=$('#pasteText')?$('#pasteText').value:null; collectForm(); draft.photo=url||''; if(credit) draft.photoCredit=credit; else delete draft.photoCredit; closeSheet(); renderEditor(true); if(paste!=null&&$('#pasteText')) $('#pasteText').value=paste; return; }
   const r=getR(id); if(!r) return;
   r.photo=url||''; if(credit) r.photoCredit=credit; else delete r.photoCredit;
   await persist(r);
   closeSheet();
-  if(km&&km.rid===id){ km.photo=r.photo; km.credit=r.photoCredit||null; km.un=false; kmPaint(); }
   if(route.v==='detail') renderDetail(true); else if(route.v==='list') renderResults();
 }
 function unPick(i){const p=UNRES[i];if(!p||!phTarget)return;
  fetch(p.links.download_location+(p.links.download_location.includes('?')?'&':'?')+'client_id='+encodeURIComponent(UN_KEY)).catch(()=>{});
  setRecipePhoto(phTarget,p.urls.regular,{name:p.user.name,link:p.user.links.html+'?utm_source=rezeptesammlung&utm_medium=referral'}).then(()=>toast('Foto übernommen'))}
 async function photoFromBlob(b){ const u=URL.createObjectURL(b); try{ const d=await shrinkDataURL(u,1100); await setRecipePhoto(phTarget,d,null); toast('Foto übernommen'); } finally{ URL.revokeObjectURL(u); } }
-function photoSheet(id){ sheet(`<h2>Foto</h2><div class="ph-dr">${photoDrawerHTML(id)}</div><div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`); unSearch(unQ||getR(id).title||''); }
+function photoSheet(id){ sheet(`<h2>Foto</h2><div class="ph-dr">${photoDrawerHTML(id)}</div><div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`); unSearch(unQ||(id==='draft'?draft.title:getR(id).title)||''); }
 document.addEventListener('submit',e=>{ const f=e.target.closest('form[data-form="un"]'); if(!f) return; e.preventDefault(); const q=(f.q.value||'').trim(); if(q) unSearch(q); });
 document.addEventListener('change',e=>{ if(e.target.id==='phFile'){ const f=e.target.files[0]; e.target.value=''; if(f) photoFromBlob(f).catch(()=>toast('Bild nicht lesbar')); } });
 async function onPhotoPicked(file){
@@ -2933,8 +2944,7 @@ document.addEventListener('click', async e=>{
     case 'kmPrev': kmStep(-1); break;
     case 'kmNext': kmStep(1); break;
     case 'kmClose': kmClose(); break;
-    case 'kmIng': km.ingOn=!km.ingOn; km.un=false; kmPaint(); break;
-    case 'kmPhoto': km.un=!km.un; km.ingOn=false; km.unDone=0; kmPaint(); break;
+    case 'kmIng': km.ingOn=!km.ingOn; kmPaint(); break;
     case 'kmIngChk': { const li=el; li.classList.toggle('done'); km.chk=km.chk||new Set(); const k=li.dataset.i; km.chk.has(k)?km.chk.delete(k):km.chk.add(k); } break;
     case 'cook': cookStart(); break;
     case 'view': pref.view=v; savePref(); renderResults(); lookSheet(); break;
@@ -2989,6 +2999,7 @@ document.addEventListener('click', async e=>{
     case 'usecook': { collectForm(); draft.cook=draft.cookEstimate; const p=$('#pasteText')?$('#pasteText').value:null; renderEditor(true); if(p!=null) $('#pasteText').value=p; break; }
     case 'photo': $('#filePhoto').click(); break;
     case 'photosheet': photoSheet(route.id); break;
+    case 'photoedit': collectForm(); photoSheet('draft'); break;
     case 'unpick': unPick(+el.dataset.i); break;
     case 'phdel': if(confirm('Foto dieses Rezepts entfernen?')) setRecipePhoto(phTarget,'',null); break;
     case 'phpaste': (async()=>{ try{ const it=await navigator.clipboard.read(); for(const x of it){ const ty=x.types.find(t=>t.startsWith('image/')); if(ty){ await photoFromBlob(await x.getType(ty)); return; } } toast('In der Zwischenablage ist kein Bild.'); }catch(err){ toast('Kein Zugriff auf die Zwischenablage. Bildadresse einfügen oder Foto wählen.'); } })(); break;

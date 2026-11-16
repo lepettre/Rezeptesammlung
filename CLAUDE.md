@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 4.2 (technisch `sw.js` VERSION v67). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 4.3 (technisch `sw.js` VERSION v68). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -28,7 +28,7 @@ Aktuelle Version: 4.2 (technisch `sw.js` VERSION v67). Anzeige in der App: `APP_
 ## Gestaltungsregeln
 - Filter in genau zwei Zeilen (`renderFilters`): oben Favoriten, Zeit und Sortierung (Knöpfe mit Auswahlfenster `timeSheet`/`sortSheet`) und Kategorien, unten Schlagwörter und Personen.
 - Darstellung (`lookSheet`, `applyLook`): getrennt wählbar Modus (`pref.mode`: light, dark, auto), Farbwelt (`pref.pal`, `FARBEN`), Schrift (`pref.font`, `SCHRIFTEN`), Ecken (`pref.corner`, `ECKEN`) und Symbole (`pref.symbols`). Kein Nachtmodus. Farbwelten: zwölf Paletten passend zu den Home-Assistant-Themes des Autors (Werte hell und dunkel in `FARBEN[].ha`), dazu Atelier mit den mehrfarbigen StandBy-Rezeptfarben; Kachelpaare je Kategorie (`CUR_PAIRS`, `buntPair`). Fotokacheln wie im StandBy-Dashboard (Bild, dunkler Verlauf, weiße Schrift). Alte `pref.style` werden in `migrateLook` übernommen. Wörter in Kacheln nie trennen (Titel wird kleiner). Kochansicht übernimmt das Farbpaar der Kategorie. Kacheln: hochkant gleich breit und unterschiedlich hoch, quer gleich hoch und unterschiedlich breit (`data-sz` nach Titellänge). Keine Portionen oder Mengen auf Kacheln. „Fertig“ in Fenstern immer als Hauptknopf (`btn primary fin`). Titel mit Zeilenhöhe mindestens 1,1 (Unterlängen). Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
-- Unsplash: Suche für Rezeptfotos wie im StandBy-Dashboard (`photoDrawerHTML`, `unSearch`, `unPick`, `UN_KEY` = öffentlicher Access Key, kein Geheimnis). Bilder per Hotlink, Fotograf und Unsplash nennen (`photoCredit`), Download melden. Bei Änderungen am Ablauf StandBy und Rezeptesammlung gleich halten.
+- Unsplash: Suche für Rezeptfotos wie im StandBy-Dashboard, erreichbar im Rezeptformular (oben, auch beim Anlegen) und in der Rezeptansicht, nicht im Kochmodus (`photoDrawerHTML`, `unSearch`, `unPick`, `UN_KEY` = öffentlicher Access Key, kein Geheimnis). Bilder per Hotlink, Fotograf und Unsplash nennen (`photoCredit`), Download melden. Bei Änderungen am Ablauf StandBy und Rezeptesammlung gleich halten.
 - Kein Server und kein Worker; Links (z. B. Instagram) werden nicht abgerufen, nur als Quelle gespeichert.
 - Navigation höchstens drei bis vier Zeilen; gleichartige Elemente (z. B. Filter-Chips) nie auf mehrere Zeilen verteilen, lieber eine seitlich scrollbare Zeile.
 
