@@ -127,6 +127,7 @@ img{ max-width:100%; display:block; }
 .frow::-webkit-scrollbar{ display:none; }
 .frow+.frow{ padding-top:0; }
 .chip.more{ border-style:dashed; }
+.lcap{ padding:0; margin:0 0 -4px; font-size:13px; color:var(--ink2); }
 .chip .car{ font-size:11px; opacity:.6; margin-left:-2px; }
 .optlist{ display:grid; gap:6px; margin:4px 0 12px; }
 .optlist button{ text-align:left; height:46px; padding:0 14px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); font-size:16px; font-weight:500; border-radius:var(--r); }
@@ -376,7 +377,6 @@ mark.sc{ background:color-mix(in srgb, var(--gelb) 70%, transparent); color:inhe
 .rtile .tm{font-size:12.5px;opacity:.85;display:flex;flex-wrap:wrap;gap:2px 10px}
 .rtile .fav{position:absolute;top:12px;right:14px}
 .km{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);padding:calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 18px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 18px)}
-html:not([data-night="1"]) .km{--paper:var(--kbg);--ink:var(--kfg);--ink2:color-mix(in srgb,var(--kfg) 68%,var(--kbg));--line:color-mix(in srgb,var(--kfg) 22%,var(--kbg));--rot:var(--kfg);--card:color-mix(in srgb,var(--kfg) 10%,var(--kbg))}
 @media (hover:hover){.km-main{cursor:pointer}}
 .km-top{display:flex;align-items:center;gap:10px}
 .km-top h2{flex:1;min-width:0;font:600 15px/1.2 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}
@@ -1210,18 +1210,32 @@ const STYLES=[
  ['nordisch','Moos','#F6F5F1','#23302B','#4F7A60','Fraunces'],
  ['altrosa','Rosé','#F3E6E3','#3A2F30','#6F8496','DM Serif Display'],
  ['kontrast','Kontrast','#FFFFFF','#111111','#0047FF','Space Grotesk']];
+/* Bunte Stile: die zwölf Farbkombinationen aus dem StandBy-Dashboard [Name, Fläche, Schrift]; Form und Schrift wie Signal */
+const BUNT=[['Gelb · Schwarz','#ffe600','#000000'],['Rosa · Blau','#ff9ad5','#2b1bd6'],['Limette · Tanne','#c7f23a','#0f2e1d'],['Orange · Schwarz','#ff5a1f','#000000'],['Mint · Marine','#63e6e2','#0b2545'],['Rot · Rosé','#ff3b30','#ffd6e0'],['Lila · Gelb','#bf5af2','#ffe600'],['Pfirsich · Bordeaux','#ffb38a','#5a0f1f'],['Blau · Weiß','#0a84ff','#ffffff'],['Grün · Dunkelgrün','#30d158','#0a2a12'],['Silber · Schwarz','#c7c7cc','#000000'],['Marine · Gelb','#0b2545','#ffe600']];
+const BUNT_ID=id=>/^b\d+$/.test(id||'')&&BUNT[+String(id).slice(1)]?+String(id).slice(1):-1;
+function applyBunt(){
+  const h=document.documentElement, k=BUNT_ID(pref.style), names=['--paper','--paper2','--card','--ink','--ink2','--line','--rot','--on-rot','--blau','--gelb','--on-gelb','--tint','--tint-ink','--field','--g-rot','--g-blau','--g-gelb','--g-ink'];
+  names.forEach(n=>h.style.removeProperty(n));
+  if(k<0||pref.night) return;
+  const P=BUNT[k][1], I=BUNT[k][2], m=(a,pc,b)=>`color-mix(in srgb,${a} ${pc}%,${b})`, v={'--paper':P,'--paper2':m(P,92,I),'--card':m(P,95,I),'--ink':I,'--ink2':m(I,72,P),'--line':m(I,24,P),'--rot':I,'--on-rot':P,'--blau':I,'--gelb':I,'--on-gelb':P,'--tint':m(I,12,P),'--tint-ink':I,'--field':m(P,92,I),'--g-rot':I,'--g-blau':I,'--g-gelb':I,'--g-ink':I};
+  for(const n in v) h.style.setProperty(n,v[n]);
+}
 function applyLook(){
-  const st = STYLES.some(s=>s[0]===pref.style) ? pref.style : 'nordisch';
+  const bk=BUNT_ID(pref.style);
+  const st = bk>=0 ? 'graphit' : (STYLES.some(s=>s[0]===pref.style) ? pref.style : 'nordisch');
   document.documentElement.dataset.style = st;
+  applyBunt();
   if(pref.night) document.documentElement.dataset.night='1'; else delete document.documentElement.dataset.night;
-  const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', pref.night?'#000000':STYLES.find(s=>s[0]===st)[2]);
+  const m=document.getElementById('themeColor'); if(m) m.setAttribute('content', pref.night?'#000000':(bk>=0?BUNT[bk][1]:STYLES.find(s=>s[0]===st)[2]));
 }
 function lookSheet(){
   /* 3.6: kompakt – Stile als eine Reihe, jede Einstellung eine Zeile */
-  const cur = document.documentElement.dataset.style, sym = pref.symbols==='icons'?'icons':'shapes', tiles=pref.view==='tiles';
+  const cur = BUNT_ID(pref.style)>=0 ? '' : document.documentElement.dataset.style, sym = pref.symbols==='icons'?'icons':'shapes', tiles=pref.view==='tiles';
   const row=(label,opts,act,val)=>`<div class="lrow"><span>${label}</span><span class="seg small">${opts.map(([k,l])=>`<button class="${val===k?'on':''}" data-act="${act}" data-v="${k}">${l}</button>`).join('')}</span></div>`;
   sheet(`<h2>Darstellung</h2>
    <div class="looks2">${STYLES.map(s=>`<button class="look2 ${s[0]===cur?'on':''}" data-act="setstyle" data-v="${s[0]}" aria-label="${s[1]}"><i style="background:${s[2]};color:${s[4]};font-family:'${s[5]}'">Aa</i><small>${s[1]}</small></button>`).join('')}</div>
+   <div class="lrow lcap"><span>Bunt</span></div>
+   <div class="looks2">${BUNT.map((c,k)=>`<button class="look2 ${'b'+k===pref.style?'on':''}" data-act="setstyle" data-v="b${k}" aria-label="${c[0]}"><i style="background:${c[1]};color:${c[2]};font-family:'Geist'">Aa</i><small>${c[0].split(' · ')[0]}</small></button>`).join('')}</div>
    ${row('Ansicht',[['list','Liste'],['tiles','Kacheln']],'view',tiles?'tiles':'list')}
    ${tiles?'':row('Symbole',[['shapes','Formen'],['icons','Zeichnungen']],'setsym',sym)}
    ${row('Nachtmodus',[['off','Aus'],['on','An']],'setnight',pref.night?'on':'off')}
@@ -1363,7 +1377,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '3.8';
+const APP_VERSION = '3.9';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1378,7 +1392,8 @@ const HISTORY = [
   ['3.5','Kompakte Navigation: Kopfzeile mit Symbolen, eine Filterzeile; Kacheln in Spalten nach Textlänge'],
   ['3.6','Einheitliche quadratische Kacheln, Fotos mit Unschärfe-Feld wie im Dashboard, kürzere Darstellungs-Auswahl'],
   ['3.7','Filter in zwei Zeilen, Import von Chat-Nachrichten und Captions verbessert, Hinweise auf unsichere Stellen, Anzeige bereinigt'],
-  ['3.8','Zeit und Sortierung als Knöpfe mit Auswahlfenster in der Filterzeile, Nachtmodus für die ganze App, Kochansicht in bunten Farbkombinationen und mit Maus bedienbar, mehrere Zutatenlisten nebeneinander']
+  ['3.8','Zeit und Sortierung als Knöpfe mit Auswahlfenster in der Filterzeile, Nachtmodus für die ganze App, Kochansicht in bunten Farbkombinationen und mit Maus bedienbar, mehrere Zutatenlisten nebeneinander'],
+  ['3.9','Zwölf bunte Stile aus dem StandBy-Dashboard unter Darstellung; Kacheln, Oberfläche und Kochansicht folgen einheitlich dem gewählten Stil']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1487,7 +1502,9 @@ function renderResults(){
 }
 
 /* Kachel: Kategorie oben klein, Titel groß in der Überschriftschrift, unten Zeit und Portionen; Farbe aus der Kategorie im aktuellen Stil; fehlende Angaben entfallen */
-function tileHTML(r){const c=(r.courses||[])[0]||'',col=(COURSES.find(x=>x[0]===c)||[])[2]||'ink',bg=col==='ink'?'var(--ink)':col==='blau'?'color-mix(in srgb,var(--blau) 62%,var(--ink))':`var(--${col})`,fg=col==='ink'||col==='blau'?'var(--paper)':col==='gelb'?'var(--on-gelb)':'var(--card)';
+function tileHTML(r){const c=(r.courses||[])[0]||'',col=(COURSES.find(x=>x[0]===c)||[])[2]||'ink';let bg=col==='ink'?'var(--ink)':col==='blau'?'color-mix(in srgb,var(--blau) 62%,var(--ink))':`var(--${col})`,fg=col==='ink'||col==='blau'?'var(--paper)':col==='gelb'?'var(--on-gelb)':'var(--card)';
+ /* bunte Stile: alle Kacheln einheitlich in Stilfarbe */
+ if(BUNT_ID(pref.style)&&!pref.night){bg='var(--ink)';fg='var(--paper)'}
  const a=activeMin(r),t=totalMin(r),time=a!=null?fmtDuration(a):(t!=null?fmtDuration(t):''),sv=r.servings?`${fmtFrac(r.servings)} ${esc(r.servingsUnit||'Portionen')}`:'';
  const inner=`${c?`<span class="tk">${esc(c)}</span>`:''}<div class="tbox"><h3 class="tt">${esc(r.title||'Ohne Titel')}</h3></div>${time||sv?`<span class="tm">${time?`<span>${time}</span>`:''}${sv?`<span>${sv}</span>`:''}</span>`:''}`;
  /* mit Foto wie im Dashboard: Bild füllt die Kachel, Text auf Unschärfe */
@@ -1590,9 +1607,7 @@ function tileFit(root){(root||document).querySelectorAll('.rtile .tt').forEach(t
 if(document.fonts){const rf=()=>{if(pref.view==='tiles')tileFit()};document.fonts.ready.then(rf);document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',rf)}
 /* Kochmodus: ein Schritt pro Bildschirm. Mengen werden nur umgerechnet, wo sie im Schritt selbst stehen (keine Zuordnung aus der Zutatenliste). */
 let km=null;
-/* Farbkombinationen wie im StandBy-Dashboard: [Fläche, Schrift]; je Rezept fest über die Kennung gewählt */
-const KM_COMBOS=[['#ffe600','#000000'],['#ff9ad5','#2b1bd6'],['#c7f23a','#0f2e1d'],['#ff5a1f','#000000'],['#63e6e2','#0b2545'],['#ff3b30','#ffd6e0'],['#bf5af2','#ffe600'],['#ffb38a','#5a0f1f'],['#0a84ff','#ffffff'],['#30d158','#0a2a12'],['#c7c7cc','#000000'],['#0b2545','#ffe600']];
-function kmOpen(o){km={...o,i:0};const d=document.createElement('div');d.className='km';d.id='km';{let h=0;for(const c of String(o.key||o.title||''))h=(h*31+c.charCodeAt(0))>>>0;const c=KM_COMBOS[h%KM_COMBOS.length];d.style.setProperty('--kbg',c[0]);d.style.setProperty('--kfg',c[1])}document.body.append(d);document.body.style.overflow='hidden';try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>km&&(km.wl=w)).catch(()=>{})}catch(e){}kmPaint();
+function kmOpen(o){km={...o,i:0};const d=document.createElement('div');d.className='km';d.id='km';document.body.append(d);document.body.style.overflow='hidden';try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>km&&(km.wl=w)).catch(()=>{})}catch(e){}kmPaint();
  let x0=null;d.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});d.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>50&&!e.target.closest('.km-ing'))kmStep(dx<0?1:-1)},{passive:true});
  /* Maus: ziehen, in die linke oder rechte Hälfte klicken, Scrollrad; Tastatur: Pfeile und Leertaste */
  let mx=null;d.addEventListener('pointerdown',e=>{mx=e.pointerType==='mouse'&&!e.target.closest('button,.km-ing')?e.clientX:null});
@@ -2837,7 +2852,7 @@ document.addEventListener('click', async e=>{
     case 'cook': cookStart(); break;
     case 'view': pref.view=v; savePref(); renderResults(); lookSheet(); break;
     case 'setsort': filt.sort=v; pref.sort=v; savePref(); closeSheet(); renderFilters(); renderResults(); break;
-    case 'setnight': pref.night=v==='on'; savePref(); applyLook(); lookSheet(); break;
+    case 'setnight': pref.night=v==='on'; savePref(); applyLook(); renderResults(); lookSheet(); break;
     case 'timesheet': timeSheet(); break;
     case 'sortsheet': sortSheet(); break;
     case 'more': stepServings(1); break;

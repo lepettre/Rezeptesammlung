@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 3.8 (technisch `sw.js` VERSION v61). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 3.9 (technisch `sw.js` VERSION v62). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -27,7 +27,7 @@ Aktuelle Version: 3.8 (technisch `sw.js` VERSION v61). Anzeige in der App: `APP_
 
 ## Gestaltungsregeln
 - Filter in genau zwei Zeilen (`renderFilters`): oben Favoriten, Zeit und Sortierung (Knöpfe mit Auswahlfenster `timeSheet`/`sortSheet`) und Kategorien, unten Schlagwörter und Personen.
-- Nachtmodus (`pref.night`, `html[data-night]`) ist ein Modus über jedem Stil, kein Stil. Kochansicht nutzt die Farbkombinationen `KM_COMBOS` aus dem StandBy-Dashboard. Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
+- Nachtmodus (`pref.night`, `html[data-night]`) ist ein Modus über jedem Stil, kein Stil. Zwölf bunte Stile (`BUNT`, Kennung `b0`–`b11`, Farbkombinationen aus dem StandBy-Dashboard) setzen die Farbvariablen in `applyBunt`; Kacheln und Kochansicht folgen immer dem gewählten Stil, keine zufälligen Farben. Knopf „Hinzufügen“ bleibt schwebend unten mittig, nicht in die Kopfzeile versetzen.
 - Kein Server und kein Worker; Links (z. B. Instagram) werden nicht abgerufen, nur als Quelle gespeichert.
 - Navigation höchstens drei bis vier Zeilen; gleichartige Elemente (z. B. Filter-Chips) nie auf mehrere Zeilen verteilen, lieber eine seitlich scrollbare Zeile.
 
