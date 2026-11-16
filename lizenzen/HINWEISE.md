@@ -22,6 +22,7 @@ Diese Bestandteile behalten ihre eigenen Lizenzen. Die Lizenztexte liegen in die
 | Fraunces | Schrift | SIL OFL 1.1 | `fraunces-OFL.txt` |
 | DM Serif Display, DM Sans | Schriften | SIL OFL 1.1 | `dmserifdisplay-OFL.txt`, `dmsans-OFL.txt` |
 | Space Grotesk | Schrift | SIL OFL 1.1 | `spacegrotesk-OFL.txt` |
+| Nunito | Schrift „Gerundet“ | SIL OFL 1.1 | `nunito-OFL.txt` |
 | Unsplash (API und Fotos) | Fotosuche für Rezeptfotos, Bilder werden von Unsplash geladen (Hotlink), Fotograf und Unsplash werden im Rezept genannt, der Download wird gemeldet | Unsplash-Lizenz und API-Richtlinien, kein Lizenztext im Ordner | https://unsplash.com/license |
 
 Die Wortliste `ocr/woerter.txt` bleibt unter CC BY-SA 4.0 und wird unter denselben Bedingungen weitergegeben.

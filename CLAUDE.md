@@ -1,7 +1,7 @@
 # Rezeptesammlung – Projektkontext für Claude Code
 
 Rezepte-Web-App (PWA) ohne Server, Konto oder Cloud. Gehostet über GitHub Pages: https://lepettre.github.io/Rezeptesammlung/
-Aktuelle Version: 4.3 (technisch `sw.js` VERSION v68). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
+Aktuelle Version: 4.4 (technisch `sw.js` VERSION v69). Anzeige in der App: `APP_VERSION`, `HISTORY`, `LEGAL` in `renderInfo`. Verlauf in `VERSIONEN.md`.
 
 ## Arbeitsregeln
 - Sprache: Deutsch. Antworten sachlich und knapp. Nie Ausrufezeichen, weder in Antworten noch in der App.
@@ -15,7 +15,7 @@ Aktuelle Version: 4.3 (technisch `sw.js` VERSION v68). Anzeige in der App: `APP_
 - `index.html` – die gesamte App in einer Datei: CSS, Parser und App-Logik (Vanilla JS, keine Build-Schritte). Einzige Quelle; es gibt keine getrennten Quelldateien.
 - `sw.js` – Service Worker. Bei jeder Änderung an der App `VERSION` hochzählen (z. B. v48 → v49), sonst bekommen Geräte kein Update. Cache-first für `ocr/` und `pdf/`.
 - `manifest.webmanifest`, `icons/` – App-Icon (Spiegelei auf Schwarz).
-- `fonts/` – zehn WOFF2-Schriften, zugeschnitten auf Latin inkl. Latin Extended.
+- `fonts/` – WOFF2-Schriften (unter anderem Nunito in Latin und Latin Extended), zugeschnitten auf Latin inkl. Latin Extended.
 - `ocr/` – Texterkennung offline: ONNX Runtime Web (`ort.wasm.min.js`, `.mjs`, `.wasm.1/.2`), PaddleOCR PP-OCRv6 small (`det.onnx.1/.2`, `rec.onnx.1–3`, `rec_dict.txt`), Wörterbuch `woerter.txt`. Große Dateien liegen in Teilen (< 8,4 MB) und werden in `fetchParts()` zusammengesetzt. Lädt erst beim ersten Fotoimport nach Rückfrage.
 - `pdf/` – jsPDF und Schrift für den PDF-Druck auf dem iPhone (Home-Bildschirm-App kann nicht direkt drucken).
 - `lizenzen/` – Lizenzen der Fremdbestandteile, Übersicht in `HINWEISE.md`.

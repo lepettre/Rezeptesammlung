@@ -22,6 +22,10 @@
 @font-face{ font-family:"Fraunces"; src:url(fonts/Fraunces.woff2) format("woff2"); font-weight:600; font-display:swap; }
 @font-face{ font-family:"DM Serif Display"; src:url(fonts/DMSerif.woff2) format("woff2"); font-weight:400; font-display:swap; }
 @font-face{ font-family:"DM Sans"; src:url(fonts/DMSans.woff2) format("woff2"); font-weight:400 700; font-display:swap; }
+@font-face{ font-family:"Nunito"; src:url(fonts/Nunito-latin-700.woff2) format("woff2"); font-weight:700; font-display:swap; unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face{ font-family:"Nunito"; src:url(fonts/Nunito-latinext-700.woff2) format("woff2"); font-weight:700; font-display:swap; unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face{ font-family:"Nunito"; src:url(fonts/Nunito-latin-800.woff2) format("woff2"); font-weight:800; font-display:swap; unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face{ font-family:"Nunito"; src:url(fonts/Nunito-latinext-800.woff2) format("woff2"); font-weight:800; font-display:swap; unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 @font-face{ font-family:"Space Grotesk"; src:url(fonts/SpaceGrotesk.woff2) format("woff2"); font-weight:400 700; font-display:swap; }
 :root{
   box-sizing:border-box;
@@ -1209,18 +1213,18 @@ function scaleStepText(t,f){
 const FARBEN=[
  {id:'atelier',n:'Atelier',a:'#ffe600',b:'#000000',ink:'#111111',lp:'#FDFBF4',dp:'#000000',fg1:'#000000',sw:['#ffe600','#ff5a1f','#2b1bd6','#ff9ad5','#c7f23a'],
   pairs:[['#ff9500','#160b00'],['#c7f23a','#0b1400'],['#123524','#c7f23a'],['#ff5a1f','#140400'],['#ffe600','#000000'],['#e9e3d3','#111111'],['#1c1c1e','#ffe600'],['#ff9ad5','#24001a'],['#63e6e2','#0b2545'],['#2b1bd6','#ff9ad5'],['#1c1c1e','#ffffff'],['#1c1c1e','#ffffff']]},
- {id:'gelb-silber',n:'Gelb · Silber',ha:{l:['#7a6e00','#ffffff','#dcd9bb','#000000','#544c00','#a69600','#000000','#f6f4e6','#ebe9d9','#ffffff'],d:['#ffe600','#000000','#f0d800','#000000','#544b00','#ffe600','#000000','#17160c','#39372a','#27261c']}},
- {id:'rosa-blau',n:'Rosa · Blau',ha:{l:['#2b1bd6','#ffffff','#d7d3f7','#000000','#3424d8','#cc7baa','#000000','#f6eff5','#ebe2ec','#ffffff'],d:['#ff9ad5','#000000','#ffc8e8','#000000','#663e56','#ff9ad5','#000000','#171217','#393239','#272227']}},
- {id:'limette-tanne',n:'Limette · Tanne',ha:{l:['#0f2e1d','#ffffff','#d3d9d5','#000000','#375042','#819d26','#000000','#f2f5ea','#e6eade','#ffffff'],d:['#c7f23a','#000000','#bee737','#000000','#425113','#c7f23a','#000000','#14170f','#35382e','#25271f']}},
- {id:'orange-creme',n:'Orange · Creme',ha:{l:['#ba4217','#ffffff','#eed2c7','#000000','#852f10','#ff5a1f','#000000','#f6eae8','#ebdcdb','#ffffff'],d:['#ff5a1f','#000000','#ffcdba','#000000','#852f10','#f2efe8','#000000','#170f0e','#392d2c','#271f1e']}},
- {id:'mint-marine',n:'Mint · Marine',ha:{l:['#0b2545','#ffffff','#d3d8dd','#000000','#374c67','#45a19e','#000000','#ebf4f6','#dde9ed','#ffffff'],d:['#63e6e2','#000000','#79e9e6','#000000','#245251','#e3f6f5','#000000','#0f1618','#2e373a','#202628']}},
- {id:'rot-rose',n:'Rot · Rosé',ha:{l:['#c92f26','#ffffff','#f3cfcd','#000000','#8f211b','#ff3b30','#000000','#f6e8e9','#ebd9dd','#ffffff'],d:['#ff3b30','#000000','#ffcac8','#000000','#8f211b','#ffd6e0','#000000','#170d0f','#392b2d','#271e1f']}},
- {id:'lila-gelb',n:'Lila · Gelb',ha:{l:['#2a1440','#ffffff','#d9d5dd','#000000','#554467','#bf5af2','#000000','#f1eaf7','#e5dcee','#ffffff'],d:['#bf5af2','#000000','#ebcdfb','#000000','#693286','#ffe600','#000000','#140f18','#342d3b','#241f29']}},
- {id:'pfirsich-bordeaux',n:'Pfirsich · Bordeaux',ha:{l:['#5a0f1f','#ffffff','#e1d4d6','#000000','#753744','#bf8668','#000000','#f6f0ef','#ebe4e5','#ffffff'],d:['#ffb38a','#000000','#ffcdb1','#000000','#624435','#ffb38a','#000000','#171313','#393434','#272423']}},
- {id:'blau-eis',n:'Blau · Eis',ha:{l:['#086acc','#ffffff','#c2daf2','#000000','#064a8f','#0a84ff','#000000','#e5edf8','#d5e0f0','#ffffff'],d:['#0f86ff','#000000','#b7dbff','#000000','#084a8e','#0f86ff','#000000','#0b1119','#28303c','#1b2129']}},
- {id:'gruen-pink',n:'Grün · Pink',ha:{l:['#0a2a12','#ffffff','#d3d8d4','#000000','#36513d','#27a947','#000000','#e7f2ec','#d8e7e0','#ffffff'],d:['#30d158','#000000','#9ae9ad','#000000','#145724','#ff9ad5','#000000','#0d1511','#2a3630','#1d2521']}},
- {id:'silber-schwarz',n:'Silber · Schwarz',ha:{l:['#3a3a3c','#ffffff','#d7d7d7','#000000','#4a4a4c','#3a3a3c','#ffffff','#f2f2f4','#e6e6eb','#ffffff'],d:['#c7c7cc','#000000','#d7d7da','#000000','#4a4a4c','#c7c7cc','#000000','#141417','#353538','#252527']}},
- {id:'marine-creme',n:'Marine · Creme',ha:{l:['#1c3557','#ffffff','#d3d7de','#000000','#364c6a','#1c3557','#ffffff','#e6e8ec','#d7d9e0','#ffffff'],d:['#77869a','#000000','#d3d8de','#000000','#434b57','#f2efe8','#000000','#0c0d11','#292b30','#1c1d21']}}];
+ {id:'gelb-silber',pal:['#ffe600','#000000'],n:'Gelb · Silber',ha:{l:['#7a6e00','#ffffff','#dcd9bb','#000000','#544c00','#a69600','#000000','#f6f4e6','#ebe9d9','#ffffff'],d:['#ffe600','#000000','#f0d800','#000000','#544b00','#ffe600','#000000','#17160c','#39372a','#27261c']}},
+ {id:'rosa-blau',pal:['#ff9ad5','#2b1bd6'],n:'Rosa · Blau',ha:{l:['#2b1bd6','#ffffff','#d7d3f7','#000000','#3424d8','#cc7baa','#000000','#f6eff5','#ebe2ec','#ffffff'],d:['#ff9ad5','#000000','#ffc8e8','#000000','#663e56','#ff9ad5','#000000','#171217','#393239','#272227']}},
+ {id:'limette-tanne',pal:['#c7f23a','#0f2e1d'],n:'Limette · Tanne',ha:{l:['#0f2e1d','#ffffff','#d3d9d5','#000000','#375042','#819d26','#000000','#f2f5ea','#e6eade','#ffffff'],d:['#c7f23a','#000000','#bee737','#000000','#425113','#c7f23a','#000000','#14170f','#35382e','#25271f']}},
+ {id:'orange-creme',pal:['#ff5a1f','#000000'],n:'Orange · Creme',ha:{l:['#ba4217','#ffffff','#eed2c7','#000000','#852f10','#ff5a1f','#000000','#f6eae8','#ebdcdb','#ffffff'],d:['#ff5a1f','#000000','#ffcdba','#000000','#852f10','#f2efe8','#000000','#170f0e','#392d2c','#271f1e']}},
+ {id:'mint-marine',pal:['#63e6e2','#0b2545'],n:'Mint · Marine',ha:{l:['#0b2545','#ffffff','#d3d8dd','#000000','#374c67','#45a19e','#000000','#ebf4f6','#dde9ed','#ffffff'],d:['#63e6e2','#000000','#79e9e6','#000000','#245251','#e3f6f5','#000000','#0f1618','#2e373a','#202628']}},
+ {id:'rot-rose',pal:['#ff3b30','#ffd6e0'],n:'Rot · Rosé',ha:{l:['#c92f26','#ffffff','#f3cfcd','#000000','#8f211b','#ff3b30','#000000','#f6e8e9','#ebd9dd','#ffffff'],d:['#ff3b30','#000000','#ffcac8','#000000','#8f211b','#ffd6e0','#000000','#170d0f','#392b2d','#271e1f']}},
+ {id:'lila-gelb',pal:['#bf5af2','#ffe600'],n:'Lila · Gelb',ha:{l:['#2a1440','#ffffff','#d9d5dd','#000000','#554467','#bf5af2','#000000','#f1eaf7','#e5dcee','#ffffff'],d:['#bf5af2','#000000','#ebcdfb','#000000','#693286','#ffe600','#000000','#140f18','#342d3b','#241f29']}},
+ {id:'pfirsich-bordeaux',pal:['#ffb38a','#5a0f1f'],n:'Pfirsich · Bordeaux',ha:{l:['#5a0f1f','#ffffff','#e1d4d6','#000000','#753744','#bf8668','#000000','#f6f0ef','#ebe4e5','#ffffff'],d:['#ffb38a','#000000','#ffcdb1','#000000','#624435','#ffb38a','#000000','#171313','#393434','#272423']}},
+ {id:'blau-eis',pal:['#0a84ff','#ffffff'],n:'Blau · Eis',ha:{l:['#086acc','#ffffff','#c2daf2','#000000','#064a8f','#0a84ff','#000000','#e5edf8','#d5e0f0','#ffffff'],d:['#0f86ff','#000000','#b7dbff','#000000','#084a8e','#0f86ff','#000000','#0b1119','#28303c','#1b2129']}},
+ {id:'gruen-pink',pal:['#30d158','#0a2a12'],n:'Grün · Pink',ha:{l:['#0a2a12','#ffffff','#d3d8d4','#000000','#36513d','#27a947','#000000','#e7f2ec','#d8e7e0','#ffffff'],d:['#30d158','#000000','#9ae9ad','#000000','#145724','#ff9ad5','#000000','#0d1511','#2a3630','#1d2521']}},
+ {id:'silber-schwarz',pal:['#c7c7cc','#000000'],n:'Silber · Schwarz',ha:{l:['#3a3a3c','#ffffff','#d7d7d7','#000000','#4a4a4c','#3a3a3c','#ffffff','#f2f2f4','#e6e6eb','#ffffff'],d:['#c7c7cc','#000000','#d7d7da','#000000','#4a4a4c','#c7c7cc','#000000','#141417','#353538','#252527']}},
+ {id:'marine-creme',pal:['#1c3557','#f2efe8'],n:'Marine · Creme',ha:{l:['#1c3557','#ffffff','#d3d7de','#000000','#364c6a','#1c3557','#ffffff','#e6e8ec','#d7d9e0','#ffffff'],d:['#77869a','#000000','#d3d8de','#000000','#434b57','#f2efe8','#000000','#0c0d11','#292b30','#1c1d21']}}];
 /* frühere Farbwelten → neue */
 const PAL_ALT={zitrone:'gelb-silber',orchidee:'rosa-blau',tanne:'limette-tanne',lagune:'mint-marine',moos:'limette-tanne',karmin:'rot-rose'};
 const SCHRIFTEN=[
@@ -1228,7 +1232,7 @@ const SCHRIFTEN=[
  {id:'plakat',n:'Plakat',d:'"Archivo Black","Arial Black",Arial,sans-serif',b:'"Archivo","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:400,ls:'-.02em'},
  {id:'redaktion',n:'Redaktion',d:'"DM Serif Display",Georgia,serif',b:'"DM Sans","Helvetica Neue",Arial,sans-serif',m:'"DM Sans","Helvetica Neue",Arial,sans-serif',w:400,ls:'-.01em'},
  {id:'manuskript',n:'Manuskript',d:'"Fraunces",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:600,ls:'-.01em'},
- {id:'gerundet',n:'Gerundet',d:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',b:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',m:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,sans-serif',w:800,ls:'-.02em'},
+ {id:'gerundet',n:'Gerundet',d:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',b:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',m:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,sans-serif',w:800,ls:'-.02em'},
  {id:'zeitung',n:'Zeitung',d:'ui-serif,"New York",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.015em'},
  {id:'maschine',n:'Maschine',d:'"Space Mono",ui-monospace,Menlo,monospace',b:'"Space Mono",ui-monospace,Menlo,monospace',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.04em'},
  {id:'raster',n:'Raster',d:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',b:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.03em'}];
@@ -1238,6 +1242,7 @@ const MODI=[['light','Hell'],['dark','Dunkel'],['auto','Automatisch']];
 const ALT_STILE={graphit:['rot-rose','klar','soft','light'],abend:['gelb-silber','klar','soft','dark'],bauhaus:['rot-rose','plakat','sharp','light'],nordisch:['limette-tanne','manuskript','soft','light'],altrosa:['rosa-blau','redaktion','soft','light'],kontrast:['mint-marine','raster','soft','light'],zitrone:['gelb-silber','plakat','round','dark'],bonbon:['rosa-blau','redaktion','round','light'],wald:['limette-tanne','raster','sharp','dark'],meer:['mint-marine','klar','soft','light'],pop:['atelier','plakat','round','dark'],sorbet:['rosa-blau','redaktion','round','light'],neon:['limette-tanne','raster','sharp','dark'],marine:['mint-marine','klar','soft','light']};
 (function migrateLook(){ if(PAL_ALT[pref.pal]){ pref.pal=PAL_ALT[pref.pal]; savePref(); }
   if(pref.pal) return; const m=ALT_STILE[pref.style]||ALT_STILE.nordisch; pref.pal=m[0]; pref.font=m[1]; pref.corner=m[2]; pref.mode=pref.night?'dark':m[3]; delete pref.night; savePref(); })();
+const mixHex=a=>{const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),x=p(a),y=p('#fdfbf4');return'#'+x.map((v,i)=>Math.round(v*.6+y[i]*.4).toString(16).padStart(2,'0')).join('')};
 const CAT_IDX=[2,0,1,2,0,1,2,1,0,1,2,1];
 let CUR_PAIRS=null;
 const mixc=(a,p,b)=>`color-mix(in srgb,${a} ${p}%,${b})`;
@@ -1253,9 +1258,11 @@ function applyLook(){
     v={'--paper':bg,'--paper2':bg2,'--card':card,'--ink':I,'--ink2':I2,'--line':mixc(I,14,bg),
      '--rot':pri,'--on-rot':onPri,'--blau':pri,'--gelb':lp,'--on-gelb':onLp,'--tint':bg2,'--tint-ink':I,'--field':bg2,
      '--g-rot':pri,'--g-blau':pri,'--g-gelb':pri,'--g-ink':pri};
-    /* Kacheln immer kräftig: Hauptfarbe und Akzent der dunklen Fassung, dazu eine dunkle Kachel */
-    const dd=F.ha.d, same=dd[5].toLowerCase()===dd[0].toLowerCase();
-    const t=[[dd[0],dd[1]],same?[dd[4],dd[2]]:[dd[5],dd[6]],dark?[bg2,pri]:[pri,onPri]];
+    /* Kacheln wie in der Kartensammlung: Akzent mit Schrift darauf, umgekehrt, und die Zweitfarbe (Akzent zu 60 % mit Creme gemischt) */
+    const [A,O]=F.pal, tint=mixHex(A), lum=h=>{const n=parseInt(h.slice(1),16),c=[n>>16,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4});return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+    const cr=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+    const tx=[O,A,'#000000'].reduce((m,c)=>cr(tint,c)>cr(tint,m)?c:m);
+    const t=[[A,O],[O,A],[tint,tx]];
     CUR_PAIRS=CAT_IDX.map(k=>t[k]); themeBg=bg;
   } else {
     const P=dark?F.dp:F.lp, I=dark?'#F4F1E8':F.ink, T=dark?mixc(F.a,82,'#fff'):F.b;
@@ -1424,7 +1431,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '4.3';
+const APP_VERSION = '4.4';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1446,7 +1453,8 @@ const HISTORY = [
   ['4.0','Darstellung neu aufgebaut: Modus (Hell, Dunkel, Automatisch), dreizehn Farbwelten nach StandBy-Vorbild, fünf Schriften, Ecken und Symbole frei wählbar; Nachtmodus entfällt; Kopf der Rezeptansicht aufgeräumt'],
   ['4.1','Kochmodus statt Kochen, Liste schließen im Kochmodus deutlich, Fertig als Hauptknopf, Unterlängen nicht mehr abgeschnitten, keine Portionen auf Kacheln'],
   ['4.2','Zwölf Farbwelten passend zu Home Assistant, Fotokacheln wie im StandBy-Dashboard, Unsplash-Suche für Rezeptfotos'],
-  ['4.3','Foto beim Bearbeiten und Anlegen oben im Rezeptformular, Schriften des StandBy-Dashboards, Scrollbalken mit Abstand zu runden Ecken']
+  ['4.3','Foto beim Bearbeiten und Anlegen oben im Rezeptformular, Schriften des StandBy-Dashboards, Scrollbalken mit Abstand zu runden Ecken'],
+  ['4.4','Schrift Nunito (Gerundet) eingebettet, Kachelfarben nach den Paletten der Kartensammlung']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1480,7 +1488,7 @@ function renderInfo(){
       'jsPDF, MIT: PDF-Druck. '+ext(LIC+'/jspdf-LICENSE.txt','Lizenztext'),
       'Tabler Icons, MIT: Symbole der Oberfläche. '+ext(LIC+'/tabler-icons-LICENSE.txt','Lizenztext'),
       'Unsplash: Fotosuche für Rezeptfotos. Bilder stammen von den genannten Fotografen und stehen unter der Unsplash-Lizenz, sie werden von Unsplash geladen. '+ext('https://unsplash.com/license','Lizenz')+' · '+ext('https://unsplash.com/?utm_source=rezeptesammlung&utm_medium=referral','Unsplash'),
-      'Schriften Archivo, Archivo Black, Space Mono, Geist, Inter, Fraunces, DM Serif Display, DM Sans und Space Grotesk, SIL Open Font License 1.1. '+ext(LIC,'Lizenztexte im Quellcode')]))}
+      'Schriften Archivo, Archivo Black, Space Mono, Geist, Inter, Fraunces, DM Serif Display, DM Sans, Space Grotesk und Nunito, SIL Open Font License 1.1. '+ext(LIC,'Lizenztexte im Quellcode')]))}
   </div>`;
 }
 

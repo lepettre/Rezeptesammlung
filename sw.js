@@ -1,10 +1,11 @@
 /* Rezeptesammlung – Offline-Cache. Bei Änderungen an index.html VERSION erhöhen. */
-const VERSION = 'v68';
+const VERSION = 'v69';
 const SHELL = 'rk-shell-' + VERSION;
 const OCR = 'rk-ocr-v4';
 const SHELL_FILES = [
   './', 'index.html', 'manifest.webmanifest',
   'fonts/ArchivoBlack-Regular.woff2', 'fonts/Archivo-var.woff2', 'fonts/SpaceMono-Regular.woff2', 'fonts/SpaceMono-Bold.woff2',
+  'fonts/Nunito-latin-700.woff2', 'fonts/Nunito-latinext-700.woff2', 'fonts/Nunito-latin-800.woff2', 'fonts/Nunito-latinext-800.woff2',
   'fonts/Geist.woff2', 'fonts/Inter.woff2', 'fonts/Fraunces.woff2', 'fonts/DMSerif.woff2', 'fonts/DMSans.woff2', 'fonts/SpaceGrotesk.woff2',
   'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png'
 ];
