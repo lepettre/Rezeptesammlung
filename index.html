@@ -1208,10 +1208,10 @@ function scaleStepText(t,f){
 }
 /* ===== Darstellung 4.0: Modus × Farbwelt × Schrift × Ecken ===== */
 /* Farbwelten nach den Kombinationen des StandBy-Dashboards: a Fläche, b Schrift/Dunkel, c Zweitfarbe. Kachelpaare [Fläche, Schrift]. */
-/* Farbwelten: zwölf Paletten für Home Assistant (hell und dunkel, abgestimmt auf die dortigen Themes), dazu Atelier mit den mehrfarbigen Rezeptfarben des StandBy-Dashboards.
+/* Farbwelten: zwölf Paletten für Home Assistant (hell und dunkel, abgestimmt auf die dortigen Themes), dazu „Mehrfarbig“ mit den mehrfarbigen Rezeptfarben des StandBy-Dashboards.
    Reihenfolge der Werte je Fassung: Hauptfarbe, Schrift darauf, helle Hauptfarbe, Schrift darauf, dunkle Hauptfarbe, Akzent, Schrift darauf, Hintergrund, zweiter Hintergrund, Karte. */
 const FARBEN=[
- {id:'atelier',n:'Atelier',a:'#ffe600',b:'#000000',ink:'#111111',lp:'#FDFBF4',dp:'#000000',fg1:'#000000',sw:['#ffe600','#ff5a1f','#2b1bd6','#ff9ad5','#c7f23a'],
+ {id:'atelier',n:'Mehrfarbig',a:'#ffe600',b:'#000000',ink:'#111111',lp:'#FDFBF4',dp:'#000000',fg1:'#000000',sw:['#ffe600','#ff5a1f','#2b1bd6','#ff9ad5','#c7f23a'],
   pairs:[['#ff9500','#160b00'],['#c7f23a','#0b1400'],['#123524','#c7f23a'],['#ff5a1f','#140400'],['#ffe600','#000000'],['#e9e3d3','#111111'],['#1c1c1e','#ffe600'],['#ff9ad5','#24001a'],['#63e6e2','#0b2545'],['#2b1bd6','#ff9ad5'],['#1c1c1e','#ffffff'],['#1c1c1e','#ffffff']]},
  {id:'gelb-silber',pal:['#ffe600','#000000'],n:'Gelb · Silber',ha:{l:['#7a6e00','#ffffff','#dcd9bb','#000000','#544c00','#a69600','#000000','#f6f4e6','#ebe9d9','#ffffff'],d:['#ffe600','#000000','#f0d800','#000000','#544b00','#ffe600','#000000','#17160c','#39372a','#27261c']}},
  {id:'rosa-blau',pal:['#ff9ad5','#2b1bd6'],n:'Rosa · Blau',ha:{l:['#2b1bd6','#ffffff','#d7d3f7','#000000','#3424d8','#cc7baa','#000000','#f6eff5','#ebe2ec','#ffffff'],d:['#ff9ad5','#000000','#ffc8e8','#000000','#663e56','#ff9ad5','#000000','#171217','#393239','#272227']}},
@@ -1228,14 +1228,14 @@ const FARBEN=[
 /* frühere Farbwelten → neue */
 const PAL_ALT={zitrone:'gelb-silber',orchidee:'rosa-blau',tanne:'limette-tanne',lagune:'mint-marine',moos:'limette-tanne',karmin:'rot-rose'};
 const SCHRIFTEN=[
- {id:'klar',n:'Klar',d:'"Geist","Helvetica Neue",Arial,sans-serif',b:'"Geist","Helvetica Neue",Arial,sans-serif',m:'"Geist","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.03em'},
- {id:'plakat',n:'Plakat',d:'"Archivo Black","Arial Black",Arial,sans-serif',b:'"Archivo","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:400,ls:'-.02em'},
- {id:'redaktion',n:'Redaktion',d:'"DM Serif Display",Georgia,serif',b:'"DM Sans","Helvetica Neue",Arial,sans-serif',m:'"DM Sans","Helvetica Neue",Arial,sans-serif',w:400,ls:'-.01em'},
- {id:'manuskript',n:'Manuskript',d:'"Fraunces",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:600,ls:'-.01em'},
- {id:'gerundet',n:'Gerundet',d:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',b:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',m:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,sans-serif',w:800,ls:'-.02em'},
- {id:'zeitung',n:'Zeitung',d:'ui-serif,"New York",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.015em'},
- {id:'maschine',n:'Maschine',d:'"Space Mono",ui-monospace,Menlo,monospace',b:'"Space Mono",ui-monospace,Menlo,monospace',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.04em'},
- {id:'raster',n:'Raster',d:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',b:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.03em'}];
+ {id:'klar',n:'Geist',d:'"Geist","Helvetica Neue",Arial,sans-serif',b:'"Geist","Helvetica Neue",Arial,sans-serif',m:'"Geist","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.03em'},
+ {id:'plakat',n:'Archivo Black',d:'"Archivo Black","Arial Black",Arial,sans-serif',b:'"Archivo","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:400,ls:'-.02em'},
+ {id:'redaktion',n:'DM Serif Display',d:'"DM Serif Display",Georgia,serif',b:'"DM Sans","Helvetica Neue",Arial,sans-serif',m:'"DM Sans","Helvetica Neue",Arial,sans-serif',w:400,ls:'-.01em'},
+ {id:'manuskript',n:'Fraunces',d:'"Fraunces",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:600,ls:'-.01em'},
+ {id:'gerundet',n:'Nunito',d:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',b:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif',m:'"Nunito",ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,sans-serif',w:800,ls:'-.02em'},
+ {id:'zeitung',n:'Serif (System)',d:'ui-serif,"New York",Georgia,serif',b:'"Inter","Helvetica Neue",Arial,sans-serif',m:'"Inter","Helvetica Neue",Arial,sans-serif',w:700,ls:'-.015em'},
+ {id:'maschine',n:'Space Mono',d:'"Space Mono",ui-monospace,Menlo,monospace',b:'"Space Mono",ui-monospace,Menlo,monospace',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.04em'},
+ {id:'raster',n:'Space Grotesk',d:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',b:'"Space Grotesk","Helvetica Neue",Arial,sans-serif',m:'"Space Mono",ui-monospace,Menlo,monospace',w:700,ls:'-.03em'}];
 const ECKEN=[['sharp','Eckig',0,0,0],['soft','Weich',10,12,18],['round','Rund',22,26,30]];
 const MODI=[['light','Hell'],['dark','Dunkel'],['auto','Automatisch']];
 /* Übernahme der früheren Stile: [Farbwelt, Schrift, Ecken, Modus] */
@@ -1431,7 +1431,7 @@ function renderHelp(){
   </div>`;
 }
 
-const APP_VERSION = '4.4';
+const APP_VERSION = '4.5';
 const LEGAL = { name:'J. Petter', anschrift:'0457 Hamburg', mail:'info@jan-petter.de' };
 const HISTORY = [
   ['0.5','Grundgerüst: Rezepte lokal speichern, Zutaten erkennen, Portionen umrechnen, als HTML-Datei teilen'],
@@ -1454,7 +1454,8 @@ const HISTORY = [
   ['4.1','Kochmodus statt Kochen, Liste schließen im Kochmodus deutlich, Fertig als Hauptknopf, Unterlängen nicht mehr abgeschnitten, keine Portionen auf Kacheln'],
   ['4.2','Zwölf Farbwelten passend zu Home Assistant, Fotokacheln wie im StandBy-Dashboard, Unsplash-Suche für Rezeptfotos'],
   ['4.3','Foto beim Bearbeiten und Anlegen oben im Rezeptformular, Schriften des StandBy-Dashboards, Scrollbalken mit Abstand zu runden Ecken'],
-  ['4.4','Schrift Nunito (Gerundet) eingebettet, Kachelfarben nach den Paletten der Kartensammlung']
+  ['4.4','Schrift Nunito (Gerundet) eingebettet, Kachelfarben nach den Paletten der Kartensammlung'],
+  ['4.5','Schriften unter ihrem echten Namen, Foto-Knopf neben dem Stift, Unsplash-Suche immer mit dem Rezepttitel']
 ];
 function renderInfo(){
   const S=(t,b)=>`<section class="hsec"><h2>${t}</h2>${b}</section>`;
@@ -1616,6 +1617,7 @@ function renderDetail(keep){
   <div class="bar"><div class="wrap">
     <button class="iconbtn backbtn" data-act="back">${ICON.back}Rezepte</button><span class="grow"></span>
     <button class="iconbtn" data-act="fav" aria-label="Favorit" style="color:${r.fav?'var(--rot)':'inherit'}">${r.fav?ICON.starOn:ICON.star}</button>
+    <button class="iconbtn" data-act="photosheet" aria-label="Foto">${ICON.camera}</button>
     <button class="iconbtn" data-act="edit" aria-label="Bearbeiten">${ICON.edit}</button>
     <button class="iconbtn" data-act="share" aria-label="Teilen">${ICON.share}</button>
   </div></div>
@@ -1641,7 +1643,6 @@ function renderDetail(keep){
     ${r.notes?`<div class="notes">${esc(r.notes)}</div>`:''}
     ${(srcLine||src.url)?`<div class="sourcebox">Quelle: ${srcLine}${src.url?`<br><a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url)}</a>`:''}</div>`:''}
     <div class="actions">
-      <button class="btn" data-act="photosheet">${ICON.camera} Foto</button>
       <button class="btn" data-act="copytext">${ICON.copy} Text kopieren</button>
       <button class="btn" data-act="print">${ICON.print} Drucken</button>
       <button class="btn danger" data-act="delete">${ICON.trash} Löschen</button>
@@ -1915,10 +1916,9 @@ function photoDrawerHTML(id){
   return `${r.photo?`<div class="ph-now"><img src="${esc(r.photo)}" alt=""><button class="btn" data-act="phdel">${ICON.trash} Foto löschen</button></div>`:''}
   <div class="row"><label class="btn primary">${ICON.camera} Foto wählen<input type="file" id="phFile" accept="image/*" hidden></label><button class="btn" data-act="phpaste">Aus Zwischenablage einfügen</button></div>
   <span class="lbl">Bild-Adresse einfügen (z. B. von Unsplash: Bild lange drücken → „Bildadresse kopieren“)</span><div class="un-f"><input id="phUrl" type="url" placeholder="https://images.unsplash.com/…" autocomplete="off"><button class="btn primary" data-act="phurl">Übernehmen</button></div>
-  <span class="lbl">Bei Unsplash suchen</span><form class="un-f" data-form="un"><input name="q" value="${esc(unQ||r.title||'')}" enterkeyhint="search" autocomplete="off"><button class="btn primary">Suchen</button></form><div class="un-g" id="unRes"></div>`;
+  <span class="lbl">Bei Unsplash suchen</span><form class="un-f" data-form="un"><input name="q" value="${esc(r.title||'')}" enterkeyhint="search" autocomplete="off"><button class="btn primary">Suchen</button></form><div class="un-g" id="unRes"></div>`;
 }
-let unQ='';
-async function unSearch(q){const box=$('#unRes');if(!box)return;unQ=q;box.innerHTML='<div class="hint">Suche …</div>';
+async function unSearch(q){const box=$('#unRes');if(!box)return;if(!String(q||'').trim()){box.innerHTML='<div class="hint">Suchbegriff eingeben.</div>';return}box.innerHTML='<div class="hint">Suche …</div>';
  try{const r=await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=18&content_filter=high&client_id=${encodeURIComponent(UN_KEY)}`);
   if(!r.ok)throw Error(r.status===401?'Unsplash-Schlüssel ungültig.':r.status===403?'Unsplash-Limit erreicht, später erneut versuchen.':'Unsplash: HTTP '+r.status);
   const j=await r.json();UNRES=j.results||[];box.innerHTML=UNRES.length?UNRES.map((p,i)=>`<button class="un-i" data-act="unpick" data-i="${i}"><img src="${esc(p.urls.thumb)}" alt="${esc(p.alt_description||'')}" loading="lazy"><span>${esc(p.user.name)}</span></button>`).join(''):'<div class="hint">Keine Treffer. Anderen Begriff versuchen.</div>'}
@@ -1935,7 +1935,7 @@ function unPick(i){const p=UNRES[i];if(!p||!phTarget)return;
  fetch(p.links.download_location+(p.links.download_location.includes('?')?'&':'?')+'client_id='+encodeURIComponent(UN_KEY)).catch(()=>{});
  setRecipePhoto(phTarget,p.urls.regular,{name:p.user.name,link:p.user.links.html+'?utm_source=rezeptesammlung&utm_medium=referral'}).then(()=>toast('Foto übernommen'))}
 async function photoFromBlob(b){ const u=URL.createObjectURL(b); try{ const d=await shrinkDataURL(u,1100); await setRecipePhoto(phTarget,d,null); toast('Foto übernommen'); } finally{ URL.revokeObjectURL(u); } }
-function photoSheet(id){ sheet(`<h2>Foto</h2><div class="ph-dr">${photoDrawerHTML(id)}</div><div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`); unSearch(unQ||(id==='draft'?draft.title:getR(id).title)||''); }
+function photoSheet(id){ sheet(`<h2>Foto</h2><div class="ph-dr">${photoDrawerHTML(id)}</div><div class="stack" style="margin-top:14px"><button class="btn primary fin" data-act="closesheet">Fertig</button></div>`); unSearch((id==='draft'?draft.title:getR(id).title)||''); }
 document.addEventListener('submit',e=>{ const f=e.target.closest('form[data-form="un"]'); if(!f) return; e.preventDefault(); const q=(f.q.value||'').trim(); if(q) unSearch(q); });
 document.addEventListener('change',e=>{ if(e.target.id==='phFile'){ const f=e.target.files[0]; e.target.value=''; if(f) photoFromBlob(f).catch(()=>toast('Bild nicht lesbar')); } });
 async function onPhotoPicked(file){
